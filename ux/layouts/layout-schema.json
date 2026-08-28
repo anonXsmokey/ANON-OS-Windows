@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ANON Desktop Layout",
+  "type": "object",
+  "required": ["id", "name", "canvas", "surfaces"],
+  "properties": {
+    "id": {"type": "string"},
+    "name": {"type": "string"},
+    "canvas": {
+      "type": "object",
+      "properties": {
+        "density": {"enum": ["compact", "comfortable", "spacious"]},
+        "grid": {"type": "object", "additionalProperties": true}
+      },
+      "additionalProperties": true
+    },
+    "surfaces": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "anchor"],
+        "properties": {
+          "id": {"type": "string"},
+          "type": {"enum": ["widget", "launcher", "dock", "system", "library", "custom"]},
+          "anchor": {"type": "object", "additionalProperties": true},
+          "visibility": {"type": "string"}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}
