@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ANON Visual Performance Profile",
+  "type": "object",
+  "required": ["id", "name", "animation", "effects", "widgets", "wallpaper"],
+  "properties": {
+    "id": {"type": "string"},
+    "name": {"type": "string"},
+    "animation": {
+      "type": "object",
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "intensity": {"type": "number", "minimum": 0, "maximum": 1},
+        "transition_ms": {"type": "integer", "minimum": 0, "maximum": 1500},
+        "reduce_during_game": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "effects": {
+      "type": "object",
+      "properties": {
+        "blur": {"type": "number", "minimum": 0, "maximum": 1},
+        "transparency": {"type": "number", "minimum": 0, "maximum": 1},
+        "parallax": {"type": "number", "minimum": 0, "maximum": 1},
+        "ambient": {"type": "number", "minimum": 0, "maximum": 1}
+      },
+      "additionalProperties": false
+    },
+    "widgets": {
+      "type": "object",
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "refresh_hz": {"type": "number", "minimum": 0, "maximum": 60},
+        "animate": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "wallpaper": {
+      "type": "object",
+      "properties": {
+        "mode": {"enum": ["static", "animated", "reactive", "dynamic"]},
+        "fps_cap": {"type": "integer", "minimum": 1, "maximum": 120},
+        "pause_during_game": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
