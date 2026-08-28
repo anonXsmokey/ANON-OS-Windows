@@ -1,0 +1,36 @@
+{
+  "profiles": [
+    {
+      "id": "maximum-performance",
+      "name": "Maximum Performance",
+      "animation": {"enabled": false, "intensity": 0, "transition_ms": 0, "reduce_during_game": true},
+      "effects": {"blur": 0, "transparency": 0, "parallax": 0, "ambient": 0},
+      "widgets": {"enabled": false, "refresh_hz": 0, "animate": false},
+      "wallpaper": {"mode": "static", "fps_cap": 1, "pause_during_game": true}
+    },
+    {
+      "id": "gaming",
+      "name": "Gaming",
+      "animation": {"enabled": true, "intensity": 0.55, "transition_ms": 220, "reduce_during_game": true},
+      "effects": {"blur": 0.25, "transparency": 0.25, "parallax": 0.1, "ambient": 0.15},
+      "widgets": {"enabled": true, "refresh_hz": 5, "animate": false},
+      "wallpaper": {"mode": "static", "fps_cap": 1, "pause_during_game": true}
+    },
+    {
+      "id": "balanced",
+      "name": "Balanced",
+      "animation": {"enabled": true, "intensity": 0.75, "transition_ms": 300, "reduce_during_game": true},
+      "effects": {"blur": 0.45, "transparency": 0.45, "parallax": 0.25, "ambient": 0.35},
+      "widgets": {"enabled": true, "refresh_hz": 10, "animate": true},
+      "wallpaper": {"mode": "animated", "fps_cap": 30, "pause_during_game": true}
+    },
+    {
+      "id": "immersive",
+      "name": "Immersive",
+      "animation": {"enabled": true, "intensity": 1, "transition_ms": 420, "reduce_during_game": false},
+      "effects": {"blur": 0.7, "transparency": 0.7, "parallax": 0.55, "ambient": 0.75},
+      "widgets": {"enabled": true, "refresh_hz": 20, "animate": true},
+      "wallpaper": {"mode": "reactive", "fps_cap": 60, "pause_during_game": false}
+    }
+  ]
+}
