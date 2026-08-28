@@ -1,0 +1,32 @@
+{
+  "layouts": [
+    {
+      "id": "classic-anon",
+      "name": "ANON Classic",
+      "canvas": {"density": "comfortable", "grid": {"columns": 12, "rows": 8}},
+      "surfaces": [
+        {"id": "desktop", "type": "custom", "anchor": {"x": 0, "y": 0}, "visibility": "always"},
+        {"id": "dock", "type": "dock", "anchor": {"x": 0.5, "y": 0.96}, "visibility": "always"},
+        {"id": "system", "type": "system", "anchor": {"x": 0.96, "y": 0.08}, "visibility": "always"}
+      ]
+    },
+    {
+      "id": "gaming-space",
+      "name": "Gaming Space",
+      "canvas": {"density": "spacious", "grid": {"columns": 12, "rows": 8}},
+      "surfaces": [
+        {"id": "library", "type": "library", "anchor": {"x": 0.5, "y": 0.48}, "visibility": "always"},
+        {"id": "performance", "type": "widget", "anchor": {"x": 0.08, "y": 0.12}, "visibility": "always"},
+        {"id": "dock", "type": "dock", "anchor": {"x": 0.5, "y": 0.96}, "visibility": "always"}
+      ]
+    },
+    {
+      "id": "minimal",
+      "name": "Minimal",
+      "canvas": {"density": "compact", "grid": {"columns": 12, "rows": 8}},
+      "surfaces": [
+        {"id": "dock", "type": "dock", "anchor": {"x": 0.5, "y": 0.96}, "visibility": "always"}
+      ]
+    }
+  ]
+}
