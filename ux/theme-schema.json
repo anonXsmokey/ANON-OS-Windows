@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ANON Theme",
+  "type": "object",
+  "required": ["id", "name", "version", "layout", "motion", "surfaces", "widgets"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9._-]+$"},
+    "name": {"type": "string"},
+    "version": {"type": "string"},
+    "layout": {
+      "type": "object",
+      "properties": {
+        "desktop": {"type": "string"},
+        "taskbar": {"type": "string"},
+        "window_behavior": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "motion": {
+      "type": "object",
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "intensity": {"type": "number", "minimum": 0, "maximum": 1},
+        "transition_ms": {"type": "integer", "minimum": 0, "maximum": 2000},
+        "reduce_during_games": {"type": "boolean"}
+      },
+      "additionalProperties": false
+    },
+    "surfaces": {"type": "object", "additionalProperties": true},
+    "widgets": {"type": "array", "items": {"type": "object"}},
+    "wallpaper": {"type": "object", "additionalProperties": true}
+  },
+  "additionalProperties": false
+}
