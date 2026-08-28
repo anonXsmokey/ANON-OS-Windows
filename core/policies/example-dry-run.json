@@ -1,0 +1,9 @@
+{
+  "id": "example.dry-run",
+  "version": "0.1.0",
+  "description": "Documentation-only example used to validate policy parsing. It must never be applied as an optimization.",
+  "risk": "safe",
+  "requires_backup": false,
+  "supported_builds": ["10.x", "11.x"],
+  "actions": []
+}
