@@ -11,19 +11,24 @@ public sealed class VisualRuntime
     public void Apply(VisualPolicy policy)
     {
         ArgumentNullException.ThrowIfNull(policy);
+        if (Equals(Current, policy)) return;
         Current = policy;
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
     public void SetGamingMode(bool enabled)
     {
+        if (GamingMode == enabled) return;
         GamingMode = enabled;
         Changed?.Invoke(this, EventArgs.Empty);
     }
 
     public void SetReducedMotion(bool enabled)
     {
+        if (ReducedMotion == enabled) return;
         ReducedMotion = enabled;
         Changed?.Invoke(this, EventArgs.Empty);
     }
+
+    public VisualProfileState ResolveProfile() => VisualProfileState.Resolve(this);
 }
