@@ -180,7 +180,7 @@ public sealed partial class MainWindow : Window
 
     private void SearchBox_KeyDown(object sender, KeyRoutedEventArgs e)
     {
-        if (e.Key == VirtualKey.Escape)
+        if (e.Key == Windows.System.VirtualKey.Escape)
         {
             SearchBox.Text = string.Empty;
             SearchBox.Focus(FocusState.Programmatic);
@@ -188,7 +188,7 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        if (e.Key != VirtualKey.Enter) return;
+        if (e.Key != Windows.System.VirtualKey.Enter) return;
         var command = _launcherCatalog.Search(SearchBox.Text.Trim()).FirstOrDefault();
         if (command is null) return;
         LaunchCommand(command);
