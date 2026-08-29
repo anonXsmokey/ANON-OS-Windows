@@ -1,0 +1,13 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Color x:Key="AnonBackgroundColor">#0B0D12</Color>
+    <Color x:Key="AnonSurfaceColor">#121722</Color>
+    <Color x:Key="AnonSurfaceStrongColor">#1A2130</Color>
+    <Color x:Key="AnonTextColor">#F4F7FB</Color>
+    <Color x:Key="AnonMutedTextColor">#8E99AA</Color>
+    <SolidColorBrush x:Key="AnonBackgroundBrush" Color="{StaticResource AnonBackgroundColor}" />
+    <SolidColorBrush x:Key="AnonSurfaceBrush" Color="{StaticResource AnonSurfaceColor}" />
+    <SolidColorBrush x:Key="AnonSurfaceStrongBrush" Color="{StaticResource AnonSurfaceStrongColor}" />
+    <SolidColorBrush x:Key="AnonTextBrush" Color="{StaticResource AnonTextColor}" />
+    <SolidColorBrush x:Key="AnonMutedTextBrush" Color="{StaticResource AnonMutedTextColor}" />
+    <CornerRadius x:Key="AnonCardRadius">18</CornerRadius>
+</ResourceDictionary>
