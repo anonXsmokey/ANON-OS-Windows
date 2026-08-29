@@ -32,11 +32,26 @@
                         <TextBlock Text="GAMING DESKTOP" FontSize="10" CharacterSpacing="180" Foreground="{StaticResource AnonMutedTextBrush}" />
                     </StackPanel>
                 </StackPanel>
-                <TextBox Grid.Column="1" Margin="44,12" PlaceholderText="Search apps, games, files, settings..." />
+                <TextBox x:Name="SearchBox" Grid.Column="1" Margin="44,12" PlaceholderText="Search apps, games, files, settings..." TextChanged="SearchBox_TextChanged" KeyDown="SearchBox_KeyDown" />
                 <Border Grid.Column="2" Padding="12,7" CornerRadius="10" Background="{StaticResource AnonSurfaceStrongBrush}" VerticalAlignment="Center">
                     <TextBlock Text="M0 • PREVIEW" Foreground="{StaticResource AnonMutedTextBrush}" />
                 </Border>
             </Grid>
+        </Border>
+
+        <Border x:Name="LauncherPanel" Grid.Row="0" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="226,68,0,0" Width="620" MaxHeight="260" Background="{StaticResource AnonSurfaceBrush}" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1" CornerRadius="12" Padding="8" Visibility="Collapsed">
+            <ListView x:Name="LauncherResults" IsItemClickEnabled="True" ItemClick="LauncherResults_ItemClick" SelectionMode="None">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="12,10">
+                            <StackPanel Spacing="2">
+                                <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" />
+                                <TextBlock Text="{Binding Subtitle}" FontSize="11" Foreground="{StaticResource AnonMutedTextBrush}" />
+                            </StackPanel>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
         </Border>
 
         <Grid Grid.Row="1" Padding="40,32">
