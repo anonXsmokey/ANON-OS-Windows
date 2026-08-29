@@ -14,9 +14,13 @@ public sealed class WidgetRuntime
 
     public IReadOnlyCollection<WidgetDefinition> Widgets => _widgets.Values;
 
+    public event EventHandler? Changed;
+
     public void SetEnabled(string id, bool enabled)
     {
         if (!_widgets.TryGetValue(id, out var widget)) return;
+        if (widget.Enabled == enabled) return;
         _widgets[id] = widget with { Enabled = enabled };
+        Changed?.Invoke(this, EventArgs.Empty);
     }
 }
