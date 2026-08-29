@@ -2,8 +2,10 @@ using Anon.Shell.M0.Runtime;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
+using Windows.System;
 
 namespace Anon.Shell.M0;
 
@@ -16,6 +18,7 @@ public sealed partial class MainWindow : Window
     private readonly WallpaperRuntime _wallpaperRuntime = new();
     private readonly WidgetRuntime _widgetRuntime = new();
     private readonly WindowLaunchService _launcher = new();
+    private readonly LauncherCatalog _launcherCatalog = new();
     private readonly DesktopController _desktop;
     private readonly PreferencesStore _preferencesStore = new();
     private readonly SystemTelemetry _telemetry = new();
@@ -159,6 +162,53 @@ public sealed partial class MainWindow : Window
     private void Apps_Click(object sender, RoutedEventArgs e) => SetStatus("Apps surface selected.");
     private void Games_Click(object sender, RoutedEventArgs e) => SetStatus("Games surface selected.");
     private void Ai_Click(object sender, RoutedEventArgs e) => SetStatus("ANON AI is optional and remains disabled in M0.");
+
+    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        var query = SearchBox.Text.Trim();
+        var results = _launcherCatalog.Search(query);
+        LauncherResults.ItemsSource = results;
+        LauncherPanel.Visibility = results.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        if (query.Length > 0)
+            SetStatus(results.Count == 0 ? $"No ANON launcher matches for \"{query}\"." : $"{results.Count} launcher result{(results.Count == 1 ? "" : "s")}.");
+    }
+
+    private void SearchBox_KeyDown(object sender, KeyRoutedEventArgs e)
+    {
+        if (e.Key == VirtualKey.Escape)
+        {
+            SearchBox.Text = string.Empty;
+            SearchBox.Focus(FocusState.Programmatic);
+            e.Handled = true;
+            return;
+        }
+
+        if (e.Key != VirtualKey.Enter) return;
+        var command = _launcherCatalog.Search(SearchBox.Text.Trim()).FirstOrDefault();
+        if (command is null) return;
+        LaunchCommand(command);
+        e.Handled = true;
+    }
+
+    private void LauncherResults_ItemClick(object sender, ItemClickEventArgs e)
+    {
+        if (e.ClickedItem is LauncherCommand command) LaunchCommand(command);
+    }
+
+    private void LaunchCommand(LauncherCommand command)
+    {
+        try
+        {
+            _launcher.Launch(command.Target);
+            SetStatus($"Opened {command.Title}.");
+            LauncherPanel.Visibility = Visibility.Collapsed;
+            SearchBox.Text = string.Empty;
+        }
+        catch (Exception ex)
+        {
+            SetStatus($"Could not open {command.Title}: {ex.Message}");
+        }
+    }
 
     private void VisualProfile_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
