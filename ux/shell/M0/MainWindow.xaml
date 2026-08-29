@@ -44,9 +44,9 @@
                 <Border CornerRadius="{StaticResource AnonCardRadius}" Padding="22" Background="{StaticResource AnonSurfaceBrush}">
                     <StackPanel Spacing="8">
                         <TextBlock Text="SYSTEM" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" />
-                        <TextBlock Text="CPU     —" Foreground="{StaticResource AnonMutedTextBrush}" />
+                        <TextBlock x:Name="CpuText" Text="CPU     —" Foreground="{StaticResource AnonMutedTextBrush}" />
                         <TextBlock Text="GPU     —" Foreground="{StaticResource AnonMutedTextBrush}" />
-                        <TextBlock Text="MEMORY  —" Foreground="{StaticResource AnonMutedTextBrush}" />
+                        <TextBlock x:Name="MemoryText" Text="MEMORY  —" Foreground="{StaticResource AnonMutedTextBrush}" />
                     </StackPanel>
                 </Border>
                 <Border CornerRadius="{StaticResource AnonCardRadius}" Padding="22" Background="{StaticResource AnonSurfaceBrush}">
