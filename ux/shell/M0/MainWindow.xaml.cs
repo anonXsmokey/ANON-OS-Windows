@@ -1,4 +1,5 @@
 using Anon.Shell.M0.Runtime;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
@@ -14,6 +15,8 @@ public sealed partial class MainWindow : Window
     private readonly WidgetRuntime _widgetRuntime = new();
     private readonly WindowLaunchService _launcher = new();
     private readonly DesktopController _desktop;
+    private readonly SystemTelemetry _telemetry = new();
+    private readonly DispatcherQueueTimer _telemetryTimer;
 
     public MainWindow()
     {
@@ -24,6 +27,12 @@ public sealed partial class MainWindow : Window
         _themeRuntime.Changed += (_, _) => ApplyRuntimeState();
         _layoutRuntime.Changed += (_, _) => ApplyRuntimeState();
         ApplyRuntimeState();
+
+        _telemetryTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
+        _telemetryTimer.Interval = TimeSpan.FromSeconds(1);
+        _telemetryTimer.Tick += (_, _) => UpdateTelemetry();
+        _telemetryTimer.Start();
+        UpdateTelemetry();
     }
 
     private void SetStatus(string text) => StatusText.Text = text;
@@ -35,6 +44,19 @@ public sealed partial class MainWindow : Window
         SetStatus($"{model.ThemeId} • {model.LayoutId} • {motion}{(_desktop.GamingMode ? " • GAMING" : "")}");
     }
 
+    private void UpdateTelemetry()
+    {
+        var snapshot = _telemetry.Read();
+        CpuText.Text = $"CPU     {snapshot.CpuPercent:0}%";
+        MemoryText.Text = $"MEMORY  {snapshot.MemoryUsedPercent:0}% ({FormatBytes(snapshot.MemoryUsedBytes)} / {FormatBytes(snapshot.MemoryTotalBytes)})";
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        if (bytes < 1024L * 1024L * 1024L) return $"{bytes / 1024d / 1024d:0.0} MB";
+        return $"{bytes / 1024d / 1024d / 1024d:0.0} GB";
+    }
+
     private void Play_Click(object sender, RoutedEventArgs e)
     {
         _desktop.EnterGamingMode();
@@ -42,7 +64,7 @@ public sealed partial class MainWindow : Window
     }
 
     private void Library_Click(object sender, RoutedEventArgs e) => SetStatus("Library surface selected.");
-    private void System_Click(object sender, RoutedEventArgs e) => SetStatus("System surface selected — telemetry integration is next.");
+    private void System_Click(object sender, RoutedEventArgs e) => SetStatus("System surface selected — telemetry integration is active.");
     private void Home_Click(object sender, RoutedEventArgs e) => SetStatus("Home.");
 
     private void Files_Click(object sender, RoutedEventArgs e)
