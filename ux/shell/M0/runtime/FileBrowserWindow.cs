@@ -3,6 +3,7 @@ using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
 
 namespace Anon.Shell.M0.Runtime;
@@ -53,7 +54,6 @@ public sealed class FileBrowserWindow : Window
         body.Children.Add(BuildSidebar());
         var listBorder = new Border
         {
-            GridColumn = 2,
             Background = SurfaceBrush,
             BorderBrush = BorderBrush,
             BorderThickness = new Thickness(1),
@@ -65,9 +65,10 @@ public sealed class FileBrowserWindow : Window
         body.Children.Add(listBorder);
 
         _items.IsItemClickEnabled = true;
-        _items.SelectionMode = ListViewSelectionMode.None;
+        _items.SelectionMode = ListViewSelectionMode.Single;
         _items.ItemClick += Items_ItemClick;
         _items.DoubleTapped += (_, _) => OpenSelected();
+        _items.ItemTemplate = CreateItemTemplate();
 
         _statusText.Text = "Ready";
         _statusText.FontSize = 11;
@@ -79,6 +80,29 @@ public sealed class FileBrowserWindow : Window
 
         Content = root;
         ShowHome();
+    }
+
+    private static DataTemplate CreateItemTemplate()
+    {
+        const string template = @"
+<DataTemplate xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation'>
+    <Border Padding='12,10' Margin='2' CornerRadius='8'>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width='42'/>
+                <ColumnDefinition Width='*'/>
+            </Grid.ColumnDefinitions>
+            <Border Width='34' Height='34' CornerRadius='9' Background='#182238' VerticalAlignment='Center'>
+                <FontIcon Glyph='{Binding IconGlyph}' FontSize='16' Foreground='#63A3FF'/>
+            </Border>
+            <StackPanel Grid.Column='1' Margin='12,0,0,0' VerticalAlignment='Center' Spacing='2'>
+                <TextBlock Text='{Binding Name}' FontSize='14' FontWeight='SemiBold' Foreground='#EEF2FA'/>
+                <TextBlock Text='{Binding Subtitle}' FontSize='11' Foreground='#919DB1'/>
+            </StackPanel>
+        </Grid>
+    </Border>
+</DataTemplate>";
+        return (DataTemplate)XamlReader.Load(template);
     }
 
     private UIElement BuildHeader()
@@ -166,14 +190,12 @@ public sealed class FileBrowserWindow : Window
     {
         var panel = new StackPanel { Spacing = 6 };
         panel.Children.Add(new TextBlock { Text = "PLACES", FontSize = 11, FontWeight = Windows.UI.Text.FontWeights.SemiBold, Foreground = MutedBrush, Margin = new Thickness(8, 4, 0, 6) });
-
         AddSidebarButton(panel, "THIS PC", () => ShowHome());
         AddSidebarButton(panel, "DESKTOP", () => NavigateSpecial(Environment.SpecialFolder.Desktop));
         AddSidebarButton(panel, "DOCUMENTS", () => NavigateSpecial(Environment.SpecialFolder.MyDocuments));
         AddSidebarButton(panel, "PICTURES", () => NavigateSpecial(Environment.SpecialFolder.MyPictures));
         AddSidebarButton(panel, "VIDEOS", () => NavigateSpecial(Environment.SpecialFolder.MyVideos));
         AddSidebarButton(panel, "DOWNLOADS", () => NavigateTo(GetDownloadsPath()));
-
         return new Border
         {
             Background = SurfaceBrush,
@@ -206,7 +228,6 @@ public sealed class FileBrowserWindow : Window
             var used = drive.TotalSize - drive.AvailableFreeSpace;
             entries.Add(FileEntry.Drive(drive.Name.TrimEnd('\\'), used, drive.TotalSize));
         }
-
         AddSpecial(entries, Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "DESKTOP", "Desktop");
         AddSpecial(entries, Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DOCUMENTS", "Documents");
         AddSpecial(entries, Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "PICTURES", "Pictures");
@@ -222,10 +243,7 @@ public sealed class FileBrowserWindow : Window
             entries.Add(FileEntry.Folder(name, path, subtitle));
     }
 
-    private void NavigateSpecial(Environment.SpecialFolder folder)
-    {
-        NavigateTo(Environment.GetFolderPath(folder));
-    }
+    private void NavigateSpecial(Environment.SpecialFolder folder) => NavigateTo(Environment.GetFolderPath(folder));
 
     private static string GetDownloadsPath() => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads");
 
@@ -238,7 +256,6 @@ public sealed class FileBrowserWindow : Window
             _history.Add(path);
             _historyIndex = _history.Count - 1;
         }
-
         _currentPath = path;
         _pathText.Text = path;
         _searchBox.Text = string.Empty;
@@ -253,22 +270,20 @@ public sealed class FileBrowserWindow : Window
         {
             foreach (var directory in Directory.EnumerateDirectories(path).OrderBy(Path.GetFileName))
                 entries.Add(FileEntry.Folder(Path.GetFileName(directory) ?? directory, directory, "Folder"));
-
             foreach (var file in Directory.EnumerateFiles(path).OrderBy(Path.GetFileName).Take(500))
             {
                 try
                 {
                     var info = new FileInfo(file);
-                    entries.Add(FileEntry.File(info.Name, info.Length, info.LastWriteTime));
+                    entries.Add(FileEntry.File(info.Name, file, info.Length, info.LastWriteTime));
                 }
                 catch (IOException) { }
             }
         }
         catch (UnauthorizedAccessException)
         {
-            entries.Add(new FileEntry("Access denied", "ANON cannot read this folder.", string.Empty, false, false, 0, DateTime.MinValue));
+            entries.Add(new FileEntry("Access denied", "ANON cannot read this folder.", string.Empty, false, false, 0, DateTime.MinValue, "\uE72E"));
         }
-
         SetEntries(entries);
     }
 
@@ -282,9 +297,7 @@ public sealed class FileBrowserWindow : Window
     private void ApplySearch()
     {
         var query = _searchBox.Text.Trim();
-        var visible = string.IsNullOrEmpty(query)
-            ? _currentEntries
-            : _currentEntries.Where(e => e.Name.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
+        var visible = string.IsNullOrEmpty(query) ? _currentEntries : _currentEntries.Where(e => e.Name.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList();
         _items.ItemsSource = visible;
         if (!string.IsNullOrEmpty(query)) _statusText.Text = $"{visible.Count} result{(visible.Count == 1 ? "" : "s")}";
     }
@@ -343,15 +356,13 @@ public sealed class FileBrowserWindow : Window
         }
         if (!string.IsNullOrEmpty(entry.FullPath) && File.Exists(entry.FullPath))
         {
-            try { Launcher(entry.FullPath); }
-            catch { }
+            try { Launcher(entry.FullPath); } catch { }
         }
     }
 
     private void OpenInWindows()
     {
-        try { Launcher(string.IsNullOrEmpty(_currentPath) ? "explorer.exe" : _currentPath); }
-        catch { }
+        try { Launcher(string.IsNullOrEmpty(_currentPath) ? "explorer.exe" : _currentPath); } catch { }
     }
 
     private static void Launcher(string target)
@@ -370,12 +381,11 @@ public sealed class FileBrowserWindow : Window
         return $"{bytes / 1024d / 1024d / 1024d:0.0} GB";
     }
 
-    private sealed record FileEntry(string Name, string Subtitle, string FullPath, bool IsFolder, bool IsDrive, long Size, DateTime Modified)
+    private sealed record FileEntry(string Name, string Subtitle, string FullPath, bool IsFolder, bool IsDrive, long Size, DateTime Modified, string IconGlyph)
     {
-        public static FileEntry Folder(string name, string path, string subtitle) => new(name, subtitle, path, true, false, 0, DateTime.MinValue);
-        public static FileEntry Drive(string name, long used, long total) => new(name, $"DRIVE  •  {FormatBytes(used)} used / {FormatBytes(total)}", name + "\\", true, true, used, DateTime.MinValue);
-        public static FileEntry File(string name, long size, DateTime modified) => new(name, $"FILE  •  {FormatBytes(size)}  •  {modified:dd MMM yyyy HH:mm}", Path.Combine(Directory.GetParent(name)?.FullName ?? string.Empty, name), false, false, size, modified);
-
+        public static FileEntry Folder(string name, string path, string subtitle) => new(name, subtitle, path, true, false, 0, DateTime.MinValue, "\uE8B7");
+        public static FileEntry Drive(string name, long used, long total) => new(name, $"DRIVE  •  {FormatBytes(used)} used / {FormatBytes(total)}", name + "\\", true, true, used, DateTime.MinValue, "\uE7F4");
+        public static FileEntry File(string name, string path, long size, DateTime modified) => new(name, $"FILE  •  {FormatBytes(size)}  •  {modified:dd MMM yyyy HH:mm}", path, false, false, size, modified, "\uE7C3");
         public override string ToString() => $"{Name}    {Subtitle}";
     }
 }
