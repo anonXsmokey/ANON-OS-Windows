@@ -25,6 +25,7 @@ public sealed partial class MainWindow : Window
     private FileBrowserWindow? _fileBrowserWindow;
     private AppLibraryWindow? _appsWindow;
     private AppLibraryWindow? _gamesWindow;
+    private SystemWindow? _systemWindow;
     private bool _surfaceLoaded;
     private bool _loadingPreferences;
 
@@ -148,12 +149,33 @@ public sealed partial class MainWindow : Window
     private void Play_Click(object sender, RoutedEventArgs e)
     {
         _desktop.EnterGamingMode();
-        SetStatus("Gaming Mode enabled. Visual workload reduced for this session.");
+        SetStatus("Gaming Mode enabled. Choose a game to launch.");
+        Games_Click(this, new RoutedEventArgs());
     }
 
-    private void Library_Click(object sender, RoutedEventArgs e) => SetStatus("Library surface selected.");
-    private void System_Click(object sender, RoutedEventArgs e) => SetStatus("System surface selected — telemetry integration is active.");
-    private void Home_Click(object sender, RoutedEventArgs e) => SetStatus("Home.");
+    private void Library_Click(object sender, RoutedEventArgs e) => Apps_Click(sender, e);
+
+    private void System_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            if (_systemWindow is null)
+            {
+                _systemWindow = new SystemWindow();
+                _systemWindow.Closed += (_, _) => _systemWindow = null;
+            }
+            _systemWindow.Activate();
+            LauncherPanel.Visibility = Visibility.Collapsed;
+            SetStatus("ANON System opened.");
+        }
+        catch (Exception ex) { SetStatus($"Could not open ANON System: {ex.Message}"); }
+    }
+
+    private void Home_Click(object sender, RoutedEventArgs e)
+    {
+        LauncherPanel.Visibility = Visibility.Collapsed;
+        SetStatus(_desktop.GamingMode ? "Home • Gaming Mode active." : "Home.");
+    }
 
     private void Files_Click(object sender, RoutedEventArgs e)
     {
@@ -198,7 +220,7 @@ public sealed partial class MainWindow : Window
             }
             _gamesWindow.Activate();
             LauncherPanel.Visibility = Visibility.Collapsed;
-            SetStatus("ANON Games opened.");
+            SetStatus(_desktop.GamingMode ? "ANON Games opened • Gaming Mode active." : "ANON Games opened.");
         }
         catch (Exception ex) { SetStatus($"Could not open ANON Games: {ex.Message}"); }
     }
@@ -251,6 +273,9 @@ public sealed partial class MainWindow : Window
                     break;
                 case "games":
                     Games_Click(this, new RoutedEventArgs());
+                    break;
+                case "system":
+                    System_Click(this, new RoutedEventArgs());
                     break;
                 default:
                     _launcher.Launch(command.Target);
