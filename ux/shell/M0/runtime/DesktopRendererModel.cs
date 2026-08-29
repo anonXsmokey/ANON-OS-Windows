@@ -12,7 +12,7 @@ public sealed record DesktopRenderModel(
 
 public static class DesktopRenderModelFactory
 {
-    public static DesktopRenderModel Create(CompositionSnapshot snapshot)
+    public static DesktopRenderModel Create(CompositionSnapshot snapshot, bool gamingMode)
     {
         var surfaces = snapshot.Widgets
             .Where(w => w.Enabled)
@@ -22,9 +22,7 @@ public static class DesktopRenderModelFactory
         surfaces.Insert(0, new RenderSurface("desktop", "desktop", true));
         surfaces.Insert(1, new RenderSurface("dock", "dock", true));
 
-        var refresh = WidgetRefreshPolicyResolver.Resolve(
-            snapshot.VisualPolicy,
-            snapshot.VisualPolicy.ReduceDuringGames);
+        var refresh = WidgetRefreshPolicyResolver.Resolve(snapshot.VisualPolicy, gamingMode);
 
         return new DesktopRenderModel(
             snapshot.ThemeId,
