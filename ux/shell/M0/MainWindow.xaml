@@ -6,7 +6,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Title="ANON OS — M0">
-    <Grid x:Name="SurfaceRoot" Loaded="SurfaceRoot_Loaded" Background="{StaticResource AnonBackgroundBrush}" Opacity="1">
+    <Grid x:Name="SurfaceRoot" Loaded="SurfaceRoot_Loaded" Background="{StaticResource AnonBackgroundBrush}" Opacity="1" RenderTransformOrigin="0.5,0.5">
+        <Grid.RenderTransform>
+            <CompositeTransform x:Name="SurfaceTransform" ScaleX="1" ScaleY="1" />
+        </Grid.RenderTransform>
         <Grid.RowDefinitions>
             <RowDefinition Height="72" />
             <RowDefinition Height="*" />
@@ -61,7 +64,7 @@
                         <RowDefinition Height="1*" />
                     </Grid.RowDefinitions>
 
-                    <Border Grid.Row="0" CornerRadius="{StaticResource AnonHeroRadius}" Background="{StaticResource AnonHeroBrush}" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1" Padding="28">
+                    <Border x:Name="HeroSurface" Grid.Row="0" CornerRadius="{StaticResource AnonHeroRadius}" Background="{StaticResource AnonHeroBrush}" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1" Padding="28">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
