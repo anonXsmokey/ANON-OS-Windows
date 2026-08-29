@@ -22,7 +22,7 @@ public sealed partial class MainWindow : Window
     private readonly DesktopController _desktop;
     private readonly PreferencesStore _preferencesStore = new();
     private readonly SystemTelemetry _telemetry = new();
-    private readonly DispatcherQueueTimer _telemetryTimer;
+    private readonly Microsoft.UI.Dispatching.DispatcherQueueTimer _telemetryTimer;
     private FileBrowserWindow? _fileBrowserWindow;
     private bool _surfaceLoaded;
     private bool _loadingPreferences;
