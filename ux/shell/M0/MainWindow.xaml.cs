@@ -49,6 +49,8 @@ public sealed partial class MainWindow : Window
         var snapshot = _telemetry.Read();
         CpuText.Text = $"CPU     {snapshot.CpuPercent:0}%";
         MemoryText.Text = $"MEMORY  {snapshot.MemoryUsedPercent:0}% ({FormatBytes(snapshot.MemoryUsedBytes)} / {FormatBytes(snapshot.MemoryTotalBytes)})";
+        CpuBar.Value = snapshot.CpuPercent;
+        MemoryBar.Value = snapshot.MemoryUsedPercent;
     }
 
     private static string FormatBytes(long bytes)
