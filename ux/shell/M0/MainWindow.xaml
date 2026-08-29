@@ -5,74 +5,162 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Title="ANON OS — M0 Prototype">
+    Title="ANON OS — M0">
     <Grid Background="{StaticResource AnonBackgroundBrush}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="64" />
-            <RowDefinition Height="*" />
             <RowDefinition Height="72" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="78" />
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Padding="24,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <TextBlock Text="ANON" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" VerticalAlignment="Center" />
-            <TextBox Grid.Column="1" Margin="32,12" PlaceholderText="Search apps, games, files..." />
-            <TextBlock Grid.Column="2" Text="M0 • PREVIEW" Foreground="{StaticResource AnonMutedTextBrush}" VerticalAlignment="Center" />
-        </Grid>
-
-        <Grid Grid.Row="1" Padding="40">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            <StackPanel Spacing="18">
-                <TextBlock Text="YOUR SPACE" FontSize="36" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" />
-                <TextBlock Text="A first interactive ANON desktop surface." Foreground="{StaticResource AnonMutedTextBrush}" />
-                <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,18,0,0">
-                    <Button Content="PLAY" Click="Play_Click" />
-                    <Button Content="LIBRARY" Click="Library_Click" />
-                    <Button Content="SYSTEM" Click="System_Click" />
+        <Border Grid.Row="0" Background="{StaticResource AnonTopBarBrush}" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="0,0,0,1">
+            <Grid Padding="24,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <Border Width="38" Height="38" CornerRadius="12" Background="{StaticResource AnonAccentBrush}">
+                        <TextBlock Text="A" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" />
+                    </Border>
+                    <StackPanel Spacing="0">
+                        <TextBlock Text="ANON" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" />
+                        <TextBlock Text="GAMING DESKTOP" FontSize="10" CharacterSpacing="180" Foreground="{StaticResource AnonMutedTextBrush}" />
+                    </StackPanel>
                 </StackPanel>
-                <TextBlock x:Name="StatusText" Text="Ready." Foreground="{StaticResource AnonMutedTextBrush}" Margin="0,20,0,0" />
+                <TextBox Grid.Column="1" Margin="44,12" PlaceholderText="Search apps, games, files, settings..." />
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <Border Padding="12,7" CornerRadius="10" Background="{StaticResource AnonSurfaceStrongBrush}">
+                        <TextBlock Text="M0 • PREVIEW" Foreground="{StaticResource AnonMutedTextBrush}" />
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" Padding="40,32">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Spacing="6" Margin="0,0,0,24">
+                <TextBlock Text="YOUR SPACE" FontSize="38" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" />
+                <TextBlock Text="One Windows desktop. Reimagined around the way gamers actually use it." FontSize="15" Foreground="{StaticResource AnonMutedTextBrush}" />
             </StackPanel>
 
-            <StackPanel Grid.Column="1" Spacing="14">
-                <Border CornerRadius="{StaticResource AnonCardRadius}" Padding="22" Background="{StaticResource AnonSurfaceBrush}">
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="SYSTEM" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" />
-                        <TextBlock x:Name="CpuText" Text="CPU     —" Foreground="{StaticResource AnonMutedTextBrush}" />
-                        <TextBlock Text="GPU     —" Foreground="{StaticResource AnonMutedTextBrush}" />
-                        <TextBlock x:Name="MemoryText" Text="MEMORY  —" Foreground="{StaticResource AnonMutedTextBrush}" />
-                    </StackPanel>
-                </Border>
-                <Border CornerRadius="{StaticResource AnonCardRadius}" Padding="22" Background="{StaticResource AnonSurfaceBrush}">
-                    <StackPanel Spacing="8">
-                        <TextBlock Text="VISUAL PROFILE" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" />
-                        <ComboBox x:Name="VisualProfile" SelectedIndex="1" SelectionChanged="VisualProfile_SelectionChanged">
-                            <ComboBoxItem Content="Maximum Performance" />
-                            <ComboBoxItem Content="Gaming" />
-                            <ComboBoxItem Content="Balanced" />
-                            <ComboBoxItem Content="Immersive" />
-                        </ComboBox>
-                        <CheckBox x:Name="ReducedMotion" Content="Reduced motion" Click="ReducedMotion_Click" />
-                    </StackPanel>
-                </Border>
-            </StackPanel>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="1.45*" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="0.8*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid Grid.Column="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1.2*" />
+                        <RowDefinition Height="18" />
+                        <RowDefinition Height="1*" />
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" CornerRadius="{StaticResource AnonHeroRadius}" Background="{StaticResource AnonHeroBrush}" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1" Padding="28">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel VerticalAlignment="Center" Spacing="16">
+                                <Border HorizontalAlignment="Left" Padding="10,5" CornerRadius="8" Background="{StaticResource AnonAccentSoftBrush}">
+                                    <TextBlock Text="READY TO PLAY" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AnonAccentBrush}" />
+                                </Border>
+                                <TextBlock Text="Everything you need.&#x0a;Nothing fighting your game." FontSize="30" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" />
+                                <TextBlock Text="Launch games, manage your library, watch performance and keep the Windows desktop underneath you." TextWrapping="Wrap" MaxWidth="610" Foreground="{StaticResource AnonMutedTextBrush}" />
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Button Content="PLAY" Click="Play_Click" Style="{StaticResource AnonPrimaryButtonStyle}" />
+                                    <Button Content="LIBRARY" Click="Library_Click" />
+                                    <Button Content="SYSTEM" Click="System_Click" />
+                                </StackPanel>
+                                <TextBlock x:Name="StatusText" Text="Ready." Foreground="{StaticResource AnonMutedTextBrush}" />
+                            </StackPanel>
+                            <Border Grid.Column="1" Width="150" Height="150" CornerRadius="75" Background="{StaticResource AnonSurfaceStrongBrush}" BorderBrush="{StaticResource AnonAccentBrush}" BorderThickness="1" VerticalAlignment="Center">
+                                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="2">
+                                    <TextBlock Text="ANON" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{StaticResource AnonTextBrush}" />
+                                    <TextBlock Text="CORE" FontSize="10" CharacterSpacing="240" HorizontalAlignment="Center" Foreground="{StaticResource AnonAccentBrush}" />
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="18" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Border CornerRadius="{StaticResource AnonCardRadius}" Background="{StaticResource AnonSurfaceBrush}" Padding="22" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="QUICK LAUNCH" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" />
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Button Content="FILES" Click="Files_Click" />
+                                    <Button Content="APPS" Click="Apps_Click" />
+                                    <Button Content="GAMES" Click="Games_Click" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                        <Border Grid.Column="2" CornerRadius="{StaticResource AnonCardRadius}" Background="{StaticResource AnonSurfaceBrush}" Padding="22" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1">
+                            <StackPanel Spacing="10">
+                                <TextBlock Text="ANON AI" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" />
+                                <TextBlock Text="Optional. Private. Toggle it whenever you want." TextWrapping="Wrap" Foreground="{StaticResource AnonMutedTextBrush}" />
+                                <Button Content="OPEN ANON AI" Click="Ai_Click" HorizontalAlignment="Left" />
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Grid>
+
+                <StackPanel Grid.Column="2" Spacing="18">
+                    <Border CornerRadius="{StaticResource AnonCardRadius}" Background="{StaticResource AnonSurfaceBrush}" Padding="22" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1">
+                        <StackPanel Spacing="12">
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="SYSTEM" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" />
+                                <TextBlock Text="LIVE" Margin="Auto,3,0,0" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AnonAccentBrush}" />
+                            </StackPanel>
+                            <TextBlock x:Name="CpuText" Text="CPU     —" Foreground="{StaticResource AnonMutedTextBrush}" />
+                            <ProgressBar x:Name="CpuBar" Minimum="0" Maximum="100" Value="0" Height="5" />
+                            <TextBlock x:Name="MemoryText" Text="MEMORY  —" Foreground="{StaticResource AnonMutedTextBrush}" />
+                            <ProgressBar x:Name="MemoryBar" Minimum="0" Maximum="100" Value="0" Height="5" />
+                            <TextBlock Text="GPU     telemetry coming next" FontSize="12" Foreground="{StaticResource AnonMutedTextBrush}" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border CornerRadius="{StaticResource AnonCardRadius}" Background="{StaticResource AnonSurfaceBrush}" Padding="22" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1">
+                        <StackPanel Spacing="12">
+                            <TextBlock Text="VISUAL PROFILE" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" />
+                            <ComboBox x:Name="VisualProfile" SelectedIndex="1" SelectionChanged="VisualProfile_SelectionChanged">
+                                <ComboBoxItem Content="Maximum Performance" />
+                                <ComboBoxItem Content="Gaming" />
+                                <ComboBoxItem Content="Balanced" />
+                                <ComboBoxItem Content="Immersive" />
+                            </ComboBox>
+                            <CheckBox x:Name="ReducedMotion" Content="Reduced motion" Click="ReducedMotion_Click" />
+                            <TextBlock Text="Choose how ANON feels. Performance and visual fidelity remain user-controlled." TextWrapping="Wrap" FontSize="12" Foreground="{StaticResource AnonMutedTextBrush}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
         </Grid>
 
-        <Border Grid.Row="2" Background="{StaticResource AnonSurfaceBrush}" Padding="24,0">
-            <StackPanel Orientation="Horizontal" Spacing="26" VerticalAlignment="Center">
-                <Button Content="◉" Click="Home_Click" />
-                <Button Content="FILES" Click="Files_Click" />
-                <Button Content="APPS" Click="Apps_Click" />
-                <Button Content="GAMES" Click="Games_Click" />
-                <Button Content="SYSTEM" Click="System_Click" />
-                <Button Content="ANON AI" Click="Ai_Click" />
-            </StackPanel>
+        <Border Grid.Row="2" Background="{StaticResource AnonTopBarBrush}" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="0,1,0,0" Padding="20,0">
+            <Grid>
+                <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Button Content="◉" Click="Home_Click" />
+                    <Button Content="FILES" Click="Files_Click" />
+                    <Button Content="APPS" Click="Apps_Click" />
+                    <Button Content="GAMES" Click="Games_Click" />
+                    <Button Content="SYSTEM" Click="System_Click" />
+                    <Button Content="ANON AI" Click="Ai_Click" />
+                </StackPanel>
+                <TextBlock Text="ANON CORE • WINDOWS NATIVE" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="11" Foreground="{StaticResource AnonMutedTextBrush}" />
+            </Grid>
         </Border>
     </Grid>
 </Window>
