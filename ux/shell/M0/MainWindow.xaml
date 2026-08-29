@@ -30,11 +30,9 @@
                     </StackPanel>
                 </StackPanel>
                 <TextBox Grid.Column="1" Margin="44,12" PlaceholderText="Search apps, games, files, settings..." />
-                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
-                    <Border Padding="12,7" CornerRadius="10" Background="{StaticResource AnonSurfaceStrongBrush}">
-                        <TextBlock Text="M0 • PREVIEW" Foreground="{StaticResource AnonMutedTextBrush}" />
-                    </Border>
-                </StackPanel>
+                <Border Grid.Column="2" Padding="12,7" CornerRadius="10" Background="{StaticResource AnonSurfaceStrongBrush}" VerticalAlignment="Center">
+                    <TextBlock Text="M0 • PREVIEW" Foreground="{StaticResource AnonMutedTextBrush}" />
+                </Border>
             </Grid>
         </Border>
 
@@ -120,10 +118,10 @@
                 <StackPanel Grid.Column="2" Spacing="18">
                     <Border CornerRadius="{StaticResource AnonCardRadius}" Background="{StaticResource AnonSurfaceBrush}" Padding="22" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1">
                         <StackPanel Spacing="12">
-                            <StackPanel Orientation="Horizontal">
+                            <Grid>
                                 <TextBlock Text="SYSTEM" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" />
-                                <TextBlock Text="LIVE" Margin="Auto,3,0,0" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AnonAccentBrush}" />
-                            </StackPanel>
+                                <TextBlock Text="LIVE" HorizontalAlignment="Right" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AnonAccentBrush}" />
+                            </Grid>
                             <TextBlock x:Name="CpuText" Text="CPU     —" Foreground="{StaticResource AnonMutedTextBrush}" />
                             <ProgressBar x:Name="CpuBar" Minimum="0" Maximum="100" Value="0" Height="5" />
                             <TextBlock x:Name="MemoryText" Text="MEMORY  —" Foreground="{StaticResource AnonMutedTextBrush}" />
