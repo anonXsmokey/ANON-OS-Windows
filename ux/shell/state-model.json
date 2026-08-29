@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ANON Shell Runtime State",
+  "type": "object",
+  "required": ["session", "layout", "theme", "visual_profile", "reduced_motion"],
+  "properties": {
+    "session": {"enum": ["desktop", "game"]},
+    "layout": {"type": "string"},
+    "theme": {"type": "string"},
+    "visual_profile": {"type": "string"},
+    "reduced_motion": {"type": "boolean"},
+    "active_game": {"type": ["string", "null"]}
+  },
+  "additionalProperties": false
+}
