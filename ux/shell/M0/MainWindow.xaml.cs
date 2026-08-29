@@ -2,6 +2,7 @@ using Anon.Shell.M0.Runtime;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 
 namespace Anon.Shell.M0;
@@ -59,20 +60,49 @@ public sealed partial class MainWindow : Window
         if (!enabled)
         {
             SurfaceRoot.Opacity = 1;
+            SurfaceTransform.ScaleX = 1;
+            SurfaceTransform.ScaleY = 1;
             return;
         }
 
-        var duration = Math.Clamp(durationMilliseconds, 80, 600);
+        var duration = Math.Clamp(durationMilliseconds, 140, 700);
+        SurfaceRoot.Opacity = 0.82;
+        SurfaceTransform.ScaleX = 0.985;
+        SurfaceTransform.ScaleY = 0.985;
+
         var storyboard = new Storyboard();
-        var animation = new DoubleAnimation
+        var opacity = new DoubleAnimation
         {
-            From = 0.94,
+            From = 0.82,
             To = 1,
-            Duration = TimeSpan.FromMilliseconds(duration)
+            Duration = TimeSpan.FromMilliseconds(duration),
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
         };
-        Storyboard.SetTarget(animation, SurfaceRoot);
-        Storyboard.SetTargetProperty(animation, "Opacity");
-        storyboard.Children.Add(animation);
+        var scaleX = new DoubleAnimation
+        {
+            From = 0.985,
+            To = 1,
+            Duration = TimeSpan.FromMilliseconds(duration),
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+        };
+        var scaleY = new DoubleAnimation
+        {
+            From = 0.985,
+            To = 1,
+            Duration = TimeSpan.FromMilliseconds(duration),
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+        };
+
+        Storyboard.SetTarget(opacity, SurfaceRoot);
+        Storyboard.SetTargetProperty(opacity, "Opacity");
+        Storyboard.SetTarget(scaleX, SurfaceTransform);
+        Storyboard.SetTargetProperty(scaleX, "ScaleX");
+        Storyboard.SetTarget(scaleY, SurfaceTransform);
+        Storyboard.SetTargetProperty(scaleY, "ScaleY");
+
+        storyboard.Children.Add(opacity);
+        storyboard.Children.Add(scaleX);
+        storyboard.Children.Add(scaleY);
         storyboard.Begin();
     }
 
