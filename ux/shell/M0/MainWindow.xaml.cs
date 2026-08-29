@@ -23,6 +23,8 @@ public sealed partial class MainWindow : Window
     private readonly SystemTelemetry _telemetry = new();
     private readonly DispatcherQueueTimer _telemetryTimer;
     private FileBrowserWindow? _fileBrowserWindow;
+    private AppLibraryWindow? _appsWindow;
+    private AppLibraryWindow? _gamesWindow;
     private bool _surfaceLoaded;
     private bool _loadingPreferences;
 
@@ -163,6 +165,7 @@ public sealed partial class MainWindow : Window
                 _fileBrowserWindow.Closed += (_, _) => _fileBrowserWindow = null;
             }
             _fileBrowserWindow.Activate();
+            LauncherPanel.Visibility = Visibility.Collapsed;
             SetStatus("ANON Files opened.");
         }
         catch (Exception ex) { SetStatus($"Could not open ANON Files: {ex.Message}"); }
@@ -172,20 +175,32 @@ public sealed partial class MainWindow : Window
     {
         try
         {
-            _launcher.Launch("shell:AppsFolder");
-            SetStatus("Windows apps surface opened.");
+            if (_appsWindow is null)
+            {
+                _appsWindow = new AppLibraryWindow(false);
+                _appsWindow.Closed += (_, _) => _appsWindow = null;
+            }
+            _appsWindow.Activate();
+            LauncherPanel.Visibility = Visibility.Collapsed;
+            SetStatus("ANON Apps opened.");
         }
-        catch (Exception ex) { SetStatus($"Could not open Apps: {ex.Message}"); }
+        catch (Exception ex) { SetStatus($"Could not open ANON Apps: {ex.Message}"); }
     }
 
     private void Games_Click(object sender, RoutedEventArgs e)
     {
         try
         {
-            _launcher.Launch("shell:AppsFolder");
-            SetStatus("Games surface opened — installed games can be launched from Windows Apps.");
+            if (_gamesWindow is null)
+            {
+                _gamesWindow = new AppLibraryWindow(true);
+                _gamesWindow.Closed += (_, _) => _gamesWindow = null;
+            }
+            _gamesWindow.Activate();
+            LauncherPanel.Visibility = Visibility.Collapsed;
+            SetStatus("ANON Games opened.");
         }
-        catch (Exception ex) { SetStatus($"Could not open Games: {ex.Message}"); }
+        catch (Exception ex) { SetStatus($"Could not open ANON Games: {ex.Message}"); }
     }
 
     private void Ai_Click(object sender, RoutedEventArgs e) => SetStatus("ANON AI is optional and remains disabled in M0.");
@@ -230,20 +245,20 @@ public sealed partial class MainWindow : Window
             {
                 case "files":
                     Files_Click(this, new RoutedEventArgs());
-                    return;
+                    break;
                 case "apps":
                     Apps_Click(this, new RoutedEventArgs());
-                    return;
+                    break;
                 case "games":
                     Games_Click(this, new RoutedEventArgs());
-                    return;
+                    break;
                 default:
                     _launcher.Launch(command.Target);
                     SetStatus($"Opened {command.Title}.");
-                    LauncherPanel.Visibility = Visibility.Collapsed;
-                    SearchBox.Text = string.Empty;
                     break;
             }
+            LauncherPanel.Visibility = Visibility.Collapsed;
+            SearchBox.Text = string.Empty;
         }
         catch (Exception ex)
         {
