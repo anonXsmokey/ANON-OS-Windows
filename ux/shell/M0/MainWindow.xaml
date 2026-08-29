@@ -6,7 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Title="ANON OS — M0">
-    <Grid Background="{StaticResource AnonBackgroundBrush}">
+    <Grid x:Name="SurfaceRoot" Loaded="SurfaceRoot_Loaded" Background="{StaticResource AnonBackgroundBrush}" Opacity="1">
         <Grid.RowDefinitions>
             <RowDefinition Height="72" />
             <RowDefinition Height="*" />
