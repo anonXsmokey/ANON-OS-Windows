@@ -2,17 +2,16 @@ namespace Anon.Shell.M0.Runtime;
 
 public sealed record TransitionPolicy(bool Enabled, int DurationMilliseconds, double Intensity)
 {
-    public static TransitionPolicy From(VisualPolicy visual, bool reducedMotion)
+    public static TransitionPolicy From(VisualPolicy visual, bool reducedMotion, bool gamingMode)
     {
-        if (reducedMotion || !visual.AnimationIntensity.Equals(0))
+        if (reducedMotion) return new(false, 0, 0);
+        var duration = visual.TransitionMilliseconds;
+        var intensity = visual.AnimationIntensity;
+        if (gamingMode && visual.ReduceDuringGames)
         {
-            if (reducedMotion)
-                return new(false, 0, 0);
+            duration = Math.Min(duration, 120);
+            intensity = Math.Min(intensity, 0.35);
         }
-
-        return new(
-            visual.AnimationIntensity > 0,
-            visual.TransitionMilliseconds,
-            visual.AnimationIntensity);
+        return new(intensity > 0, duration, intensity);
     }
 }
