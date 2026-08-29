@@ -17,7 +17,10 @@ public sealed class DesktopController
         _widgets = widgets;
     }
 
+    public bool GamingMode => _visual.GamingMode;
     public CompositionSnapshot Snapshot => CompositionSnapshotFactory.Create(_theme, _layout, _visual, _wallpaper, _widgets);
+    public DesktopRenderModel RenderModel => DesktopRenderModelFactory.Create(Snapshot, GamingMode);
+
     public void EnterGamingMode() => _visual.SetGamingMode(true);
     public void ExitGamingMode() => _visual.SetGamingMode(false);
 }
