@@ -45,19 +45,18 @@ public sealed partial class MainWindow : Window
         var model = _desktop.RenderModel;
         var motion = model.Transition.Enabled ? $"motion {model.Transition.DurationMilliseconds}ms" : "motion off";
         SetStatus($"{model.ThemeId} • {model.LayoutId} • {motion}{(_desktop.GamingMode ? " • GAMING" : "")}");
-        if (_surfaceLoaded) PlaySurfaceTransition(model.Transition.Enabled, model.Transition.DurationMilliseconds);
+        if (_surfaceLoaded) PlaySurfaceTransition(model.Transition);
     }
 
     private void SurfaceRoot_Loaded(object sender, RoutedEventArgs e)
     {
         _surfaceLoaded = true;
-        var model = _desktop.RenderModel;
-        PlaySurfaceTransition(model.Transition.Enabled, model.Transition.DurationMilliseconds);
+        PlaySurfaceTransition(_desktop.RenderModel.Transition);
     }
 
-    private void PlaySurfaceTransition(bool enabled, int durationMilliseconds)
+    private void PlaySurfaceTransition(TransitionPolicy transition)
     {
-        if (!enabled)
+        if (!transition.Enabled)
         {
             SurfaceRoot.Opacity = 1;
             SurfaceTransform.ScaleX = 1;
@@ -65,32 +64,36 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        var duration = Math.Clamp(durationMilliseconds, 140, 700);
-        SurfaceRoot.Opacity = 0.82;
-        SurfaceTransform.ScaleX = 0.985;
-        SurfaceTransform.ScaleY = 0.985;
+        var duration = Math.Clamp(transition.DurationMilliseconds, 100, 700);
+        var intensity = Math.Clamp(transition.Intensity, 0, 1);
+        var startOpacity = 1 - (0.16 * intensity);
+        var startScale = 1 - (0.018 * intensity);
+        SurfaceRoot.Opacity = startOpacity;
+        SurfaceTransform.ScaleX = startScale;
+        SurfaceTransform.ScaleY = startScale;
 
+        var easing = new CubicEase { EasingMode = EasingMode.EaseOut };
         var storyboard = new Storyboard();
         var opacity = new DoubleAnimation
         {
-            From = 0.82,
+            From = startOpacity,
             To = 1,
             Duration = TimeSpan.FromMilliseconds(duration),
-            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            EasingFunction = easing
         };
         var scaleX = new DoubleAnimation
         {
-            From = 0.985,
+            From = startScale,
             To = 1,
             Duration = TimeSpan.FromMilliseconds(duration),
-            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            EasingFunction = easing
         };
         var scaleY = new DoubleAnimation
         {
-            From = 0.985,
+            From = startScale,
             To = 1,
             Duration = TimeSpan.FromMilliseconds(duration),
-            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            EasingFunction = easing
         };
 
         Storyboard.SetTarget(opacity, SurfaceRoot);
