@@ -157,15 +157,37 @@ public sealed partial class MainWindow : Window
     {
         try
         {
-            _fileBrowserWindow ??= new FileBrowserWindow();
+            if (_fileBrowserWindow is null)
+            {
+                _fileBrowserWindow = new FileBrowserWindow();
+                _fileBrowserWindow.Closed += (_, _) => _fileBrowserWindow = null;
+            }
             _fileBrowserWindow.Activate();
             SetStatus("ANON Files opened.");
         }
         catch (Exception ex) { SetStatus($"Could not open ANON Files: {ex.Message}"); }
     }
 
-    private void Apps_Click(object sender, RoutedEventArgs e) => SetStatus("Apps surface selected.");
-    private void Games_Click(object sender, RoutedEventArgs e) => SetStatus("Games surface selected.");
+    private void Apps_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _launcher.Launch("shell:AppsFolder");
+            SetStatus("Windows apps surface opened.");
+        }
+        catch (Exception ex) { SetStatus($"Could not open Apps: {ex.Message}"); }
+    }
+
+    private void Games_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            _launcher.Launch("shell:AppsFolder");
+            SetStatus("Games surface opened — installed games can be launched from Windows Apps.");
+        }
+        catch (Exception ex) { SetStatus($"Could not open Games: {ex.Message}"); }
+    }
+
     private void Ai_Click(object sender, RoutedEventArgs e) => SetStatus("ANON AI is optional and remains disabled in M0.");
 
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -204,10 +226,24 @@ public sealed partial class MainWindow : Window
     {
         try
         {
-            _launcher.Launch(command.Target);
-            SetStatus($"Opened {command.Title}.");
-            LauncherPanel.Visibility = Visibility.Collapsed;
-            SearchBox.Text = string.Empty;
+            switch (command.Id)
+            {
+                case "files":
+                    Files_Click(this, new RoutedEventArgs());
+                    return;
+                case "apps":
+                    Apps_Click(this, new RoutedEventArgs());
+                    return;
+                case "games":
+                    Games_Click(this, new RoutedEventArgs());
+                    return;
+                default:
+                    _launcher.Launch(command.Target);
+                    SetStatus($"Opened {command.Title}.");
+                    LauncherPanel.Visibility = Visibility.Collapsed;
+                    SearchBox.Text = string.Empty;
+                    break;
+            }
         }
         catch (Exception ex)
         {
