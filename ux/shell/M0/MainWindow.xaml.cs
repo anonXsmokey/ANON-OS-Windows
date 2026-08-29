@@ -17,18 +17,21 @@ public sealed partial class MainWindow : Window
     private readonly WidgetRuntime _widgetRuntime = new();
     private readonly WindowLaunchService _launcher = new();
     private readonly DesktopController _desktop;
+    private readonly PreferencesStore _preferencesStore = new();
     private readonly SystemTelemetry _telemetry = new();
     private readonly DispatcherQueueTimer _telemetryTimer;
     private bool _surfaceLoaded;
+    private bool _loadingPreferences;
 
     public MainWindow()
     {
         InitializeComponent();
         _themeRuntime = new ThemeRuntime(_themes);
         _desktop = new DesktopController(_themeRuntime, _layoutRuntime, _visualRuntime, _wallpaperRuntime, _widgetRuntime);
-        _visualRuntime.Changed += (_, _) => ApplyRuntimeState();
-        _themeRuntime.Changed += (_, _) => ApplyRuntimeState();
-        _layoutRuntime.Changed += (_, _) => ApplyRuntimeState();
+        _visualRuntime.Changed += (_, _) => { ApplyRuntimeState(); SavePreferences(); };
+        _themeRuntime.Changed += (_, _) => { ApplyRuntimeState(); SavePreferences(); };
+        _layoutRuntime.Changed += (_, _) => { ApplyRuntimeState(); SavePreferences(); };
+        ApplySavedPreferences();
         ApplyRuntimeState();
 
         _telemetryTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
@@ -36,6 +39,37 @@ public sealed partial class MainWindow : Window
         _telemetryTimer.Tick += (_, _) => UpdateTelemetry();
         _telemetryTimer.Start();
         UpdateTelemetry();
+    }
+
+    private void ApplySavedPreferences()
+    {
+        _loadingPreferences = true;
+        try
+        {
+            var preferences = _preferencesStore.Load();
+            var layouts = new LayoutCatalog();
+            PreferenceMapper.Apply(preferences, _themes, _themeRuntime, layouts, _layoutRuntime, _visualRuntime, _widgetRuntime);
+            VisualProfile.SelectedIndex = preferences.VisualProfileId switch
+            {
+                "maximum-performance" => 0,
+                "gaming" => 1,
+                "immersive" => 3,
+                _ => 2
+            };
+            ReducedMotion.IsChecked = preferences.ReducedMotion;
+        }
+        finally { _loadingPreferences = false; }
+    }
+
+    private void SavePreferences()
+    {
+        if (_loadingPreferences) return;
+        _preferencesStore.Save(new UserPreferences(
+            ThemeId: _themeRuntime.Current.Id,
+            LayoutId: _layoutRuntime.Current.Id,
+            VisualProfileId: _visualRuntime.Current.Id,
+            ReducedMotion: _visualRuntime.ReducedMotion,
+            WidgetsEnabled: _widgetRuntime.Widgets.Any(w => w.Enabled)));
     }
 
     private void SetStatus(string text) => StatusText.Text = text;
@@ -74,27 +108,9 @@ public sealed partial class MainWindow : Window
 
         var easing = new CubicEase { EasingMode = EasingMode.EaseOut };
         var storyboard = new Storyboard();
-        var opacity = new DoubleAnimation
-        {
-            From = startOpacity,
-            To = 1,
-            Duration = TimeSpan.FromMilliseconds(duration),
-            EasingFunction = easing
-        };
-        var scaleX = new DoubleAnimation
-        {
-            From = startScale,
-            To = 1,
-            Duration = TimeSpan.FromMilliseconds(duration),
-            EasingFunction = easing
-        };
-        var scaleY = new DoubleAnimation
-        {
-            From = startScale,
-            To = 1,
-            Duration = TimeSpan.FromMilliseconds(duration),
-            EasingFunction = easing
-        };
+        var opacity = new DoubleAnimation { From = startOpacity, To = 1, Duration = TimeSpan.FromMilliseconds(duration), EasingFunction = easing };
+        var scaleX = new DoubleAnimation { From = startScale, To = 1, Duration = TimeSpan.FromMilliseconds(duration), EasingFunction = easing };
+        var scaleY = new DoubleAnimation { From = startScale, To = 1, Duration = TimeSpan.FromMilliseconds(duration), EasingFunction = easing };
 
         Storyboard.SetTarget(opacity, SurfaceRoot);
         Storyboard.SetTargetProperty(opacity, "Opacity");
