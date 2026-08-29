@@ -2,6 +2,7 @@ using Anon.Shell.M0.Runtime;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media.Animation;
 
 namespace Anon.Shell.M0;
 
@@ -17,6 +18,7 @@ public sealed partial class MainWindow : Window
     private readonly DesktopController _desktop;
     private readonly SystemTelemetry _telemetry = new();
     private readonly DispatcherQueueTimer _telemetryTimer;
+    private bool _surfaceLoaded;
 
     public MainWindow()
     {
@@ -42,6 +44,36 @@ public sealed partial class MainWindow : Window
         var model = _desktop.RenderModel;
         var motion = model.Transition.Enabled ? $"motion {model.Transition.DurationMilliseconds}ms" : "motion off";
         SetStatus($"{model.ThemeId} • {model.LayoutId} • {motion}{(_desktop.GamingMode ? " • GAMING" : "")}");
+        if (_surfaceLoaded) PlaySurfaceTransition(model.Transition.Enabled, model.Transition.DurationMilliseconds);
+    }
+
+    private void SurfaceRoot_Loaded(object sender, RoutedEventArgs e)
+    {
+        _surfaceLoaded = true;
+        var model = _desktop.RenderModel;
+        PlaySurfaceTransition(model.Transition.Enabled, model.Transition.DurationMilliseconds);
+    }
+
+    private void PlaySurfaceTransition(bool enabled, int durationMilliseconds)
+    {
+        if (!enabled)
+        {
+            SurfaceRoot.Opacity = 1;
+            return;
+        }
+
+        var duration = Math.Clamp(durationMilliseconds, 80, 600);
+        var storyboard = new Storyboard();
+        var animation = new DoubleAnimation
+        {
+            From = 0.94,
+            To = 1,
+            Duration = TimeSpan.FromMilliseconds(duration)
+        };
+        Storyboard.SetTarget(animation, SurfaceRoot);
+        Storyboard.SetTargetProperty(animation, "Opacity");
+        storyboard.Children.Add(animation);
+        storyboard.Begin();
     }
 
     private void UpdateTelemetry()
