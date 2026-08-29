@@ -4,7 +4,6 @@ using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Windows.System;
 
 namespace Anon.Shell.M0.Runtime;
 
@@ -19,10 +18,7 @@ public sealed class FileBrowserWindow : Window
     {
         Title = "ANON Files";
 
-        var root = new Grid
-        {
-            Background = new SolidColorBrush(Colors.Black)
-        };
+        var root = new Grid { Background = new SolidColorBrush(Colors.Black) };
         root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(64) });
         root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
@@ -64,17 +60,6 @@ public sealed class FileBrowserWindow : Window
         _items.IsItemClickEnabled = true;
         _items.ItemClick += Items_ItemClick;
         _items.SelectionMode = ListViewSelectionMode.None;
-        _items.ItemTemplate = new DataTemplate(() =>
-        {
-            var panel = new StackPanel { Padding = new Thickness(16, 12), Spacing = 3 };
-            var title = new TextBlock { FontSize = 15, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold };
-            title.SetBinding(TextBlock.TextProperty, new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath("Name") });
-            var subtitle = new TextBlock { FontSize = 11, Foreground = new SolidColorBrush(Colors.Gray) };
-            subtitle.SetBinding(TextBlock.TextProperty, new Microsoft.UI.Xaml.Data.Binding { Path = new PropertyPath("Subtitle") });
-            panel.Children.Add(title);
-            panel.Children.Add(subtitle);
-            return panel;
-        });
         Grid.SetRow(_items, 2);
         root.Children.Add(_items);
 
@@ -96,7 +81,7 @@ public sealed class FileBrowserWindow : Window
         AddFolder(entries, Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "DOCUMENTS");
         AddFolder(entries, Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "PICTURES");
         AddFolder(entries, Environment.GetFolderPath(Environment.SpecialFolder.MyVideos), "VIDEOS");
-        AddFolder(entries, Environment.GetFolderPath(Environment.SpecialFolder.Downloads), "DOWNLOADS");
+        AddFolder(entries, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads"), "DOWNLOADS");
 
         _items.ItemsSource = entries;
     }
@@ -172,10 +157,7 @@ public sealed class FileBrowserWindow : Window
 
     private void OpenInWindows()
     {
-        try
-        {
-            Launcher(string.IsNullOrEmpty(_currentPath) ? "explorer.exe" : _currentPath);
-        }
+        try { Launcher(string.IsNullOrEmpty(_currentPath) ? "explorer.exe" : _currentPath); }
         catch { }
     }
 
@@ -195,5 +177,8 @@ public sealed class FileBrowserWindow : Window
         return $"{bytes / 1024d / 1024d / 1024d:0.0} GB";
     }
 
-    private sealed record FileEntry(string Name, string Subtitle);
+    private sealed record FileEntry(string Name, string Subtitle)
+    {
+        public override string ToString() => $"{Name}    {Subtitle}";
+    }
 }
