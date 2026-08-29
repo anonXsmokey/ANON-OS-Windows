@@ -23,6 +23,7 @@ public sealed partial class MainWindow : Window
     private readonly PreferencesStore _preferencesStore = new();
     private readonly SystemTelemetry _telemetry = new();
     private readonly DispatcherQueueTimer _telemetryTimer;
+    private FileBrowserWindow? _fileBrowserWindow;
     private bool _surfaceLoaded;
     private bool _loadingPreferences;
 
@@ -155,8 +156,13 @@ public sealed partial class MainWindow : Window
 
     private void Files_Click(object sender, RoutedEventArgs e)
     {
-        try { _launcher.Launch("explorer.exe"); SetStatus("Windows Files opened."); }
-        catch (Exception ex) { SetStatus($"Could not open Files: {ex.Message}"); }
+        try
+        {
+            _fileBrowserWindow ??= new FileBrowserWindow();
+            _fileBrowserWindow.Activate();
+            SetStatus("ANON Files opened.");
+        }
+        catch (Exception ex) { SetStatus($"Could not open ANON Files: {ex.Message}"); }
     }
 
     private void Apps_Click(object sender, RoutedEventArgs e) => SetStatus("Apps surface selected.");
