@@ -22,6 +22,7 @@ public sealed class AppLibraryWindow : Window
     private static readonly SolidColorBrush Text = new(Color.FromArgb(255, 238, 242, 250));
     private static readonly SolidColorBrush Muted = new(Color.FromArgb(255, 145, 157, 177));
     private static readonly SolidColorBrush Accent = new(Color.FromArgb(255, 99, 163, 255));
+    private static readonly SolidColorBrush White = new(Colors.White);
 
     public AppLibraryWindow(bool gamesOnly)
     {
@@ -44,7 +45,7 @@ public sealed class AppLibraryWindow : Window
             Height = 40,
             CornerRadius = new CornerRadius(12),
             Background = Accent,
-            Child = new TextBlock { Text = _gamesOnly ? "G" : "A", FontSize = 20, FontWeight = Windows.UI.Text.FontWeights.Bold, Foreground = Colors.White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }
+            Child = new TextBlock { Text = _gamesOnly ? "G" : "A", FontSize = 20, FontWeight = Windows.UI.Text.FontWeights.Bold, Foreground = White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center }
         });
         heading.Children.Add(new TextBlock { Text = _gamesOnly ? "ANON GAMES" : "ANON APPS", FontSize = 20, FontWeight = Windows.UI.Text.FontWeights.SemiBold, Foreground = Text, VerticalAlignment = VerticalAlignment.Center });
         header.Children.Add(heading);
