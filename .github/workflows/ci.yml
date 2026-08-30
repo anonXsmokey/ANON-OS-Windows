@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+env:
+  DOTNET_VERSION: '8.0.x'
+  RID: 'win-x64'
+
 jobs:
   shell-build:
     name: Build ANON Shell
@@ -21,16 +25,16 @@ jobs:
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore
-        run: dotnet restore ux/shell/M0/ANON.Shell.M0.csproj
+        run: dotnet restore ux/shell/M0/ANON.Shell.M0.csproj --runtime ${{ env.RID }}
 
       - name: Build x64
-        run: dotnet build ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --no-restore --arch x64
+        run: dotnet build ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --no-restore --runtime ${{ env.RID }} --arch x64
 
       - name: Publish smoke build
-        run: dotnet publish ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --runtime win-x64 --self-contained true --no-restore --output build/ci-publish
+        run: dotnet publish ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --runtime ${{ env.RID }} --self-contained true --no-restore --output build/ci-publish
 
       - name: Verify executable
         shell: pwsh
