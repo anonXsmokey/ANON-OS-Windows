@@ -12,18 +12,12 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.4.0" />
-  </ItemGroup>
-
+  <ItemGroup><PackageReference Include="Microsoft.WindowsAppSDK" Version="2.4.0" /></ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../../core/Anon.Os.Core.csproj" />
+    <ProjectReference Include="../../../ai/Anon.Os.Ai.csproj" />
   </ItemGroup>
-
-  <!-- M0 file browser is temporarily replaced by the compatibility implementation. -->
   <ItemGroup>
     <Compile Remove="runtime/FileBrowserWindow.cs" />
-    <Compile Include="runtime/FileBrowserWindowCompat.cs" />
   </ItemGroup>
 </Project>
