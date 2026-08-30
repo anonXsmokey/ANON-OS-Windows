@@ -42,3 +42,10 @@ jobs:
           $exe = Resolve-Path build/ci-publish/ANON.Shell.M0.exe -ErrorAction SilentlyContinue
           if (-not $exe) { throw 'ANON.Shell.M0.exe was not produced.' }
           Write-Host "Shell build PASS: $exe"
+
+      - name: Upload shell smoke artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: anon-shell-win-x64
+          path: build/ci-publish
+          if-no-files-found: error
