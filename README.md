@@ -98,25 +98,29 @@ Future capabilities include conversation, voice, user-approved memory, system un
 - [x] Backup + rollback manifest foundation
 - [x] Hardware capability database foundation
 - [x] Performance benchmark foundation
+- [x] Measurable process benchmark runner
+- [x] Policy parser + guarded transformation executor
 
 ### GAMING
 - [x] Gaming Mode foundation
 - [x] Game profile engine foundation
 - [x] Compatibility database foundation
-- [ ] Full benchmark harness
+- [x] Full benchmark harness foundation
 - [ ] Production game-session policies
 
 ### EXPERIENCE
 - [x] ANON Control Center state foundation
+- [x] Isolated optional ANON AI contract layer
 - [ ] Full graphical Control Center
-- [ ] ANON AI integration
+- [ ] ANON AI provider integration
 - [ ] Recovery environment
 
 ### RELEASE
-- [ ] Installer integration
-- [ ] Windows image transformation
-- [ ] Bootable ISO
-- [ ] VM installation validation
+- [x] Windows image transformation foundation
+- [x] Bootable ISO assembly pipeline
+- [x] ISO structural validation
+- [x] VM smoke-test harness
+- [ ] Full VM installation + first-logon validation
 - [ ] Private alpha
 - [ ] Public release
 
