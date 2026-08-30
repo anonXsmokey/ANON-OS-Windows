@@ -8,9 +8,9 @@ on:
         required: true
         type: string
       image_index:
-        description: 'Windows image index'
+        description: 'Windows image index (6 = Windows 11 Pro in the supplied 25H2 ISO)'
         required: false
-        default: '1'
+        default: '6'
         type: string
       architecture:
         description: 'Target architecture'
@@ -69,7 +69,7 @@ jobs:
         run: |
           $iso=Get-ChildItem .\build\out\ANON-OS-Windows-*.iso|Select-Object -First 1
           if(-not$iso){throw 'ANON OS ISO was not produced.'}
-          & .\build\assembly\validate-iso.ps1 -IsoPath $iso.FullName -ExpectedArchitecture '${{ inputs.architecture }}'
+          & .\build\assembly\validate-iso.ps1 -IsoPath $iso.FullName -ExpectedArchitecture '${{ inputs.architecture }}' -ExpectedImageIndex ([int]'${{ inputs.image_index }}')
       - name: Generate release manifest
         shell: pwsh
         run: |
