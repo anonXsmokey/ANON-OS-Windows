@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ANON OS Recovery Manifest",
+  "type": "object",
+  "required": ["formatVersion", "createdUtc", "source", "operations"],
+  "properties": {
+    "formatVersion": {"type": "integer", "minimum": 1},
+    "createdUtc": {"type": "string", "format": "date-time"},
+    "source": {"type": "string", "minLength": 1},
+    "operations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "target", "rollback"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "type": {"enum": ["registry", "service", "scheduled_task", "package", "setting", "command"]},
+          "target": {"type": "string", "minLength": 1},
+          "rollback": {"type": "object"}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": false
+}
