@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "repository": "anonXsmokey/ANON-OS-Windows",
+  "target": {
+    "family": "Windows",
+    "architecture": ["x64", "ARM64"],
+    "minimumWindowsBuild": "19041",
+    "shellFramework": "WinUI 3 / Windows App SDK"
+  },
+  "shellProject": "ux/shell/M0/ANON.Shell.M0.csproj",
+  "pipeline": [
+    "SOURCE",
+    "VERIFY",
+    "MOUNT",
+    "SERVICE",
+    "CONFIGURE",
+    "RECOVERY",
+    "ASSEMBLE",
+    "TEST",
+    "RELEASE"
+  ],
+  "releasePolicy": {
+    "requireInventory": true,
+    "requireBuildSuccess": true,
+    "requireVmValidation": true,
+    "emitSha256": true,
+    "includeMicrosoftMedia": false
+  },
+  "artifacts": {
+    "isoPattern": "ANON-OS-Windows-{build}-{arch}.iso",
+    "manifest": "BUILD-MANIFEST.json",
+    "checksums": "SHA256SUMS.txt",
+    "notes": "RELEASE-NOTES.md"
+  }
+}
