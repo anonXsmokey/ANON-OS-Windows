@@ -9,13 +9,13 @@ using Windows.UI;
 
 namespace Anon.Shell.M0.Runtime;
 
-public sealed class FileBrowserWindowCompat : Window
+public sealed class FileBrowserWindow : Window
 {
     private readonly ListView _list = new();
     private readonly TextBlock _path = new();
     private string _currentPath = string.Empty;
 
-    public FileBrowserWindowCompat()
+    public FileBrowserWindow()
     {
         base.Title = "ANON Files";
         var root = new Grid { Background = new SolidColorBrush(Colors.Black), Padding = new Thickness(20, 20, 20, 20) };
@@ -26,8 +26,7 @@ public sealed class FileBrowserWindowCompat : Window
         var header = new Grid { Margin = new Thickness(0, 0, 0, 14) };
         header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        var title = new TextBlock { Text = "ANON FILES", FontSize = 24, FontWeight = FontWeights.SemiBold, Foreground = new SolidColorBrush(Color.FromArgb(255, 238, 242, 250)) };
-        header.Children.Add(title);
+        header.Children.Add(new TextBlock { Text = "ANON FILES", FontSize = 24, FontWeight = FontWeights.SemiBold, Foreground = new SolidColorBrush(Color.FromArgb(255, 238, 242, 250)) });
         _path.Text = "THIS PC";
         _path.FontSize = 12;
         _path.Foreground = new SolidColorBrush(Color.FromArgb(255, 145, 157, 177));
@@ -55,7 +54,6 @@ public sealed class FileBrowserWindowCompat : Window
                 else Launch(item.Path);
             }
         };
-        _list.ItemTemplate = CreateTemplate();
         Grid.SetRow(_list, 2);
         root.Children.Add(_list);
         Content = root;
@@ -69,14 +67,11 @@ public sealed class FileBrowserWindowCompat : Window
         panel.Children.Add(button);
     }
 
-    private static DataTemplate CreateTemplate() => new DataTemplate();
-
     private void ShowHome()
     {
         _currentPath = string.Empty;
         _path.Text = "THIS PC";
-        var entries = DriveInfo.GetDrives().Where(d => d.IsReady).Select(d => new Entry(d.Name.TrimEnd('\\'), d.Name, true)).ToList();
-        _list.ItemsSource = entries;
+        _list.ItemsSource = DriveInfo.GetDrives().Where(d => d.IsReady).Select(d => new Entry(d.Name.TrimEnd('\\'), d.Name, true)).ToList();
     }
 
     private void OpenFolder(string path)
