@@ -7,25 +7,11 @@ $resolved=(Resolve-Path $IsoPath).Path
 $hash=(Get-FileHash -LiteralPath $resolved -Algorithm SHA256).Hash
 $info=Get-Item -LiteralPath $resolved
 $manifest=[ordered]@{
- Product='ANON OS Windows'
- Channel='private-alpha'
- Status='candidate'
- Version=(Get-Date).ToUniversalTime().ToString('yyyy.MM.dd.HHmm')
- Architecture='x64'
- IsoPath=$resolved
- IsoBytes=$info.Length
- Sha256=$hash
- GeneratedUtc=[DateTime]::UtcNow.ToString('o')
- Gates=[ordered]@{
-  ShellBuild='required'
-  IsoStructure='required'
-  VmBoot='required'
-  WindowsInstall='required'
-  FirstLogon='required'
-  ShellSmoke='required'
- }
+ Product='ANON OS Windows';Channel='private-alpha';Status='candidate'
+ Version=(Get-Date).ToUniversalTime().ToString('yyyy.MM.dd.HHmm');Architecture='x64'
+ IsoPath=$resolved;IsoBytes=$info.Length;Sha256=$hash;GeneratedUtc=[DateTime]::UtcNow.ToString('o')
+ Gates=[ordered]@{ShellBuild='required';IsoStructure='required';VmBoot='required';WindowsInstall='required';FirstLogon='required';ShellSmoke='required'}
  ReleaseDecision='BLOCKED_UNTIL_ALL_GATES_PASS'
 }
 $manifest|ConvertTo-Json -Depth 6|Set-Content -LiteralPath $OutputPath -Encoding UTF8
-Write-Host "Release manifest: $OutputPath"
-Write-Host "SHA256: $hash"
+Write-Host "Release manifest: $OutputPath";Write-Host "SHA256: $hash"
