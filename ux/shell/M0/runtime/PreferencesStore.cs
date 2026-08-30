@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Anon.Shell.M0.Runtime;
 
@@ -12,6 +13,12 @@ public sealed record UserPreferences(
 public sealed class PreferencesStore
 {
     private readonly string _path;
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+        PropertyNameCaseInsensitive = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
 
     public PreferencesStore(string? rootDirectory = null)
     {
@@ -26,20 +33,26 @@ public sealed class PreferencesStore
         {
             if (!File.Exists(_path)) return new();
             var json = File.ReadAllText(_path);
-            return JsonSerializer.Deserialize<UserPreferences>(json) ?? new();
+            return JsonSerializer.Deserialize<UserPreferences>(json, JsonOptions) ?? new();
         }
-        catch
-        {
-            return new();
-        }
+        catch { return new(); }
     }
 
     public void Save(UserPreferences preferences)
     {
         ArgumentNullException.ThrowIfNull(preferences);
-        var json = JsonSerializer.Serialize(preferences, new JsonSerializerOptions { WriteIndented = true });
+        var directory = Path.GetDirectoryName(_path);
+        if (!string.IsNullOrEmpty(directory)) Directory.CreateDirectory(directory);
+        var json = JsonSerializer.Serialize(preferences, JsonOptions);
         var tempPath = _path + ".tmp";
-        File.WriteAllText(tempPath, json);
-        File.Move(tempPath, _path, true);
+        try
+        {
+            File.WriteAllText(tempPath, json);
+            File.Move(tempPath, _path, true);
+        }
+        finally
+        {
+            try { if (File.Exists(tempPath)) File.Delete(tempPath); } catch { }
+        }
     }
 }
