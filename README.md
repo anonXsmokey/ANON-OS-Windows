@@ -1,213 +1,215 @@
 <div align="center">
 
-# ⚡ ANON OS — WINDOWS
+# ⚡ ANON OS // WINDOWS
 
-### **THE WINDOWS GAMING PLATFORM WE WISH EXISTED.**
+### **KEEP WINDOWS. REMOVE THE NOISE. BUILD FOR GAMERS.**
 
-`PERFORMANCE` · `COMPATIBILITY` · `CONTROL` · `ANON AI`
+<img src="https://img.shields.io/badge/ANON%20OS-PRIVATE%20DEVELOPMENT-05070d?style=for-the-badge&labelColor=05070d" />
+<img src="https://img.shields.io/badge/WINDOWS-10%20%2F%2011-0078D4?style=for-the-badge&labelColor=05070d" />
+<img src="https://img.shields.io/badge/FOCUS-GAMING-45e7ff?style=for-the-badge&labelColor=05070d" />
+<img src="https://img.shields.io/badge/AI-OPTIONAL-9a6cff?style=for-the-badge&labelColor=05070d" />
 
-[![Status](https://img.shields.io/badge/STATUS-PRIVATE%20DEVELOPMENT-111827?style=for-the-badge)](docs/PROJECT-CHARTER.md)
-[![Platform](https://img.shields.io/badge/PLATFORM-WINDOWS%2010%2F11-0078D4?style=for-the-badge)](docs/PLATFORM-STRATEGY.md)
-[![Priority](https://img.shields.io/badge/PRIORITY-GAMING%20FIRST-22d3ee?style=for-the-badge)](docs/PERFORMANCE-FIRST.md)
-[![AI](https://img.shields.io/badge/ANON%20AI-OPTIONAL-a78bfa?style=for-the-badge)](docs/ANON-AI.md)
+<br><br>
 
-**ANON OS Windows is a transformation platform built around a licensed Windows installation.**
+**A Windows-native gaming platform focused on measurable performance, compatibility, control and a radically better desktop experience.**
 
-It is designed to preserve the modern Windows application and game ecosystem while aggressively pursuing lower overhead, better gaming behavior, stronger control, measurable performance, and a completely new gaming-first experience.
+[⚡ ENTER THE BUILD](docs/site/index.html) · [ARCHITECTURE](docs/PLATFORM-STRATEGY.md) · [PERFORMANCE](docs/PERFORMANCE-FIRST.md) · [AI](docs/ANON-AI.md)
 
 </div>
 
 ---
 
-## 🧬 THE IDEA
+<div align="center">
+
+## ◈ THE ANON SYSTEM
 
 ```text
-             LICENSED WINDOWS
-                    │
-                    ▼
-            ANON PRE-FLIGHT
-          Hardware + Build Scan
-                    │
-                    ▼
-             ANON TRANSFORM
-                    │
-       ┌────────────┼────────────┐
-       ▼            ▼            ▼
-  PERFORMANCE    GAMING       EXPERIENCE
-     CORE         CORE           CORE
-       │            │            │
-       └────────────┼────────────┘
-                    ▼
-             ANON CONTROL
-                    │
-             ┌──────┴──────┐
-             ▼             ▼
-        ANON AI*       WINDOWS
-        Companion      Application
-                        Ecosystem
-
-* Optional. Never required for gaming.
+╔════════════════════════════════════════════════════════════╗
+║                     LICENSED WINDOWS                       ║
+║                            │                               ║
+║                            ▼                               ║
+║                    ┌──────────────┐                        ║
+║                    │ ANON PREFLIGHT│                        ║
+║                    └──────┬───────┘                        ║
+║                           ▼                                ║
+║                ┌─────────────────────┐                     ║
+║                │   ANON TRANSFORM     │                     ║
+║                └─────────┬───────────┘                     ║
+║                          ▼                                 ║
+║       ┌──────────────────┼──────────────────┐              ║
+║       ▼                  ▼                  ▼              ║
+║   PERFORMANCE          GAMING           EXPERIENCE         ║
+║       CORE              CORE               CORE            ║
+║       └──────────────────┼──────────────────┘              ║
+║                          ▼                                 ║
+║                   ANON CONTROL                             ║
+║                    ╱          ╲                            ║
+║               ANON AI*       WINDOWS                        ║
+║                              ECOSYSTEM                      ║
+╚════════════════════════════════════════════════════════════╝
+* optional — never required for gaming
 ```
 
-## 🎮 OUR NON-NEGOTIABLE
+</div>
 
-> **If Windows can run it, ANON OS Windows should make every reasonable effort to keep it running.**
+## ⚡ THIS IS NOT A TWEAK PACK
 
-ANON OS Windows does **not** replace Windows' application platform with a compatibility layer. Windows remains the foundation. This is what lets the project concentrate on optimization and experience instead of attempting to recreate the entire Windows ecosystem.
-
-Universal compatibility is not promised blindly. Kernel drivers, anti-cheat systems, DRM, hardware dependencies, unsupported Windows builds, and vendor restrictions will be tested and documented honestly.
-
-## ⚡ PERFORMANCE ENGINE
-
-Average FPS is only one measurement.
-
-ANON evaluates:
-
-`BOOT` → `IDLE OVERHEAD` → `LAUNCH TIME` → `CPU` → `GPU` → `RAM` → `VRAM` → `I/O` → `FRAME-TIME` → `1% LOW` → `0.1% LOW` → `LATENCY` → `THERMALS`
-
-Every optimization follows:
+ANON OS Windows is being built as a **platform**, not a collection of random registry edits.
 
 **BASELINE → CHANGE → BENCHMARK → COMPARE → KEEP / ROLLBACK**
 
-No placebo tweak collection. No unexplained registry graveyard. No irreversible tuning without justification.
+The performance stack measures boot time, idle overhead, launch time, CPU/GPU/RAM/VRAM behavior, I/O, frame-time, 1% lows, 0.1% lows, latency and thermals.
 
-## 🪶 ONE PLATFORM · THREE BEHAVIOURS
+> **No placebo optimizations. No unexplained registry graveyard. No irreversible tuning without a recovery path.**
 
-| Profile | Purpose | AI | Priority |
+---
+
+## 🎮 THREE MODES. ONE WINDOWS FOUNDATION.
+
+| ◈ | PROFILE | MISSION | AI |
 |---|---|---|---|
-| 🪶 **LITE** | modest hardware | Off | minimum overhead |
-| 🎮 **GAMING** | everyday gaming | Manual | game performance |
-| 🚀 **ULTRA** | high-end rigs | User choice | maximum capability |
+| 🪶 | **LITE** | minimum overhead | OFF |
+| ⚡ | **GAMING** | balanced gaming performance | MANUAL |
+| 🚀 | **ULTRA** | maximum capability | USER CHOICE |
 
-## 🛡️ COMPATIBILITY FIRST
+ANON stays compatible with the Windows application ecosystem instead of attempting to recreate it.
 
-ANON OS Windows is intended to preserve the software environment users already expect from modern Windows:
+---
 
-- modern Win32 applications
-- x64 applications
-- Windows 10/11-era software
-- DirectX games
-- launchers
-- anti-cheat where supported by the underlying Windows configuration
-- peripherals and vendor software
+## 🧠 CORE LOOP
 
-The project will maintain a tested compatibility matrix rather than making marketing claims without evidence.
+```text
+┌───────────┐     ┌───────────┐     ┌────────────┐
+│  PREFLIGHT│ ──▶ │ TRANSFORM │ ──▶ │ BENCHMARK  │
+└───────────┘     └───────────┘     └─────┬──────┘
+                                          │
+                                  ┌───────▼───────┐
+                                  │   COMPARE     │
+                                  └───────┬───────┘
+                                    ┌─────┴─────┐
+                                    ▼           ▼
+                                  KEEP       ROLLBACK
+```
 
-## 🎮 ANON GAMING CORE
+## 🎯 GAMING ENGINE
 
 ```text
 GAME LAUNCH
-    │
-    ▼
-GAME IDENTIFICATION
-    │
-    ▼
-HARDWARE + PROFILE CHECK
-    │
-    ▼
-SAFE PERFORMANCE POLICY
-    │
-    ▼
-GAME SESSION
-    │
-    ├── Telemetry
-    ├── Frame-time analysis
-    ├── Overlay
-    └── Optional ANON AI
-    │
-    ▼
+     │
+     ▼
+IDENTIFY GAME
+     │
+     ▼
+HARDWARE + PROFILE
+     │
+     ▼
+SAFE SESSION POLICY
+     │
+     ├── TELEMETRY
+     ├── FRAME-TIME
+     ├── OVERLAY
+     └── OPTIONAL AI
+     │
+     ▼
 GAME EXIT
-    │
-    ▼
-STATE RESTORATION
+     │
+     ▼
+RESTORE STATE
 ```
 
-## 🤖 ANON AI
+## 🤖 ANON AI IS A LAYER — NOT A REQUIREMENT
 
-ANON AI is a **separate, optional layer**.
+ANON AI is isolated from the performance core.
 
-It can eventually become a persistent companion with:
+Future capabilities include conversational interaction, voice, user-approved memory, system understanding, diagnostics, planning, application awareness and optional vision.
 
-- natural conversation
-- expressive voice
-- long-term user-approved memory
-- screen/application awareness
-- gaming diagnostics
-- system understanding
-- planning and tool use
-- optional vision
-- personality and social interaction
+**AI OFF = ANON OS STILL WORKS.**
 
-But:
+---
 
-> **ANON AI OFF = ANON OS Windows still works as a complete gaming platform.**
+# 🗺️ BUILD QUEST
 
-## 🧠 WHY THIS PROJECT IS DIFFERENT
-
-Existing Windows optimization projects demonstrate the value of reducing unnecessary overhead and tuning configuration. ANON OS Windows takes that foundation and aims to build an entire gaming platform around it:
-
-**Optimization + gaming lifecycle + telemetry + compatibility intelligence + Control Center + optional AI + recovery + polished UX.**
-
-## 🗺️ BUILD QUEST
-
+### FOUNDATION
 - [x] Separate Windows-native project
-- [x] Windows-first architecture decision
+- [x] Windows-first architecture
 - [x] Performance-first design
 - [x] AI isolation principle
-- [ ] Windows build/pre-flight scanner
-- [ ] Safe transformation engine
-- [ ] Backup + rollback engine
-- [ ] Hardware capability database
-- [ ] Performance benchmark harness
-- [ ] Gaming Mode
-- [ ] Game profile engine
-- [ ] ANON Control Center
-- [ ] Compatibility database
+
+### SYSTEM
+- [x] Windows build/pre-flight scanner foundation
+- [x] Safe transformation planning foundation
+- [x] Backup + rollback manifest foundation
+- [x] Hardware capability database foundation
+- [x] Performance benchmark foundation
+
+### GAMING
+- [x] Gaming Mode foundation
+- [x] Game profile engine foundation
+- [x] Compatibility database foundation
+- [ ] Full benchmark harness
+- [ ] Production game-session policies
+
+### EXPERIENCE
+- [x] ANON Control Center state foundation
+- [ ] Full graphical Control Center
 - [ ] ANON AI integration
 - [ ] Recovery environment
+
+### RELEASE
+- [ ] Installer integration
+- [ ] Windows image transformation
+- [ ] Bootable ISO
+- [ ] VM installation validation
 - [ ] Private alpha
 - [ ] Public release
 
-## 📂 PROJECT MAP
+**Status: ACTIVE PRIVATE DEVELOPMENT**
 
-| Area | Purpose |
-|---|---|
-| [`docs/`](docs/) | product, architecture, safety, licensing and research |
-| [`core/`](core/) | Windows transformation and policy engine |
-| [`performance/`](performance/) | telemetry, benchmarks and optimization |
-| [`gaming/`](gaming/) | game profiles, Gaming Mode and launcher integration |
-| [`control-center/`](control-center/) | graphical user control layer |
-| [`anon-ai/`](anon-ai/) | optional AI subsystem |
-| [`compatibility/`](compatibility/) | application/game compatibility intelligence |
-| [`installer/`](installer/) | installation and recovery workflow |
-| [`tests/`](tests/) | automated validation |
+---
 
-## 🔒 SAFETY & RECOVERY
+## 🛰️ PROJECT ARCHITECTURE
 
-ANON OS Windows must never turn a user's machine into an unrecoverable experiment.
+```text
+ANON-OS-Windows/
+│
+├── core/             → system intelligence + transformation
+├── performance/      → measurement + optimization
+├── gaming/           → profiles + Gaming Mode
+├── control-center/   → user control surface
+├── compatibility/    → application/game intelligence
+├── anon-ai/          → optional intelligence layer
+├── installer/        → installation + recovery
+├── tests/            → validation
+├── ux/shell/M0/      → ANON desktop shell
+└── build/            → image assembly + release gates
+```
 
-Every transformation stage is designed around:
+## 🛡️ COMPATIBILITY IS A REQUIREMENT
 
-- preflight checks
-- backups where appropriate
-- explicit policy records
-- reversible changes
-- recovery paths
-- compatibility safeguards
-- version-aware behavior
+The target is modern Windows software, Win32, x64 applications, DirectX games, launchers, peripherals and supported anti-cheat configurations.
 
-## ⚠️ PROJECT STATUS
+Universal compatibility is **not** promised blindly. Drivers, DRM, anti-cheat, hardware dependencies and Windows-version restrictions must be tested and documented.
 
-This is a **private development project**. It is not currently a production Windows distribution or a modified Windows ISO.
+## 🔒 SAFETY
 
-The project is intended to work with appropriately licensed Windows installations and will document Microsoft's licensing requirements and the licenses of every third-party component used or redistributed.
+Every serious system change must have:
+
+`PREFLIGHT → BACKUP → POLICY → CHANGE → VERIFY → ROLLBACK`
+
+Recovery is part of the architecture, not an afterthought.
+
+## ⚠️ STATUS
+
+ANON OS Windows is a private development project. It is **not yet a production Windows distribution or a validated public ISO**. It is intended to work with appropriately licensed Windows installations.
 
 ---
 
 <div align="center">
 
-### **ANON OS WINDOWS**
+# ⚡ ANON OS
 
-**KEEP WINDOWS. REMOVE THE NOISE. BUILD FOR GAMERS.**
+### **THE WINDOWS GAMING PLATFORM WE WISH EXISTED.**
+
+`PERFORMANCE` · `COMPATIBILITY` · `CONTROL` · `ANON AI`
 
 </div>
