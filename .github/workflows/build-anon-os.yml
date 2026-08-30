@@ -1,0 +1,107 @@
+name: Build ANON OS Windows ISO
+
+on:
+  workflow_dispatch:
+    inputs:
+      windows_iso_url:
+        description: 'Official Windows 11 x64 ISO URL (temporary Microsoft CDN links are supported)'
+        required: true
+        type: string
+      image_index:
+        description: 'Windows image index to customize'
+        required: false
+        default: '1'
+        type: string
+      architecture:
+        description: 'Target architecture'
+        required: false
+        default: x64
+        type: choice
+        options:
+          - x64
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_VERSION: '8.0.x'
+
+jobs:
+  build-iso:
+    name: Build + validate ANON OS ISO
+    runs-on: windows-2022
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Install oscdimg
+        shell: pwsh
+        run: |
+          choco install windows-adk-oscdimg -y --no-progress
+          if (-not (Get-Command oscdimg.exe -ErrorAction SilentlyContinue)) {
+            throw 'oscdimg.exe was not added to PATH by the ADK package.'
+          }
+
+      - name: Download Windows source ISO
+        shell: pwsh
+        env:
+          WINDOWS_ISO_URL: ${{ inputs.windows_iso_url }}
+        run: |
+          New-Item -ItemType Directory -Force -Path "$env:GITHUB_WORKSPACE\build\input" | Out-Null
+          $iso = "$env:GITHUB_WORKSPACE\build\input\windows-source.iso"
+          Write-Host 'Downloading Windows source ISO...'
+          Invoke-WebRequest -Uri $env:WINDOWS_ISO_URL -OutFile $iso -UseBasicParsing
+          if (-not (Test-Path $iso)) { throw 'Windows source ISO download failed.' }
+          $size = (Get-Item $iso).Length
+          if ($size -lt 4000000000) { throw "Downloaded file is unexpectedly small: $size bytes" }
+          Get-FileHash $iso -Algorithm SHA256 | Tee-Object "$env:GITHUB_WORKSPACE\build\input\SOURCE-SHA256.txt"
+
+      - name: Publish ANON shell
+        shell: pwsh
+        run: |
+          dotnet restore ux/shell/M0/ANON.Shell.M0.csproj
+          dotnet publish ux/shell/M0/ANON.Shell.M0.csproj `
+            --configuration Release `
+            --runtime win-x64 `
+            --self-contained true `
+            --output "$env:GITHUB_WORKSPACE\build\shell-publish"
+
+          if (-not (Test-Path "$env:GITHUB_WORKSPACE\build\shell-publish\ANON.Shell.M0.exe")) {
+            throw 'ANON.Shell.M0.exe was not produced.'
+          }
+
+      - name: Assemble ISO
+        shell: pwsh
+        run: |
+          & .\build\assembly\build-iso.ps1 `
+            -WindowsIso "$env:GITHUB_WORKSPACE\build\input\windows-source.iso" `
+            -ShellPublish "$env:GITHUB_WORKSPACE\build\shell-publish" `
+            -OutputRoot "$env:GITHUB_WORKSPACE\build\out" `
+            -Architecture '${{ inputs.architecture }}' `
+            -ImageIndex ([int]'${{ inputs.image_index }}')
+
+      - name: Validate ISO
+        shell: pwsh
+        run: |
+          $iso = Get-ChildItem .\build\out\ANON-OS-Windows-*.iso | Select-Object -First 1
+          if (-not $iso) { throw 'ANON OS ISO was not produced.' }
+          & .\build\assembly\validate-iso.ps1 -IsoPath $iso.FullName
+          if ($LASTEXITCODE -ne 0) { throw 'ISO validation failed.' }
+
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ANON-OS-Windows-ISO
+          path: |
+            build/out/*.iso
+            build/out/SHA256SUMS.txt
+            build/out/BUILD-MANIFEST.json
+          if-no-files-found: error
+          retention-days: 14
