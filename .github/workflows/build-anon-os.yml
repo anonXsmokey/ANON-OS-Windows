@@ -62,8 +62,6 @@ jobs:
           if(-not(Test-Path "$env:GITHUB_WORKSPACE\build\shell-publish\ANON.Shell.M0.exe")){throw 'ANON Shell publish failed.'}
       - name: Assemble ISO
         shell: pwsh
-        env:
-          OSCDIMG_PATH: ${{ env.OSCDIMG_PATH }}
         run: |
           & .\build\assembly\build-iso.ps1 -WindowsIso "$env:GITHUB_WORKSPACE\build\input\windows-source.iso" -ShellPublish "$env:GITHUB_WORKSPACE\build\shell-publish" -OutputRoot "$env:GITHUB_WORKSPACE\build\out" -Architecture '${{ inputs.architecture }}' -ImageIndex ([int]'${{ inputs.image_index }}')
       - name: Validate ISO
@@ -77,6 +75,7 @@ jobs:
         run: |
           $iso=Get-ChildItem .\build\out\ANON-OS-Windows-*.iso|Select-Object -First 1
           & .\build\assembly\release-manifest.ps1 -IsoPath $iso.FullName
+          & .\build\assembly\validate-release-gates.ps1 -ManifestPath (Join-Path $iso.DirectoryName 'RELEASE-MANIFEST.json')
       - name: Upload ISO candidate
         uses: actions/upload-artifact@v4
         with:
