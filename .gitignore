@@ -1,0 +1,17 @@
+# Windows build inputs/outputs
+build/input/
+build/out/
+build/assembly/iso-*/
+*.iso
+*.wim
+*.esd
+*.vhd
+*.vhdx
+*.vdi
+
+# Local publish output
+**/bin/
+**/obj/
+
+# VM test state
+build/assembly/vm/
