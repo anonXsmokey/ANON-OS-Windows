@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ANON OS Installation Plan",
+  "type": "object",
+  "required": ["schemaVersion","source","target","profile","features"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "source": {"type":"object","required":["imageFile","imageIndex"],"properties":{"imageFile":{"type":"string","enum":["install.wim","install.esd"]},"imageIndex":{"type":"integer","minimum":1}}},
+    "target": {"type":"object","required":["firmware","architecture"],"properties":{"firmware":{"type":"string","enum":["UEFI"]},"architecture":{"const":"x64"}}},
+    "profile": {"type":"string","enum":["BALANCED","GAMING","PERFORMANCE","CUSTOM"]},
+    "features": {"type":"object","properties":{"ai":{"type":"boolean"},"telemetry":{"type":"string","enum":["minimal","standard","custom"]},"recovery":{"type":"boolean"},"restorePoint":{"type":"boolean"}}}
+  },
+  "additionalProperties": false
+}
