@@ -1,9 +1,11 @@
 using System.IO;
 using Microsoft.UI;
+using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
+using Windows.UI;
 
 namespace Anon.Shell.M0.Runtime;
 
@@ -27,7 +29,7 @@ public sealed class AppLibraryWindow : Window
     public AppLibraryWindow(bool gamesOnly)
     {
         _gamesOnly = gamesOnly;
-        Title = gamesOnly ? "ANON Games" : "ANON Apps";
+        base.Title = gamesOnly ? "ANON Games" : "ANON Apps";
 
         var root = new Grid { Background = Bg };
         root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(72) });
@@ -39,22 +41,22 @@ public sealed class AppLibraryWindow : Window
         header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         var heading = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, VerticalAlignment = VerticalAlignment.Center };
-        heading.Children.Add(new Border { Width = 40, Height = 40, CornerRadius = new CornerRadius(12), Background = Accent, Child = new TextBlock { Text = _gamesOnly ? "G" : "A", FontSize = 20, FontWeight = Windows.UI.Text.FontWeights.Bold, Foreground = White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } });
-        heading.Children.Add(new TextBlock { Text = _gamesOnly ? "ANON GAMES" : "ANON APPS", FontSize = 20, FontWeight = Windows.UI.Text.FontWeights.SemiBold, Foreground = Text, VerticalAlignment = VerticalAlignment.Center });
+        heading.Children.Add(new Border { Width = 40, Height = 40, CornerRadius = new CornerRadius(12), Background = Accent, Child = new TextBlock { Text = _gamesOnly ? "G" : "A", FontSize = 20, FontWeight = FontWeights.Bold, Foreground = White, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center } });
+        heading.Children.Add(new TextBlock { Text = _gamesOnly ? "ANON GAMES" : "ANON APPS", FontSize = 20, FontWeight = FontWeights.SemiBold, Foreground = Text, VerticalAlignment = VerticalAlignment.Center });
         header.Children.Add(heading);
         _search.PlaceholderText = _gamesOnly ? "Search games..." : "Search apps...";
         _search.Margin = new Thickness(30, 0, 0, 0); _search.VerticalAlignment = VerticalAlignment.Center; _search.TextChanged += (_, _) => ApplySearch();
         Grid.SetColumn(_search, 1); header.Children.Add(_search); root.Children.Add(header);
 
-        var toolbar = new Grid { Padding = new Thickness(20, 8), Background = Strong };
+        var toolbar = new Grid { Padding = new Thickness(20, 8, 20, 8), Background = Strong };
         toolbar.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); toolbar.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); toolbar.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         var refresh = new Button { Content = "↻  REFRESH" }; refresh.Click += (_, _) => LoadEntries(); toolbar.Children.Add(refresh);
         var hint = new TextBlock { Text = _gamesOnly ? "Installed games discovered from Windows shortcuts" : "Installed apps discovered from Windows shortcuts", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(16, 0, 0, 0) }; Grid.SetColumn(hint, 1); toolbar.Children.Add(hint);
         var windows = new Button { Content = "WINDOWS APPS" }; windows.Click += (_, _) => Launch("shell:AppsFolder"); Grid.SetColumn(windows, 2); toolbar.Children.Add(windows); Grid.SetRow(toolbar, 1); root.Children.Add(toolbar);
 
-        var border = new Border { Background = Surface, BorderBrush = Border, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Margin = new Thickness(20, 0, 20, 10), Padding = new Thickness(8) };
+        var border = new Border { Background = Surface, BorderBrush = Border, BorderThickness = new Thickness(1, 1, 1, 1), CornerRadius = new CornerRadius(12), Margin = new Thickness(20, 0, 20, 10), Padding = new Thickness(8, 8, 8, 8) };
         _list.IsItemClickEnabled = true; _list.SelectionMode = ListViewSelectionMode.Single; _list.ItemClick += (_, e) => { if (e.ClickedItem is Entry entry) Launch(entry.Path); }; _list.DoubleTapped += (_, _) => { if (_list.SelectedItem is Entry entry) Launch(entry.Path); }; _list.ItemTemplate = CreateTemplate(); _list.Background = Surface; border.Child = _list; Grid.SetRow(border, 2); root.Children.Add(border);
-        _count.Text = "Scanning..."; _count.Foreground = Muted; _count.FontSize = 11; _count.Margin = new Thickness(20, 0); _count.VerticalAlignment = VerticalAlignment.Center; Grid.SetRow(_count, 3); root.Children.Add(_count);
+        _count.Text = "Scanning..."; _count.Foreground = Muted; _count.FontSize = 11; _count.Margin = new Thickness(20, 0, 20, 0); _count.VerticalAlignment = VerticalAlignment.Center; Grid.SetRow(_count, 3); root.Children.Add(_count);
         Content = root; LoadEntries();
     }
 
@@ -97,6 +99,6 @@ public sealed class AppLibraryWindow : Window
         var query = _search.Text.Trim(); var visible = string.IsNullOrEmpty(query) ? _entries : _entries.Where(e => e.Name.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList(); _list.ItemsSource = visible; _count.Text = $"{visible.Count} {(_gamesOnly ? "game" : "app")}{(visible.Count == 1 ? "" : "s")}";
     }
 
-    private static void Launch(string target) { _ = global::System.Diagnostics.Process.Start(new global::System.Diagnostics.ProcessStartInfo { FileName = target, UseShellExecute = true }); }
+    private static void Launch(string target) { try { _ = global::System.Diagnostics.Process.Start(new global::System.Diagnostics.ProcessStartInfo { FileName = target, UseShellExecute = true }); } catch { } }
     private sealed record Entry(string Name, string Path, string Subtitle, string Icon);
 }
