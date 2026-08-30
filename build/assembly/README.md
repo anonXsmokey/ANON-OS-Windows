@@ -14,15 +14,26 @@ This directory contains the controlled Windows image assembly and release-valida
 
 ## Local commands
 
+The easiest local entrypoint is:
+
+```powershell
+.\build\assembly\build-local.ps1 -WindowsIso "C:\Path\To\Windows11.iso" -ImageIndex 1
+```
+
+Or run the individual stages:
+
 ```powershell
 dotnet publish ux/shell/M0/ANON.Shell.M0.csproj -c Release -r win-x64 --self-contained true
-.
-\build\assembly\build-iso.ps1 -WindowsIso <windows.iso> -ShellPublish <publish-dir>
+.\build\assembly\build-iso.ps1 -WindowsIso <windows.iso> -ShellPublish <publish-dir>
 .\build\assembly\validate-iso.ps1 -IsoPath <anon-os.iso> -ExpectedArchitecture x64
 .\build\assembly\release-manifest.ps1 -IsoPath <anon-os.iso>
 .\build\assembly\vm-smoke-test.ps1 -IsoPath <anon-os.iso>
 .\build\assembly\finalize-release.ps1 -ManifestPath <RELEASE-MANIFEST.json> -VmResultPath <VM-RESULT.json>
 ```
+
+## Windows media policy
+
+Do **not** commit the Windows ISO, `install.wim`, or `install.esd` to this repository. The root `.gitignore` excludes these large installation artifacts. Keep the licensed source ISO on the build machine and pass its path to `build-local.ps1`.
 
 ## Release policy
 
