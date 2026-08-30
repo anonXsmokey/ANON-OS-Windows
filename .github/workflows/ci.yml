@@ -31,7 +31,7 @@ jobs:
         run: dotnet restore ux/shell/M0/ANON.Shell.M0.csproj --runtime ${{ env.RID }}
 
       - name: Build x64
-        run: dotnet build ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --no-restore --runtime ${{ env.RID }} --arch x64
+        run: dotnet build ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
 
       - name: Publish smoke build
         run: dotnet publish ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --runtime ${{ env.RID }} --self-contained true --no-restore --output build/ci-publish
