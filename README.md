@@ -1,64 +1,38 @@
 <div align="center">
 
+<img src="docs/site/assets/anon-hero.svg" alt="ANON OS" width="100%" />
+
 # ⚡ ANON OS // WINDOWS
 
 ### **KEEP WINDOWS. REMOVE THE NOISE. BUILD FOR GAMERS.**
 
-<img src="https://img.shields.io/badge/ANON%20OS-PRIVATE%20DEVELOPMENT-05070d?style=for-the-badge&labelColor=05070d" />
-<img src="https://img.shields.io/badge/WINDOWS-10%20%2F%2011-0078D4?style=for-the-badge&labelColor=05070d" />
-<img src="https://img.shields.io/badge/FOCUS-GAMING-45e7ff?style=for-the-badge&labelColor=05070d" />
-<img src="https://img.shields.io/badge/AI-OPTIONAL-9a6cff?style=for-the-badge&labelColor=05070d" />
+<img src="https://img.shields.io/badge/STATUS-PRIVATE%20DEVELOPMENT-05070d?style=for-the-badge&labelColor=05070d" /> <img src="https://img.shields.io/badge/PLATFORM-WINDOWS%2010%2F11-0078D4?style=for-the-badge&labelColor=05070d" /> <img src="https://img.shields.io/badge/FOCUS-GAMING-45e7ff?style=for-the-badge&labelColor=05070d" /> <img src="https://img.shields.io/badge/AI-OPTIONAL-9a6cff?style=for-the-badge&labelColor=05070d" />
 
-<br><br>
+**A Windows-native gaming platform engineered around measurable performance, compatibility, control and an optional intelligence layer.**
 
-**A Windows-native gaming platform focused on measurable performance, compatibility, control and a radically better desktop experience.**
-
-[⚡ ENTER THE BUILD](docs/site/index.html) · [ARCHITECTURE](docs/PLATFORM-STRATEGY.md) · [PERFORMANCE](docs/PERFORMANCE-FIRST.md) · [AI](docs/ANON-AI.md)
+[⚡ ENTER THE ANIMATED COMMAND CENTER](docs/site/index.html) · [ARCHITECTURE](docs/PLATFORM-STRATEGY.md) · [PERFORMANCE](docs/PERFORMANCE-FIRST.md) · [ANON AI](docs/ANON-AI.md)
 
 </div>
 
 ---
 
+## ◈ LIVE SYSTEM VISUAL
+
 <div align="center">
 
-## ◈ THE ANON SYSTEM
-
-```text
-╔════════════════════════════════════════════════════════════╗
-║                     LICENSED WINDOWS                       ║
-║                            │                               ║
-║                            ▼                               ║
-║                    ┌──────────────┐                        ║
-║                    │ ANON PREFLIGHT│                        ║
-║                    └──────┬───────┘                        ║
-║                           ▼                                ║
-║                ┌─────────────────────┐                     ║
-║                │   ANON TRANSFORM     │                     ║
-║                └─────────┬───────────┘                     ║
-║                          ▼                                 ║
-║       ┌──────────────────┼──────────────────┐              ║
-║       ▼                  ▼                  ▼              ║
-║   PERFORMANCE          GAMING           EXPERIENCE         ║
-║       CORE              CORE               CORE            ║
-║       └──────────────────┼──────────────────┘              ║
-║                          ▼                                 ║
-║                   ANON CONTROL                             ║
-║                    ╱          ╲                            ║
-║               ANON AI*       WINDOWS                        ║
-║                              ECOSYSTEM                      ║
-╚════════════════════════════════════════════════════════════╝
-* optional — never required for gaming
-```
+<img src="docs/site/assets/anon-hero.svg" alt="Animated ANON OS system visual" width="900" />
 
 </div>
 
-## ⚡ THIS IS NOT A TWEAK PACK
+> **The repository now has a real visual layer.** The SVG hero contains native animation, so it can render without third-party image hosting.
 
-ANON OS Windows is being built as a **platform**, not a collection of random registry edits.
+## ⚡ NOT ANOTHER TWEAK PACK
 
-**BASELINE → CHANGE → BENCHMARK → COMPARE → KEEP / ROLLBACK**
+ANON OS Windows is being built as a **platform**, not a pile of unexplained registry edits.
 
-The performance stack measures boot time, idle overhead, launch time, CPU/GPU/RAM/VRAM behavior, I/O, frame-time, 1% lows, 0.1% lows, latency and thermals.
+`BASELINE → CHANGE → BENCHMARK → COMPARE → KEEP / ROLLBACK`
+
+The performance stack targets boot time, idle overhead, launch time, CPU/GPU/RAM/VRAM behavior, I/O, frame-time, 1% lows, 0.1% lows, latency and thermals.
 
 > **No placebo optimizations. No unexplained registry graveyard. No irreversible tuning without a recovery path.**
 
@@ -71,10 +45,6 @@ The performance stack measures boot time, idle overhead, launch time, CPU/GPU/RA
 | 🪶 | **LITE** | minimum overhead | OFF |
 | ⚡ | **GAMING** | balanced gaming performance | MANUAL |
 | 🚀 | **ULTRA** | maximum capability | USER CHOICE |
-
-ANON stays compatible with the Windows application ecosystem instead of attempting to recreate it.
-
----
 
 ## 🧠 CORE LOOP
 
@@ -94,34 +64,21 @@ ANON stays compatible with the Windows application ecosystem instead of attempti
 ## 🎯 GAMING ENGINE
 
 ```text
-GAME LAUNCH
-     │
-     ▼
-IDENTIFY GAME
-     │
-     ▼
-HARDWARE + PROFILE
-     │
-     ▼
-SAFE SESSION POLICY
-     │
-     ├── TELEMETRY
-     ├── FRAME-TIME
-     ├── OVERLAY
-     └── OPTIONAL AI
-     │
-     ▼
-GAME EXIT
-     │
-     ▼
-RESTORE STATE
+GAME LAUNCH → IDENTIFY → HARDWARE + PROFILE → SAFE POLICY
+                                      │
+                     ┌────────────────┼────────────────┐
+                     ▼                ▼                ▼
+                  TELEMETRY       FRAME-TIME       OPTIONAL AI
+                     └────────────────┼────────────────┘
+                                      ▼
+                                RESTORE STATE
 ```
 
-## 🤖 ANON AI IS A LAYER — NOT A REQUIREMENT
+## 🤖 ANON AI
 
 ANON AI is isolated from the performance core.
 
-Future capabilities include conversational interaction, voice, user-approved memory, system understanding, diagnostics, planning, application awareness and optional vision.
+Future capabilities include conversation, voice, user-approved memory, system understanding, diagnostics, planning, application awareness and optional vision.
 
 **AI OFF = ANON OS STILL WORKS.**
 
@@ -163,7 +120,7 @@ Future capabilities include conversational interaction, voice, user-approved mem
 - [ ] Private alpha
 - [ ] Public release
 
-**Status: ACTIVE PRIVATE DEVELOPMENT**
+**STATUS // ACTIVE PRIVATE DEVELOPMENT**
 
 ---
 
@@ -171,7 +128,6 @@ Future capabilities include conversational interaction, voice, user-approved mem
 
 ```text
 ANON-OS-Windows/
-│
 ├── core/             → system intelligence + transformation
 ├── performance/      → measurement + optimization
 ├── gaming/           → profiles + Gaming Mode
@@ -184,7 +140,7 @@ ANON-OS-Windows/
 └── build/            → image assembly + release gates
 ```
 
-## 🛡️ COMPATIBILITY IS A REQUIREMENT
+## 🛡️ COMPATIBILITY
 
 The target is modern Windows software, Win32, x64 applications, DirectX games, launchers, peripherals and supported anti-cheat configurations.
 
@@ -192,7 +148,7 @@ Universal compatibility is **not** promised blindly. Drivers, DRM, anti-cheat, h
 
 ## 🔒 SAFETY
 
-Every serious system change must have:
+Every serious system change follows:
 
 `PREFLIGHT → BACKUP → POLICY → CHANGE → VERIFY → ROLLBACK`
 
@@ -206,10 +162,8 @@ ANON OS Windows is a private development project. It is **not yet a production W
 
 <div align="center">
 
-# ⚡ ANON OS
+### ⚡ ANON OS // WINDOWS
 
-### **THE WINDOWS GAMING PLATFORM WE WISH EXISTED.**
-
-`PERFORMANCE` · `COMPATIBILITY` · `CONTROL` · `ANON AI`
+**THE WINDOWS GAMING PLATFORM WE WISH EXISTED.**
 
 </div>
