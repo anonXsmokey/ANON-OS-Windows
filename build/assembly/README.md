@@ -1,31 +1,31 @@
-# ISO Assembly Stage
+# ANON OS Windows — ISO Assembly & Release
 
-This directory contains the controlled assembly layer for ANON OS Windows.
+This directory contains the controlled Windows image assembly and release-validation layer. Microsoft Windows installation media is supplied by the builder and is not redistributed by this repository.
 
-The intended product is a Windows installation image with ANON shell integration. The repository does **not** contain Microsoft Windows binaries or installation media.
+## Pipeline
 
-## Required host inputs
+1. Build and publish `ANON.Shell.M0` for `win-x64`.
+2. Supply a properly licensed Windows installation ISO.
+3. `build-iso.ps1` mounts the source, validates the selected WIM/ESD index, injects the ANON shell, configures offline Winlogon, commits the image, and emits bootable ISO media.
+4. `validate-iso.ps1` checks boot files, install image, ANON payload, marker, architecture, and SHA-256.
+5. `vm-smoke-test.ps1` provides the VirtualBox boot harness.
+6. `validate-vm.ps1` creates a non-falsifying validation manifest; merely detecting a VM runner never counts as a PASS.
+7. `finalize-release.ps1` is the final gate. It refuses approval unless ShellBuild, IsoStructure, VmBoot, WindowsInstall, FirstLogon, and ShellSmoke are all `PASS`.
 
-1. A supported Windows installation ISO supplied by the builder.
-2. Windows ADK deployment tools, including DISM and `oscdimg.exe`.
-3. Administrator PowerShell.
-4. A Release build of `ANON.Shell.M0`.
-5. A VM capable of UEFI boot for validation.
+## Local commands
 
-## Current safety gate
+```powershell
+dotnet publish ux/shell/M0/ANON.Shell.M0.csproj -c Release -r win-x64 --self-contained true
+.
+\build\assembly\build-iso.ps1 -WindowsIso <windows.iso> -ShellPublish <publish-dir>
+.\build\assembly\validate-iso.ps1 -IsoPath <anon-os.iso> -ExpectedArchitecture x64
+.\build\assembly\release-manifest.ps1 -IsoPath <anon-os.iso>
+.\build\assembly\vm-smoke-test.ps1 -IsoPath <anon-os.iso>
+.\build\assembly\finalize-release.ps1 -ManifestPath <RELEASE-MANIFEST.json> -VmResultPath <VM-RESULT.json>
+```
 
-`assemble-anon.ps1` currently produces an **assembly staging tree**, not a falsely-labelled release ISO. Installer integration must be completed against the selected Windows edition/index before `oscdimg` is allowed to create release media.
+## Release policy
 
-The release process must verify:
+A generated ISO is a **candidate**. It is not a working release until a clean VM has completed Windows installation, reached first logon, launched ANON Shell, and passed the shell smoke test. The finalizer changes the manifest to `RELEASE_APPROVED` only after every gate is explicitly `PASS`.
 
-- WIM/ESD source index and architecture.
-- Image mount/unmount integrity.
-- ANON payload placement and startup integration.
-- Recovery/rollback path.
-- UEFI bootability.
-- Clean installation in a VM.
-- First-logon ANON shell startup.
-- Basic Files/Apps/Games/System functionality.
-- SHA-256 checksum of the final ISO.
-
-No release artifact should be described as a working ISO until those checks pass.
+`assemble-anon.ps1` remains an engineering staging helper and intentionally does not emit release media.
