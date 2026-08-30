@@ -16,27 +16,15 @@
 
 ---
 
-## ◈ LIVE SYSTEM VISUAL
-
-<div align="center">
-
-<img src="docs/site/assets/anon-hero.svg" alt="Animated ANON OS system visual" width="900" />
-
-</div>
-
-> **The repository now has a real visual layer.** The SVG hero contains native animation, so it can render without third-party image hosting.
-
 ## ⚡ NOT ANOTHER TWEAK PACK
 
-ANON OS Windows is being built as a **platform**, not a pile of unexplained registry edits.
+ANON OS Windows is a **platform**, not a pile of unexplained registry edits.
 
 `BASELINE → CHANGE → BENCHMARK → COMPARE → KEEP / ROLLBACK`
 
 The performance stack targets boot time, idle overhead, launch time, CPU/GPU/RAM/VRAM behavior, I/O, frame-time, 1% lows, 0.1% lows, latency and thermals.
 
 > **No placebo optimizations. No unexplained registry graveyard. No irreversible tuning without a recovery path.**
-
----
 
 ## 🎮 THREE MODES. ONE WINDOWS FOUNDATION.
 
@@ -49,36 +37,30 @@ The performance stack targets boot time, idle overhead, launch time, CPU/GPU/RAM
 ## 🧠 CORE LOOP
 
 ```text
-┌───────────┐     ┌───────────┐     ┌────────────┐
-│  PREFLIGHT│ ──▶ │ TRANSFORM │ ──▶ │ BENCHMARK  │
-└───────────┘     └───────────┘     └─────┬──────┘
-                                          │
-                                  ┌───────▼───────┐
-                                  │   COMPARE     │
-                                  └───────┬───────┘
-                                    ┌─────┴─────┐
-                                    ▼           ▼
-                                  KEEP       ROLLBACK
+PREFLIGHT → TRANSFORM → BENCHMARK → COMPARE
+                                      ├── KEEP
+                                      └── ROLLBACK
 ```
 
 ## 🎯 GAMING ENGINE
 
 ```text
-GAME LAUNCH → IDENTIFY → HARDWARE + PROFILE → SAFE POLICY
-                                      │
-                     ┌────────────────┼────────────────┐
-                     ▼                ▼                ▼
-                  TELEMETRY       FRAME-TIME       OPTIONAL AI
-                     └────────────────┼────────────────┘
-                                      ▼
-                                RESTORE STATE
+GAME LAUNCH → IDENTIFY → COMPATIBILITY → PROFILE
+                                      ↓
+                              SAFE SESSION POLICY
+                                      ↓
+                       TELEMETRY + FRAME-TIME
+                                      ↓
+                           RESTORE PREVIOUS STATE
 ```
+
+The Gaming layer now includes reversible process-session policies, lifecycle management, profile-driven launch, compatibility decisions and automatic restoration when a game exits.
 
 ## 🤖 ANON AI
 
-ANON AI is isolated from the performance core.
+ANON AI is isolated from the performance core. It is optional and disabled unless the user explicitly configures and enables a provider.
 
-Future capabilities include conversation, voice, user-approved memory, system understanding, diagnostics, planning, application awareness and optional vision.
+The provider layer supports OpenAI-compatible `/chat/completions` endpoints through `ANON_AI_ENDPOINT`, `ANON_AI_MODEL` and `ANON_AI_API_KEY` environment configuration.
 
 **AI OFF = ANON OS STILL WORKS.**
 
@@ -106,14 +88,14 @@ Future capabilities include conversation, voice, user-approved memory, system un
 - [x] Game profile engine foundation
 - [x] Compatibility database foundation
 - [x] Full benchmark harness foundation
-- [ ] Production game-session policies
+- [x] Production game-session policies
 
 ### EXPERIENCE
 - [x] ANON Control Center state foundation
 - [x] Isolated optional ANON AI contract layer
-- [ ] Full graphical Control Center
-- [ ] ANON AI provider integration
-- [ ] Recovery environment
+- [x] Full graphical Control Center
+- [x] ANON AI provider integration
+- [x] Recovery environment
 
 ### RELEASE
 - [x] Windows image transformation foundation
@@ -124,7 +106,7 @@ Future capabilities include conversation, voice, user-approved memory, system un
 - [ ] Private alpha
 - [ ] Public release
 
-**STATUS // ACTIVE PRIVATE DEVELOPMENT**
+**STATUS // GAMING + EXPERIENCE IMPLEMENTATION COMPLETE — RELEASE VALIDATION REMAINS**
 
 ---
 
@@ -134,10 +116,11 @@ Future capabilities include conversation, voice, user-approved memory, system un
 ANON-OS-Windows/
 ├── core/             → system intelligence + transformation
 ├── performance/      → measurement + optimization
-├── gaming/           → profiles + Gaming Mode
-├── control-center/   → user control surface
+├── gaming/           → profiles + session policies
+├── control-center/   → persistent user control surface
 ├── compatibility/    → application/game intelligence
-├── anon-ai/          → optional intelligence layer
+├── anon-ai/          → optional provider layer
+├── recovery/         → validated recovery manifest engine
 ├── installer/        → installation + recovery
 ├── tests/            → validation
 ├── ux/shell/M0/      → ANON desktop shell
@@ -156,7 +139,7 @@ Every serious system change follows:
 
 `PREFLIGHT → BACKUP → POLICY → CHANGE → VERIFY → ROLLBACK`
 
-Recovery is part of the architecture, not an afterthought.
+Recovery manifests are checksum-validatable and only describe recorded reversible operations. Bootable WinRE integration remains a release validation concern rather than being falsely represented as tested.
 
 ## ⚠️ STATUS
 
