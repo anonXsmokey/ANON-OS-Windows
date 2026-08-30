@@ -2,9 +2,11 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using Windows.UI;
 
 namespace Anon.Shell.M0.Runtime;
 
@@ -29,8 +31,8 @@ public sealed class SystemWindow : Window
 
     public SystemWindow()
     {
-        Title = "ANON System";
-        var root = new Grid { Background = Background, Padding = new Thickness(20) };
+        base.Title = "ANON System";
+        var root = new Grid { Background = Background, Padding = new Thickness(20, 20, 20, 20) };
         root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
@@ -40,13 +42,13 @@ public sealed class SystemWindow : Window
         header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         header.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         header.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        header.Children.Add(new TextBlock { Text = "ANON SYSTEM", FontSize = 24, FontWeight = Windows.UI.Text.FontWeights.SemiBold, Foreground = Text, VerticalAlignment = VerticalAlignment.Center });
-        var live = new TextBlock { Text = "LIVE", FontSize = 10, FontWeight = Windows.UI.Text.FontWeights.SemiBold, Foreground = Accent, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(16, 0, 0, 0) };
+        header.Children.Add(new TextBlock { Text = "ANON SYSTEM", FontSize = 24, FontWeight = FontWeights.SemiBold, Foreground = Text, VerticalAlignment = VerticalAlignment.Center });
+        var live = new TextBlock { Text = "LIVE", FontSize = 10, FontWeight = FontWeights.SemiBold, Foreground = Accent, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(16, 0, 0, 0) };
         Grid.SetColumn(live, 1); header.Children.Add(live);
         var refresh = new Button { Content = "↻  REFRESH" }; refresh.Click += (_, _) => Update(); Grid.SetColumn(refresh, 2); header.Children.Add(refresh);
         root.Children.Add(header);
 
-        var actions = new Grid { Background = Strong, Padding = new Thickness(12), Margin = new Thickness(0, 0, 0, 16) };
+        var actions = new Grid { Background = Strong, Padding = new Thickness(12, 12, 12, 12), Margin = new Thickness(0, 0, 0, 16) };
         actions.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         actions.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         actions.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
@@ -56,10 +58,10 @@ public sealed class SystemWindow : Window
         var content = new Grid { ColumnSpacing = 16, RowSpacing = 16 };
         content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.15, GridUnitType.Star) }); content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); content.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-        var telemetryCard = Card(); var telemetryStack = new StackPanel { Spacing = 12 }; telemetryStack.Children.Add(Title("PERFORMANCE")); _telemetryText.FontSize = 14; _telemetryText.Foreground = Muted; telemetryStack.Children.Add(_telemetryText); _cpuBar.Maximum = 100; _cpuBar.Height = 5; telemetryStack.Children.Add(_cpuBar); _memoryBar.Maximum = 100; _memoryBar.Height = 5; telemetryStack.Children.Add(_memoryBar); telemetryCard.Child = telemetryStack; content.Children.Add(telemetryCard);
-        var hardwareCard = Card(); var hardwareStack = new StackPanel { Spacing = 10 }; hardwareStack.Children.Add(Title("HARDWARE")); _hardwareText.FontSize = 13; _hardwareText.TextWrapping = TextWrapping.Wrap; _hardwareText.Foreground = Muted; hardwareStack.Children.Add(_hardwareText); hardwareCard.Child = hardwareStack; Grid.SetColumn(hardwareCard, 1); content.Children.Add(hardwareCard);
-        var storageCard = Card(); var storageStack = new StackPanel { Spacing = 10 }; storageStack.Children.Add(Title("STORAGE")); _storageText.FontSize = 13; _storageText.TextWrapping = TextWrapping.Wrap; _storageText.Foreground = Muted; storageStack.Children.Add(_storageText); storageStack.Children.Add(new TextBlock { Text = "ANON does not modify storage policy in M0.", FontSize = 11, Foreground = Muted, TextWrapping = TextWrapping.Wrap }); storageCard.Child = storageStack; Grid.SetRow(storageCard, 1); content.Children.Add(storageCard);
-        var runtimeCard = Card(); var runtimeStack = new StackPanel { Spacing = 10 }; runtimeStack.Children.Add(Title("WINDOWS RUNTIME")); runtimeStack.Children.Add(new TextBlock { Text = $"Architecture  {RuntimeInformation.OSArchitecture}\n.NET           {Environment.Version}\nProcessors     {Environment.ProcessorCount}\nMachine        {Environment.MachineName}", FontSize = 13, Foreground = Muted }); runtimeCard.Child = runtimeStack; Grid.SetColumn(runtimeCard, 1); Grid.SetRow(runtimeCard, 1); content.Children.Add(runtimeCard);
+        var telemetryCard = Card(); var telemetryStack = new StackPanel { Spacing = 12 }; telemetryStack.Children.Add(SectionTitle("PERFORMANCE")); _telemetryText.FontSize = 14; _telemetryText.Foreground = Muted; telemetryStack.Children.Add(_telemetryText); _cpuBar.Maximum = 100; _cpuBar.Height = 5; telemetryStack.Children.Add(_cpuBar); _memoryBar.Maximum = 100; _memoryBar.Height = 5; telemetryStack.Children.Add(_memoryBar); telemetryCard.Child = telemetryStack; content.Children.Add(telemetryCard);
+        var hardwareCard = Card(); var hardwareStack = new StackPanel { Spacing = 10 }; hardwareStack.Children.Add(SectionTitle("HARDWARE")); _hardwareText.FontSize = 13; _hardwareText.TextWrapping = TextWrapping.Wrap; _hardwareText.Foreground = Muted; hardwareStack.Children.Add(_hardwareText); hardwareCard.Child = hardwareStack; Grid.SetColumn(hardwareCard, 1); content.Children.Add(hardwareCard);
+        var storageCard = Card(); var storageStack = new StackPanel { Spacing = 10 }; storageStack.Children.Add(SectionTitle("STORAGE")); _storageText.FontSize = 13; _storageText.TextWrapping = TextWrapping.Wrap; _storageText.Foreground = Muted; storageStack.Children.Add(_storageText); storageStack.Children.Add(new TextBlock { Text = "ANON does not modify storage policy in M0.", FontSize = 11, Foreground = Muted, TextWrapping = TextWrapping.Wrap }); storageCard.Child = storageStack; Grid.SetRow(storageCard, 1); content.Children.Add(storageCard);
+        var runtimeCard = Card(); var runtimeStack = new StackPanel { Spacing = 10 }; runtimeStack.Children.Add(SectionTitle("WINDOWS RUNTIME")); runtimeStack.Children.Add(new TextBlock { Text = $"Architecture  {RuntimeInformation.OSArchitecture}\n.NET           {Environment.Version}\nProcessors     {Environment.ProcessorCount}\nMachine        {Environment.MachineName}", FontSize = 13, Foreground = Muted }); runtimeCard.Child = runtimeStack; Grid.SetColumn(runtimeCard, 1); Grid.SetRow(runtimeCard, 1); content.Children.Add(runtimeCard);
         Grid.SetRow(content, 2); root.Children.Add(content);
 
         _statusText.Text = "Telemetry active."; _statusText.FontSize = 11; _statusText.Foreground = Muted; _statusText.Margin = new Thickness(0, 12, 0, 0); Grid.SetRow(_statusText, 3); root.Children.Add(_statusText);
@@ -67,8 +69,8 @@ public sealed class SystemWindow : Window
         _timer = DispatcherQueue.GetForCurrentThread().CreateTimer(); _timer.Interval = TimeSpan.FromSeconds(1); _timer.Tick += (_, _) => Update(); _timer.Start(); Closed += (_, _) => _timer.Stop(); Update();
     }
 
-    private static Border Card() => new() { Background = Surface, BorderBrush = Border, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(18) };
-    private static TextBlock Title(string text) => new() { Text = text, FontSize = 15, FontWeight = Windows.UI.Text.FontWeights.SemiBold, Foreground = Text };
+    private static Border Card() => new() { Background = Surface, BorderBrush = Border, BorderThickness = new Thickness(1, 1, 1, 1), CornerRadius = new CornerRadius(12), Padding = new Thickness(18, 18, 18, 18) };
+    private static TextBlock SectionTitle(string text) => new() { Text = text, FontSize = 15, FontWeight = FontWeights.SemiBold, Foreground = Text };
     private static void AddAction(Grid grid, string label, string target, int column) { var button = new Button { Content = label, Margin = new Thickness(column == 0 ? 0 : 8, 0, 0, 0) }; button.Click += (_, _) => Launch(target); Grid.SetColumn(button, column); grid.Children.Add(button); }
 
     private void Update()
