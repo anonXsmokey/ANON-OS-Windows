@@ -14,6 +14,22 @@ env:
   RID: 'win-x64'
 
 jobs:
+  core-build:
+    name: Build ANON Core
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Restore core
+        run: dotnet restore core/Anon.Os.Core.csproj --runtime ${{ env.RID }}
+      - name: Build core
+        run: dotnet build core/Anon.Os.Core.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
+
   shell-build:
     name: Build ANON Shell
     runs-on: windows-2022
@@ -21,28 +37,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
       - name: Restore
         run: dotnet restore ux/shell/M0/ANON.Shell.M0.csproj --runtime ${{ env.RID }}
-
       - name: Build x64
         run: dotnet build ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
-
       - name: Publish smoke build
         run: dotnet publish ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --runtime ${{ env.RID }} --self-contained true --no-restore --output build/ci-publish
-
       - name: Verify executable
         shell: pwsh
         run: |
           $exe = Resolve-Path build/ci-publish/ANON.Shell.M0.exe -ErrorAction SilentlyContinue
           if (-not $exe) { throw 'ANON.Shell.M0.exe was not produced.' }
           Write-Host "Shell build PASS: $exe"
-
       - name: Upload shell smoke artifact
         uses: actions/upload-artifact@v4
         with:
