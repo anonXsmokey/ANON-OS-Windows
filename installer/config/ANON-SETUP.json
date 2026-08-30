@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "product": "ANON OS Windows",
+  "architecture": "x64",
+  "installer": {
+    "brand": "ANON OS",
+    "mode": "custom",
+    "language": "en-US",
+    "pages": [
+      "welcome",
+      "hardware",
+      "license",
+      "disk",
+      "installation",
+      "configuration",
+      "firstBoot"
+    ]
+  },
+  "defaults": {
+    "profile": "GAMING",
+    "aiEnabled": false,
+    "telemetryMode": "minimal",
+    "restorePoint": true
+  },
+  "releaseGates": [
+    "boot",
+    "install",
+    "firstLogon",
+    "provisioning",
+    "shell",
+    "rebootPersistence",
+    "recovery"
+  ]
+}
