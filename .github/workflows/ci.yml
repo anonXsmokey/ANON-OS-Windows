@@ -1,0 +1,40 @@
+name: ANON OS CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  shell-build:
+    name: Build ANON Shell
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore
+        run: dotnet restore ux/shell/M0/ANON.Shell.M0.csproj
+
+      - name: Build x64
+        run: dotnet build ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --no-restore --arch x64
+
+      - name: Publish smoke build
+        run: dotnet publish ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --runtime win-x64 --self-contained true --no-restore --output build/ci-publish
+
+      - name: Verify executable
+        shell: pwsh
+        run: |
+          $exe = Resolve-Path build/ci-publish/ANON.Shell.M0.exe -ErrorAction SilentlyContinue
+          if (-not $exe) { throw 'ANON.Shell.M0.exe was not produced.' }
+          Write-Host "Shell build PASS: $exe"
