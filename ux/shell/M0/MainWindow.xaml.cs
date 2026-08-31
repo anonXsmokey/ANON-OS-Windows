@@ -22,7 +22,7 @@ public sealed partial class MainWindow : Window
     private readonly PreferencesStore _preferencesStore = new();
     private readonly SystemTelemetry _telemetry = new();
     private readonly DispatcherQueueTimer _telemetryTimer;
-    private FileBrowserWindow? _fileBrowserWindow;
+    private FileBrowserWindowCompat? _fileBrowserWindow;
     private AppLibraryWindow? _appsWindow;
     private AppLibraryWindow? _gamesWindow;
     private SystemWindow? _systemWindow;
@@ -37,273 +37,31 @@ public sealed partial class MainWindow : Window
         _visualRuntime.Changed += (_, _) => { ApplyRuntimeState(); SavePreferences(); };
         _themeRuntime.Changed += (_, _) => { ApplyRuntimeState(); SavePreferences(); };
         _layoutRuntime.Changed += (_, _) => { ApplyRuntimeState(); SavePreferences(); };
-        ApplySavedPreferences();
-        ApplyRuntimeState();
-
+        ApplySavedPreferences(); ApplyRuntimeState();
         _telemetryTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-        _telemetryTimer.Interval = TimeSpan.FromSeconds(1);
-        _telemetryTimer.Tick += (_, _) => UpdateTelemetry();
-        _telemetryTimer.Start();
-        UpdateTelemetry();
+        _telemetryTimer.Interval = TimeSpan.FromSeconds(1); _telemetryTimer.Tick += (_, _) => UpdateTelemetry(); _telemetryTimer.Start(); UpdateTelemetry();
     }
 
-    private void ApplySavedPreferences()
-    {
-        _loadingPreferences = true;
-        try
-        {
-            var preferences = _preferencesStore.Load();
-            var layouts = new LayoutCatalog();
-            PreferenceMapper.Apply(preferences, _themes, _themeRuntime, layouts, _layoutRuntime, _visualRuntime, _widgetRuntime);
-            VisualProfile.SelectedIndex = preferences.VisualProfileId switch
-            {
-                "maximum-performance" => 0,
-                "gaming" => 1,
-                "immersive" => 3,
-                _ => 2
-            };
-            ReducedMotion.IsChecked = preferences.ReducedMotion;
-        }
-        finally { _loadingPreferences = false; }
-    }
-
-    private void SavePreferences()
-    {
-        if (_loadingPreferences) return;
-        _preferencesStore.Save(new UserPreferences(
-            ThemeId: _themeRuntime.Current.Id,
-            LayoutId: _layoutRuntime.Current.Id,
-            VisualProfileId: _visualRuntime.Current.Id,
-            ReducedMotion: _visualRuntime.ReducedMotion,
-            WidgetsEnabled: _widgetRuntime.Widgets.Any(w => w.Enabled)));
-    }
-
+    private void ApplySavedPreferences() { _loadingPreferences = true; try { var preferences = _preferencesStore.Load(); var layouts = new LayoutCatalog(); PreferenceMapper.Apply(preferences, _themes, _themeRuntime, layouts, _layoutRuntime, _visualRuntime, _widgetRuntime); VisualProfile.SelectedIndex = preferences.VisualProfileId switch { "maximum-performance" => 0, "gaming" => 1, "immersive" => 3, _ => 2 }; ReducedMotion.IsChecked = preferences.ReducedMotion; } finally { _loadingPreferences = false; } }
+    private void SavePreferences() { if (_loadingPreferences) return; _preferencesStore.Save(new UserPreferences(ThemeId: _themeRuntime.Current.Id, LayoutId: _layoutRuntime.Current.Id, VisualProfileId: _visualRuntime.Current.Id, ReducedMotion: _visualRuntime.ReducedMotion, WidgetsEnabled: _widgetRuntime.Widgets.Any(w => w.Enabled))); }
     private void SetStatus(string text) => StatusText.Text = text;
-
-    private void ApplyRuntimeState()
-    {
-        var model = _desktop.RenderModel;
-        var motion = model.Transition.Enabled ? $"motion {model.Transition.DurationMilliseconds}ms" : "motion off";
-        SetStatus($"{model.ThemeId} • {model.LayoutId} • {motion}{(_desktop.GamingMode ? " • GAMING" : "")}");
-        if (_surfaceLoaded) PlaySurfaceTransition(model.Transition);
-    }
-
-    private void SurfaceRoot_Loaded(object sender, RoutedEventArgs e)
-    {
-        _surfaceLoaded = true;
-        PlaySurfaceTransition(_desktop.RenderModel.Transition);
-    }
-
-    private void PlaySurfaceTransition(TransitionPolicy transition)
-    {
-        if (!transition.Enabled)
-        {
-            SurfaceRoot.Opacity = 1;
-            SurfaceTransform.ScaleX = 1;
-            SurfaceTransform.ScaleY = 1;
-            return;
-        }
-
-        var duration = Math.Clamp(transition.DurationMilliseconds, 100, 700);
-        var intensity = Math.Clamp(transition.Intensity, 0, 1);
-        var startOpacity = 1 - (0.16 * intensity);
-        var startScale = 1 - (0.018 * intensity);
-        SurfaceRoot.Opacity = startOpacity;
-        SurfaceTransform.ScaleX = startScale;
-        SurfaceTransform.ScaleY = startScale;
-
-        var easing = new CubicEase { EasingMode = EasingMode.EaseOut };
-        var storyboard = new Storyboard();
-        var opacity = new DoubleAnimation { From = startOpacity, To = 1, Duration = TimeSpan.FromMilliseconds(duration), EasingFunction = easing };
-        var scaleX = new DoubleAnimation { From = startScale, To = 1, Duration = TimeSpan.FromMilliseconds(duration), EasingFunction = easing };
-        var scaleY = new DoubleAnimation { From = startScale, To = 1, Duration = TimeSpan.FromMilliseconds(duration), EasingFunction = easing };
-
-        Storyboard.SetTarget(opacity, SurfaceRoot);
-        Storyboard.SetTargetProperty(opacity, "Opacity");
-        Storyboard.SetTarget(scaleX, SurfaceTransform);
-        Storyboard.SetTargetProperty(scaleX, "ScaleX");
-        Storyboard.SetTarget(scaleY, SurfaceTransform);
-        Storyboard.SetTargetProperty(scaleY, "ScaleY");
-
-        storyboard.Children.Add(opacity);
-        storyboard.Children.Add(scaleX);
-        storyboard.Children.Add(scaleY);
-        storyboard.Begin();
-    }
-
-    private void UpdateTelemetry()
-    {
-        var snapshot = _telemetry.Read();
-        CpuText.Text = $"CPU     {snapshot.CpuPercent:0}%";
-        MemoryText.Text = $"MEMORY  {snapshot.MemoryUsedPercent:0}% ({FormatBytes(snapshot.MemoryUsedBytes)} / {FormatBytes(snapshot.MemoryTotalBytes)})";
-        CpuBar.Value = snapshot.CpuPercent;
-        MemoryBar.Value = snapshot.MemoryUsedPercent;
-    }
-
-    private static string FormatBytes(long bytes)
-    {
-        if (bytes < 1024L * 1024L * 1024L) return $"{bytes / 1024d / 1024d:0.0} MB";
-        return $"{bytes / 1024d / 1024d / 1024d:0.0} GB";
-    }
-
-    private void Play_Click(object sender, RoutedEventArgs e)
-    {
-        _desktop.EnterGamingMode();
-        SetStatus("Gaming Mode enabled. Choose a game to launch.");
-        Games_Click(this, new RoutedEventArgs());
-    }
-
+    private void ApplyRuntimeState() { var model = _desktop.RenderModel; var motion = model.Transition.Enabled ? $"motion {model.Transition.DurationMilliseconds}ms" : "motion off"; SetStatus($"{model.ThemeId} • {model.LayoutId} • {motion}{(_desktop.GamingMode ? " • GAMING" : "")}"); if (_surfaceLoaded) PlaySurfaceTransition(model.Transition); }
+    private void SurfaceRoot_Loaded(object sender, RoutedEventArgs e) { _surfaceLoaded = true; PlaySurfaceTransition(_desktop.RenderModel.Transition); }
+    private void PlaySurfaceTransition(TransitionPolicy transition) { if (!transition.Enabled) { SurfaceRoot.Opacity = 1; SurfaceTransform.ScaleX = 1; SurfaceTransform.ScaleY = 1; return; } var duration = Math.Clamp(transition.DurationMilliseconds, 100, 700); var intensity = Math.Clamp(transition.Intensity, 0, 1); var startOpacity = 1 - (0.16 * intensity); var startScale = 1 - (0.018 * intensity); SurfaceRoot.Opacity = startOpacity; SurfaceTransform.ScaleX = startScale; SurfaceTransform.ScaleY = startScale; var easing = new CubicEase { EasingMode = EasingMode.EaseOut }; var storyboard = new Storyboard(); var opacity = new DoubleAnimation { From = startOpacity, To = 1, Duration = TimeSpan.FromMilliseconds(duration), EasingFunction = easing }; var scaleX = new DoubleAnimation { From = startScale, To = 1, Duration = TimeSpan.FromMilliseconds(duration), EasingFunction = easing }; var scaleY = new DoubleAnimation { From = startScale, To = 1, Duration = TimeSpan.FromMilliseconds(duration), EasingFunction = easing }; Storyboard.SetTarget(opacity, SurfaceRoot); Storyboard.SetTargetProperty(opacity, "Opacity"); Storyboard.SetTarget(scaleX, SurfaceTransform); Storyboard.SetTargetProperty(scaleX, "ScaleX"); Storyboard.SetTarget(scaleY, SurfaceTransform); Storyboard.SetTargetProperty(scaleY, "ScaleY"); storyboard.Children.Add(opacity); storyboard.Children.Add(scaleX); storyboard.Children.Add(scaleY); storyboard.Begin(); }
+    private void UpdateTelemetry() { var snapshot = _telemetry.Read(); CpuText.Text = $"CPU     {snapshot.CpuPercent:0}%"; MemoryText.Text = $"MEMORY  {snapshot.MemoryUsedPercent:0}% ({FormatBytes(snapshot.MemoryUsedBytes)} / {FormatBytes(snapshot.MemoryTotalBytes)})"; CpuBar.Value = snapshot.CpuPercent; MemoryBar.Value = snapshot.MemoryUsedPercent; }
+    private static string FormatBytes(long bytes) => bytes < 1024L * 1024L * 1024L ? $"{bytes / 1024d / 1024d:0.0} MB" : $"{bytes / 1024d / 1024d / 1024d:0.0} GB";
+    private void Play_Click(object sender, RoutedEventArgs e) { _desktop.EnterGamingMode(); SetStatus("Gaming Mode enabled. Choose a game to launch."); Games_Click(this, new RoutedEventArgs()); }
     private void Library_Click(object sender, RoutedEventArgs e) => Apps_Click(sender, e);
-
-    private void System_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            if (_systemWindow is null)
-            {
-                _systemWindow = new SystemWindow();
-                _systemWindow.Closed += (_, _) => _systemWindow = null;
-            }
-            _systemWindow.Activate();
-            LauncherPanel.Visibility = Visibility.Collapsed;
-            SetStatus("ANON System opened.");
-        }
-        catch (Exception ex) { SetStatus($"Could not open ANON System: {ex.Message}"); }
-    }
-
-    private void Home_Click(object sender, RoutedEventArgs e)
-    {
-        LauncherPanel.Visibility = Visibility.Collapsed;
-        SetStatus(_desktop.GamingMode ? "Home • Gaming Mode active." : "Home.");
-    }
-
-    private void Files_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            if (_fileBrowserWindow is null)
-            {
-                _fileBrowserWindow = new FileBrowserWindow();
-                _fileBrowserWindow.Closed += (_, _) => _fileBrowserWindow = null;
-            }
-            _fileBrowserWindow.Activate();
-            LauncherPanel.Visibility = Visibility.Collapsed;
-            SetStatus("ANON Files opened.");
-        }
-        catch (Exception ex) { SetStatus($"Could not open ANON Files: {ex.Message}"); }
-    }
-
-    private void Apps_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            if (_appsWindow is null)
-            {
-                _appsWindow = new AppLibraryWindow(false);
-                _appsWindow.Closed += (_, _) => _appsWindow = null;
-            }
-            _appsWindow.Activate();
-            LauncherPanel.Visibility = Visibility.Collapsed;
-            SetStatus("ANON Apps opened.");
-        }
-        catch (Exception ex) { SetStatus($"Could not open ANON Apps: {ex.Message}"); }
-    }
-
-    private void Games_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            if (_gamesWindow is null)
-            {
-                _gamesWindow = new AppLibraryWindow(true);
-                _gamesWindow.Closed += (_, _) => _gamesWindow = null;
-            }
-            _gamesWindow.Activate();
-            LauncherPanel.Visibility = Visibility.Collapsed;
-            SetStatus(_desktop.GamingMode ? "ANON Games opened • Gaming Mode active." : "ANON Games opened.");
-        }
-        catch (Exception ex) { SetStatus($"Could not open ANON Games: {ex.Message}"); }
-    }
-
+    private void System_Click(object sender, RoutedEventArgs e) { try { if (_systemWindow is null) { _systemWindow = new SystemWindow(); _systemWindow.Closed += (_, _) => _systemWindow = null; } _systemWindow.Activate(); LauncherPanel.Visibility = Visibility.Collapsed; SetStatus("ANON System opened."); } catch (Exception ex) { SetStatus($"Could not open ANON System: {ex.Message}"); } }
+    private void Home_Click(object sender, RoutedEventArgs e) { LauncherPanel.Visibility = Visibility.Collapsed; SetStatus(_desktop.GamingMode ? "Home • Gaming Mode active." : "Home."); }
+    private void Files_Click(object sender, RoutedEventArgs e) { try { if (_fileBrowserWindow is null) { _fileBrowserWindow = new FileBrowserWindowCompat(); _fileBrowserWindow.Closed += (_, _) => _fileBrowserWindow = null; } _fileBrowserWindow.Activate(); LauncherPanel.Visibility = Visibility.Collapsed; SetStatus("ANON Files opened."); } catch (Exception ex) { SetStatus($"Could not open ANON Files: {ex.Message}"); } }
+    private void Apps_Click(object sender, RoutedEventArgs e) { try { if (_appsWindow is null) { _appsWindow = new AppLibraryWindow(false); _appsWindow.Closed += (_, _) => _appsWindow = null; } _appsWindow.Activate(); LauncherPanel.Visibility = Visibility.Collapsed; SetStatus("ANON Apps opened."); } catch (Exception ex) { SetStatus($"Could not open ANON Apps: {ex.Message}"); } }
+    private void Games_Click(object sender, RoutedEventArgs e) { try { if (_gamesWindow is null) { _gamesWindow = new AppLibraryWindow(true); _gamesWindow.Closed += (_, _) => _gamesWindow = null; } _gamesWindow.Activate(); LauncherPanel.Visibility = Visibility.Collapsed; SetStatus(_desktop.GamingMode ? "ANON Games opened • Gaming Mode active." : "ANON Games opened."); } catch (Exception ex) { SetStatus($"Could not open ANON Games: {ex.Message}"); } }
     private void Ai_Click(object sender, RoutedEventArgs e) => SetStatus("ANON AI is optional and remains disabled in M0.");
-
-    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        var query = SearchBox.Text.Trim();
-        var results = _launcherCatalog.Search(query);
-        LauncherResults.ItemsSource = results;
-        LauncherPanel.Visibility = results.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        if (query.Length > 0)
-            SetStatus(results.Count == 0 ? $"No ANON launcher matches for \"{query}\"." : $"{results.Count} launcher result{(results.Count == 1 ? "" : "s")}.");
-    }
-
-    private void SearchBox_KeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        if (e.Key == Windows.System.VirtualKey.Escape)
-        {
-            SearchBox.Text = string.Empty;
-            SearchBox.Focus(FocusState.Programmatic);
-            e.Handled = true;
-            return;
-        }
-
-        if (e.Key != Windows.System.VirtualKey.Enter) return;
-        var command = _launcherCatalog.Search(SearchBox.Text.Trim()).FirstOrDefault();
-        if (command is null) return;
-        LaunchCommand(command);
-        e.Handled = true;
-    }
-
-    private void LauncherResults_ItemClick(object sender, ItemClickEventArgs e)
-    {
-        if (e.ClickedItem is LauncherCommand command) LaunchCommand(command);
-    }
-
-    private void LaunchCommand(LauncherCommand command)
-    {
-        try
-        {
-            switch (command.Id)
-            {
-                case "files":
-                    Files_Click(this, new RoutedEventArgs());
-                    break;
-                case "apps":
-                    Apps_Click(this, new RoutedEventArgs());
-                    break;
-                case "games":
-                    Games_Click(this, new RoutedEventArgs());
-                    break;
-                case "system":
-                    System_Click(this, new RoutedEventArgs());
-                    break;
-                default:
-                    _launcher.Launch(command.Target);
-                    SetStatus($"Opened {command.Title}.");
-                    break;
-            }
-            LauncherPanel.Visibility = Visibility.Collapsed;
-            SearchBox.Text = string.Empty;
-        }
-        catch (Exception ex)
-        {
-            SetStatus($"Could not open {command.Title}: {ex.Message}");
-        }
-    }
-
-    private void VisualProfile_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (VisualProfile.SelectedItem is not ComboBoxItem item) return;
-        var policy = item.Content?.ToString() switch
-        {
-            "Maximum Performance" => VisualPolicies.MaximumPerformance,
-            "Gaming" => VisualPolicies.Gaming,
-            "Immersive" => VisualPolicies.Immersive,
-            _ => VisualPolicies.Balanced
-        };
-        _visualRuntime.Apply(policy);
-    }
-
-    private void ReducedMotion_Click(object sender, RoutedEventArgs e) =>
-        _visualRuntime.SetReducedMotion(ReducedMotion.IsChecked == true);
+    private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) { var query = SearchBox.Text.Trim(); var results = _launcherCatalog.Search(query); LauncherResults.ItemsSource = results; LauncherPanel.Visibility = results.Count > 0 ? Visibility.Visible : Visibility.Collapsed; if (query.Length > 0) SetStatus(results.Count == 0 ? $"No ANON launcher matches for \"{query}\"." : $"{results.Count} launcher result{(results.Count == 1 ? "" : "s")}. "); }
+    private void SearchBox_KeyDown(object sender, KeyRoutedEventArgs e) { if (e.Key == Windows.System.VirtualKey.Escape) { SearchBox.Text = string.Empty; SearchBox.Focus(FocusState.Programmatic); e.Handled = true; return; } if (e.Key != Windows.System.VirtualKey.Enter) return; var command = _launcherCatalog.Search(SearchBox.Text.Trim()).FirstOrDefault(); if (command is null) return; LaunchCommand(command); e.Handled = true; }
+    private void LauncherResults_ItemClick(object sender, ItemClickEventArgs e) { if (e.ClickedItem is LauncherCommand command) LaunchCommand(command); }
+    private void LaunchCommand(LauncherCommand command) { try { switch (command.Id) { case "files": Files_Click(this, new RoutedEventArgs()); break; case "apps": Apps_Click(this, new RoutedEventArgs()); break; case "games": Games_Click(this, new RoutedEventArgs()); break; case "system": System_Click(this, new RoutedEventArgs()); break; default: _launcher.Launch(command.Target); SetStatus($"Opened {command.Title}."); break; } LauncherPanel.Visibility = Visibility.Collapsed; SearchBox.Text = string.Empty; } catch (Exception ex) { SetStatus($"Could not open {command.Title}: {ex.Message}"); } }
+    private void VisualProfile_SelectionChanged(object sender, SelectionChangedEventArgs e) { if (VisualProfile.SelectedItem is not ComboBoxItem item) return; var policy = item.Content?.ToString() switch { "Maximum Performance" => VisualPolicies.MaximumPerformance, "Gaming" => VisualPolicies.Gaming, "Immersive" => VisualPolicies.Immersive, _ => VisualPolicies.Balanced }; _visualRuntime.Apply(policy); }
+    private void ReducedMotion_Click(object sender, RoutedEventArgs e) => _visualRuntime.SetReducedMotion(ReducedMotion.IsChecked == true);
 }
