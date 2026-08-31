@@ -2,7 +2,7 @@ using Anon.Os.ControlCenter;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Windows.UI;
+using Microsoft.UI;
 
 namespace Anon.Shell.M0.Runtime;
 
@@ -15,11 +15,10 @@ public sealed class ControlCenterWindow : Window
     private readonly TextBlock _status = new();
 
     private static readonly SolidColorBrush Background = new(Colors.Black);
-    private static readonly SolidColorBrush Surface = new(Color.FromArgb(255, 15, 19, 29));
-    private static readonly SolidColorBrush Border = new(Color.FromArgb(255, 48, 56, 72));
-    private static readonly SolidColorBrush Text = new(Color.FromArgb(255, 238, 242, 250));
-    private static readonly SolidColorBrush Muted = new(Color.FromArgb(255, 145, 157, 177));
-    private static readonly SolidColorBrush Accent = new(Color.FromArgb(255, 99, 163, 255));
+    private static readonly SolidColorBrush Surface = new(Windows.UI.Color.FromArgb(255, 15, 19, 29));
+    private static readonly SolidColorBrush Border = new(Windows.UI.Color.FromArgb(255, 48, 56, 72));
+    private static readonly SolidColorBrush Text = new(Windows.UI.Color.FromArgb(255, 238, 242, 250));
+    private static readonly SolidColorBrush Muted = new(Windows.UI.Color.FromArgb(255, 145, 157, 177));
 
     public ControlCenterWindow()
     {
