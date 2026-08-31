@@ -17,8 +17,4 @@
     <ProjectReference Include="../../../core/Anon.Os.Core.csproj" />
     <ProjectReference Include="../../../ai/Anon.Os.Ai.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="runtime/FileBrowserWindow.cs" />
-    <Compile Remove="runtime/FileBrowserWindowCompat.cs" />
-  </ItemGroup>
 </Project>
