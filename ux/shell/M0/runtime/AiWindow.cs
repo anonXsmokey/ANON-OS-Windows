@@ -1,8 +1,8 @@
 using Anon.Os.Ai;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
-using Windows.UI;
 
 namespace Anon.Shell.M0.Runtime;
 
@@ -12,7 +12,6 @@ public sealed class AiWindow : Window
     private readonly TextBox _prompt = new();
     private readonly TextBlock _response = new();
     private readonly Button _ask = new();
-
     private static readonly SolidColorBrush Background = new(Colors.Black);
     private static readonly SolidColorBrush Surface = new(Color.FromArgb(255, 15, 19, 29));
     private static readonly SolidColorBrush Border = new(Color.FromArgb(255, 48, 56, 72));
@@ -47,11 +46,7 @@ public sealed class AiWindow : Window
     {
         if (string.IsNullOrWhiteSpace(_prompt.Text)) return;
         _ask.IsEnabled = false;
-        try
-        {
-            var result = await _service.AskAsync(new AiRequest(_prompt.Text));
-            _response.Text = result.Text;
-        }
+        try { var result = await _service.AskAsync(new AiRequest(_prompt.Text)); _response.Text = result.Text; }
         catch (Exception ex) { _response.Text = $"ANON AI error: {ex.Message}"; }
         finally { _ask.IsEnabled = true; }
     }
