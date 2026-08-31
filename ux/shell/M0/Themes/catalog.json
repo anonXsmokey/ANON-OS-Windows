@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": 1,
+  "defaultTheme": "anon-core",
+  "themes": [
+    {
+      "id": "anon-core",
+      "name": "ANON Core",
+      "mode": "dark",
+      "accent": "#B56CFF",
+      "background": "#090A0F",
+      "surface": "#11131A",
+      "surfaceStrong": "#181B24",
+      "text": "#F4F2FA",
+      "mutedText": "#9B9AA6",
+      "border": "#292B36",
+      "wallpaper": "anon-core"
+    },
+    {
+      "id": "aurora",
+      "name": "Aurora",
+      "mode": "dark",
+      "accent": "#7C8CFF",
+      "background": "#080B14",
+      "surface": "#101523",
+      "surfaceStrong": "#182035",
+      "text": "#F3F6FF",
+      "mutedText": "#9AA6C4",
+      "border": "#29324A",
+      "wallpaper": "aurora"
+    },
+    {
+      "id": "carbon",
+      "name": "Carbon",
+      "mode": "dark",
+      "accent": "#D8D8E0",
+      "background": "#070707",
+      "surface": "#101010",
+      "surfaceStrong": "#191919",
+      "text": "#F7F7F7",
+      "mutedText": "#929292",
+      "border": "#292929",
+      "wallpaper": "carbon"
+    },
+    {
+      "id": "pulse",
+      "name": "Pulse",
+      "mode": "dark",
+      "accent": "#FF4F9A",
+      "background": "#0D080D",
+      "surface": "#181019",
+      "surfaceStrong": "#241522",
+      "text": "#FFF3FA",
+      "mutedText": "#B69AAA",
+      "border": "#3A2636",
+      "wallpaper": "pulse"
+    },
+    {
+      "id": "light",
+      "name": "ANON Light",
+      "mode": "light",
+      "accent": "#7146D9",
+      "background": "#F5F4F8",
+      "surface": "#FFFFFF",
+      "surfaceStrong": "#ECEAF2",
+      "text": "#17151C",
+      "mutedText": "#6E6A78",
+      "border": "#D8D4E0",
+      "wallpaper": "light"
+    },
+    {
+      "id": "crimson",
+      "name": "Crimson",
+      "mode": "dark",
+      "accent": "#FF5266",
+      "background": "#0D080A",
+      "surface": "#171012",
+      "surfaceStrong": "#24171A",
+      "text": "#FFF4F5",
+      "mutedText": "#B79B9F",
+      "border": "#39272A",
+      "wallpaper": "crimson"
+    }
+  ]
+}
