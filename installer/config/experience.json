@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "product": {
+    "name": "ANON-OS",
+    "edition": "Windows",
+    "uiReference": "Fedora/GNOME-inspired, independently implemented",
+    "defaultTheme": "anon-dark",
+    "defaultMotion": "full"
+  },
+  "themes": [
+    "anon-dark",
+    "anon-light",
+    "anon-aurora",
+    "anon-carbon",
+    "anon-crimson"
+  ],
+  "installer": {
+    "stages": [
+      "welcome",
+      "preflight",
+      "license",
+      "disk",
+      "install",
+      "configure",
+      "firstBoot",
+      "validation"
+    ],
+    "networkRequiredForCoreInstall": false,
+    "showMicrosoftOobe": false,
+    "destructiveDiskActionsRequireConfirmation": true,
+    "enableRecoveryEntry": true
+  },
+  "profiles": {
+    "balanced": {
+      "label": "ANON Balanced",
+      "description": "Everyday performance, battery life and responsiveness."
+    },
+    "gaming": {
+      "label": "ANON Gaming",
+      "description": "Gaming-focused defaults with reversible performance policies."
+    },
+    "creator": {
+      "label": "ANON Creator",
+      "description": "A responsive profile for creative and production workloads."
+    },
+    "custom": {
+      "label": "Custom",
+      "description": "Choose components and policies individually."
+    }
+  },
+  "ai": {
+    "enabledByDefault": false,
+    "requiresNetwork": false,
+    "providerCredentialsFromSource": false,
+    "localProviderSupported": true,
+    "remoteProviderSupported": true
+  },
+  "accessibility": {
+    "keyboardNavigation": true,
+    "scalableText": true,
+    "reducedMotion": true,
+    "highContrast": true
+  }
+}
