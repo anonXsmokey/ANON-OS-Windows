@@ -5,9 +5,10 @@ function Find-Tool([string]$Name,[string[]]$Candidates){$cmd=Get-Command $Name -
 $dism=Find-Tool 'dism.exe' @("$env:SystemRoot\System32\dism.exe")
 $reg=Find-Tool 'reg.exe' @("$env:SystemRoot\System32\reg.exe")
 $oscdimg=Find-Tool 'oscdimg.exe' @("E:\Windows Kits\10\ADK\Assessment and Deployment Kit\Deployment Tools\amd64\Oscdimg\oscdimg.exe","E:\Windows Kits\10\ADK\Assessment and Deployment Kit\Deployment Tools\x86\Oscdimg\oscdimg.exe")
+$robocopy=Find-Tool 'robocopy.exe' @("$env:SystemRoot\System32\robocopy.exe")
 if(-not(Test-Path -LiteralPath $WindowsIso)){throw "Windows ISO not found: $WindowsIso"};if(-not(Test-Path -LiteralPath $ShellPublish)){throw "Shell publish directory not found: $ShellPublish"}
 $iso=(Resolve-Path $WindowsIso).Path;New-Item -ItemType Directory -Force -Path $OutputRoot|Out-Null;$stamp=Get-Date -Format 'yyyyMMdd-HHmmss';$work=Join-Path $OutputRoot "iso-$stamp";$source=Join-Path $work 'source';$mount=Join-Path $work 'mount';New-Item -ItemType Directory -Force -Path $source,$mount|Out-Null
-$disk=Mount-DiskImage -ImagePath $iso -PassThru;try{$vol=$disk|Get-Volume|Where-Object DriveLetter|Select-Object -First 1;if(-not$vol){throw 'Could not resolve mounted Windows ISO drive.'};Copy-Item "$($vol.DriveLetter):\*" $source -Recurse -Force}finally{Dismount-DiskImage -ImagePath $iso}
+$disk=Mount-DiskImage -ImagePath $iso -PassThru;try{$vol=$disk|Get-Volume|Where-Object DriveLetter|Select-Object -First 1;if(-not$vol){throw 'Could not resolve mounted Windows ISO drive.'};&$robocopy "$($vol.DriveLetter):\" $source /E /COPY:DAT /DCOPY:DAT /R:1 /W:1 /NFL /NDL /NJH /NJS | Out-Null;if($LASTEXITCODE -gt 7){throw "ISO source copy failed: $LASTEXITCODE"}}finally{Dismount-DiskImage -ImagePath $iso}
 $wim=Join-Path $source 'sources\install.wim';$esd=Join-Path $source 'sources\install.esd';if(-not(Test-Path $wim)){if(-not(Test-Path $esd)){throw 'Windows source contains neither install.wim nor install.esd.'};$export=Join-Path $work 'install.wim';&$dism /Export-Image /SourceImageFile:$esd /SourceIndex:$ImageIndex /DestinationImageFile:$export /Compress:max /CheckIntegrity;if($LASTEXITCODE){throw "DISM export failed: $LASTEXITCODE"};Remove-Item $esd -Force;Move-Item $export $wim -Force}
 # ISO contents originate from a read-only mounted filesystem; explicitly make the copied WIM writable for offline servicing.
 $item=Get-Item -LiteralPath $wim;$item.IsReadOnly=$false;icacls.exe $wim /inheritance:e /grant:r "$env:USERNAME:(F)" /c | Out-Null
@@ -21,7 +22,24 @@ try{
 }finally{&$dism /Unmount-Wim /MountDir:$mount /Commit;if($LASTEXITCODE){throw "DISM commit failed: $LASTEXITCODE"}}
 $rootMarker=Join-Path $source 'ANON-OS.txt';"ANON OS Windows`r`nArchitecture: $Architecture`r`nImageIndex: $ImageIndex`r`nShell: ProgramData/ANON/Shell/M0/ANON.Shell.M0.exe`r`n"|Set-Content $rootMarker -Encoding UTF8
 $bootEtfs=Join-Path $source 'boot\etfsboot.com';$efi=Join-Path $source 'efi\microsoft\boot\efisys.bin';if(-not(Test-Path $bootEtfs)){throw 'BIOS boot image missing.'};if(-not(Test-Path $efi)){throw 'UEFI boot image missing.'}
-$outIso=Join-Path $OutputRoot "ANON-OS-Windows-$stamp-$Architecture.iso";&$oscdimg -m -o -u2 -udfver102 "-bootdata:2#p0,e,b$bootEtfs#pEF,e,b$efi" $source $outIso;if($LASTEXITCODE){throw "oscdimg failed: $LASTEXITCODE"}
+# Microsoft requires a boot-order file for images larger than 4.5 GB so the El Torito boot files are placed early in the image.
+$bootOrder=Join-Path $work 'bootOrder.txt';@(
+ 'boot\bcd'
+ 'boot\boot.sdi'
+ 'boot\bootfix.bin'
+ 'boot\bootsect.exe'
+ 'boot\etfsboot.com'
+ 'boot\memtest.efi'
+ 'boot\memtest.exe'
+ 'boot\en-us\bootsect.exe.mui'
+ 'boot\fonts\chs_boot.ttf'
+ 'boot\fonts\cht_boot.ttf'
+ 'boot\fonts\jpn_boot.ttf'
+ 'boot\fonts\kor_boot.ttf'
+ 'boot\fonts\wgl4_boot.ttf'
+ 'sources\boot.wim'
+) | Set-Content $bootOrder -Encoding ASCII
+$outIso=Join-Path $OutputRoot "ANON-OS-Windows-$stamp-$Architecture.iso";&$oscdimg -m -o -u2 -udfver102 "-yo$bootOrder" "-bootdata:2#p0,e,b$bootEtfs#pEF,e,b$efi" $source $outIso;if($LASTEXITCODE){throw "oscdimg failed: $LASTEXITCODE"}
 $hash=(Get-FileHash $outIso -Algorithm SHA256).Hash;"$hash  $(Split-Path $outIso -Leaf)"|Set-Content (Join-Path $OutputRoot 'SHA256SUMS.txt') -Encoding ASCII
 [ordered]@{Product='ANON OS Windows';Architecture=$Architecture;ImageIndex=$ImageIndex;BuiltUtc=[DateTime]::UtcNow.ToString('o');SourceIsoSha256=(Get-FileHash $iso -Algorithm SHA256).Hash;OutputIso=(Split-Path $outIso -Leaf);OutputIsoSha256=$hash;Validation='STRUCTURE-VALIDATED-VM-REQUIRED'}|ConvertTo-Json|Set-Content (Join-Path $OutputRoot 'BUILD-MANIFEST.json') -Encoding UTF8
 Write-Host "ISO assembled: $outIso";if(-not$KeepWork){Remove-Item $work -Recurse -Force}
