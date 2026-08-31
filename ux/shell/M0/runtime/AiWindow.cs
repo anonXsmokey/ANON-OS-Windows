@@ -13,10 +13,10 @@ public sealed class AiWindow : Window
     private readonly TextBlock _response = new();
     private readonly Button _ask = new();
     private static readonly SolidColorBrush Background = new(Colors.Black);
-    private static readonly SolidColorBrush Surface = new(Color.FromArgb(255, 15, 19, 29));
-    private static readonly SolidColorBrush Border = new(Color.FromArgb(255, 48, 56, 72));
-    private static readonly SolidColorBrush Text = new(Color.FromArgb(255, 238, 242, 250));
-    private static readonly SolidColorBrush Muted = new(Color.FromArgb(255, 145, 157, 177));
+    private static readonly SolidColorBrush Surface = new(Windows.UI.Color.FromArgb(255, 15, 19, 29));
+    private static readonly SolidColorBrush Border = new(Windows.UI.Color.FromArgb(255, 48, 56, 72));
+    private static readonly SolidColorBrush Text = new(Windows.UI.Color.FromArgb(255, 238, 242, 250));
+    private static readonly SolidColorBrush Muted = new(Windows.UI.Color.FromArgb(255, 145, 157, 177));
 
     public AiWindow()
     {
@@ -29,11 +29,11 @@ public sealed class AiWindow : Window
 
         var header = new StackPanel { Spacing = 4, Margin = new Thickness(0, 0, 0, 18) };
         header.Children.Add(new TextBlock { Text = "ANON AI", FontSize = 26, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold, Foreground = Text });
-        header.Children.Add(new TextBlock { Text = "Optional intelligence layer. No provider is contacted unless configured.", FontSize = 12, Foreground = Muted });
+        header.Children.Add(new TextBlock { Text = "Local-first intelligence powered by your configured provider.", FontSize = 12, Foreground = Muted });
         root.Children.Add(header);
 
         var responseCard = new Border { Background = Surface, BorderBrush = Border, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(18) };
-        _response.Text = "AI is ready. Configure ANON_AI_ENDPOINT, ANON_AI_MODEL and ANON_AI_API_KEY to enable an OpenAI-compatible provider.";
+        _response.Text = "ANON AI is ready. The default provider is local Ollama at http://localhost:11434 using gemma3:4b.";
         _response.TextWrapping = TextWrapping.Wrap; _response.Foreground = Muted; _response.FontSize = 13;
         responseCard.Child = _response; Grid.SetRow(responseCard, 1); root.Children.Add(responseCard);
 
