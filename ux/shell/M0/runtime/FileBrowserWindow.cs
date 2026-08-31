@@ -1,7 +1,5 @@
 using System.Diagnostics;
 using System.IO;
-using Microsoft.UI;
-using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -13,9 +11,9 @@ public sealed class FileBrowserWindow : Window
     private readonly ListView _list = new();
     private readonly TextBlock _path = new();
     private string _currentPath = string.Empty;
-    private static readonly SolidColorBrush BackgroundBrush = new(Colors.Black);
-    private static readonly SolidColorBrush TextBrush = new(Color.FromArgb(255,238,242,250));
-    private static readonly SolidColorBrush MutedBrush = new(Color.FromArgb(255,145,157,177));
+    private static readonly SolidColorBrush BackgroundBrush = new(Microsoft.UI.Colors.Black);
+    private static readonly SolidColorBrush TextBrush = new(Microsoft.UI.ColorHelper.FromArgb(255,238,242,250));
+    private static readonly SolidColorBrush MutedBrush = new(Microsoft.UI.ColorHelper.FromArgb(255,145,157,177));
 
     public FileBrowserWindow()
     {
@@ -27,7 +25,7 @@ public sealed class FileBrowserWindow : Window
         var header=new Grid{Margin=new Thickness(0,0,0,14)};
         header.ColumnDefinitions.Add(new ColumnDefinition{Width=GridLength.Auto});
         header.ColumnDefinitions.Add(new ColumnDefinition{Width=new GridLength(1,GridUnitType.Star)});
-        header.Children.Add(new TextBlock{Text="ANON FILES",FontSize=24,FontWeight=FontWeights.SemiBold,Foreground=TextBrush});
+        header.Children.Add(new TextBlock{Text="ANON FILES",FontSize=24,Foreground=TextBrush});
         _path.Text="THIS PC";_path.FontSize=12;_path.Foreground=MutedBrush;_path.VerticalAlignment=VerticalAlignment.Center;Grid.SetColumn(_path,1);header.Children.Add(_path);
         root.Children.Add(header);
         var toolbar=new StackPanel{Orientation=Orientation.Horizontal,Spacing=8,Margin=new Thickness(0,0,0,12)};
