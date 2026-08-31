@@ -51,17 +51,34 @@ public sealed class ThemeRuntime
         if (!resources.TryGetValue(key, out var resource) || resource is not SolidColorBrush brush)
             return;
 
+        if (!TryParseColor(value, out var color))
+            return;
+
+        brush.Color = color;
+    }
+
+    private static bool TryParseColor(string value, out Color color)
+    {
+        color = Colors.Transparent;
+        if (string.IsNullOrWhiteSpace(value)) return false;
+
+        var hex = value.Trim().TrimStart('#');
+        if (hex.Length == 6)
+            hex = "FF" + hex;
+        if (hex.Length != 8) return false;
+
         try
         {
-            brush.Color = ColorHelper.FromArgb(
-                Convert.ToByte(value[1..3], 16),
-                Convert.ToByte(value[3..5], 16),
-                Convert.ToByte(value[5..7], 16),
-                Convert.ToByte(value[7..9], 16));
+            color = ColorHelper.FromArgb(
+                Convert.ToByte(hex[0..2], 16),
+                Convert.ToByte(hex[2..4], 16),
+                Convert.ToByte(hex[4..6], 16),
+                Convert.ToByte(hex[6..8], 16));
+            return true;
         }
         catch (FormatException)
         {
-            // Ignore invalid custom theme colors and keep the previous color.
+            return false;
         }
     }
 }
