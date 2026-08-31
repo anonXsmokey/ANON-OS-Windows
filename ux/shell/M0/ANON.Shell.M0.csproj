@@ -12,9 +12,14 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-  <ItemGroup><PackageReference Include="Microsoft.WindowsAppSDK" Version="2.4.0" /></ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.4.0" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../../core/Anon.Os.Core.csproj" />
     <ProjectReference Include="../../../ai/Anon.Os.Ai.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="runtime/FileBrowserWindowCompat.cs" />
   </ItemGroup>
 </Project>
