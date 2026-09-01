@@ -37,7 +37,7 @@ public sealed class AiWindow : Window
         title.Children.Add(new TextBlock { Text = "ANON AI", FontSize = 28, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold, Foreground = Text });
         title.Children.Add(new TextBlock { Text = "Local-first intelligence. No cloud account required for Ollama.", FontSize = 12, Foreground = Muted });
         header.Children.Add(title);
-        var badge = new Border { Background = SurfaceStrong, BorderBrush = Border, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 7), HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
+        var badge = new Border { Background = SurfaceStrong, BorderBrush = Border, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(12, 7, 12, 7), HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
         badge.Child = new TextBlock { Text = "LOCAL-FIRST", FontSize = 10, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold, Foreground = Accent };
         header.Children.Add(badge);
         root.Children.Add(header);
@@ -64,7 +64,7 @@ public sealed class AiWindow : Window
         _prompt.BorderBrush = Border;
         _prompt.BorderThickness = new Thickness(1);
         _prompt.CornerRadius = new CornerRadius(14);
-        _prompt.Padding = new Thickness(16, 12);
+        _prompt.Padding = new Thickness(16, 12, 16, 12);
         Grid.SetRow(_prompt, 2);
         root.Children.Add(_prompt);
 
@@ -79,7 +79,7 @@ public sealed class AiWindow : Window
         _ask.Foreground = AccentText;
         _ask.FontWeight = Microsoft.UI.Text.FontWeights.SemiBold;
         _ask.CornerRadius = new CornerRadius(12);
-        _ask.Padding = new Thickness(18, 10);
+        _ask.Padding = new Thickness(18, 10, 18, 10);
         _ask.Click += AskAsync;
         footer.Children.Add(_ask);
         Grid.SetRow(footer, 3);
