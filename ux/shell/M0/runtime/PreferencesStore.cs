@@ -8,7 +8,8 @@ public sealed record UserPreferences(
     string LayoutId = "classic-anon",
     string VisualProfileId = "balanced",
     bool ReducedMotion = false,
-    bool WidgetsEnabled = true);
+    bool WidgetsEnabled = true,
+    bool FirstRunCompleted = false);
 
 public sealed class PreferencesStore
 {
@@ -19,6 +20,8 @@ public sealed class PreferencesStore
         PropertyNameCaseInsensitive = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
+
+    public bool Exists => File.Exists(_path);
 
     public PreferencesStore(string? rootDirectory = null)
     {
