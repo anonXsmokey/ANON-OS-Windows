@@ -21,6 +21,7 @@ public sealed class AiWindow : Window
     private static readonly SolidColorBrush Text = new(ColorHelper.FromArgb(255, 245, 247, 250));
     private static readonly SolidColorBrush Muted = new(ColorHelper.FromArgb(255, 155, 167, 184));
     private static readonly SolidColorBrush Accent = new(ColorHelper.FromArgb(255, 121, 184, 255));
+    private static readonly SolidColorBrush AccentText = new(ColorHelper.FromArgb(255, 7, 16, 28));
 
     public AiWindow()
     {
@@ -75,7 +76,7 @@ public sealed class AiWindow : Window
         _ask.Content = "ASK ANON AI";
         _ask.HorizontalAlignment = HorizontalAlignment.Right;
         _ask.Background = Accent;
-        _ask.Foreground = ColorHelper.FromArgb(255, 7, 16, 28);
+        _ask.Foreground = AccentText;
         _ask.FontWeight = Microsoft.UI.Text.FontWeights.SemiBold;
         _ask.CornerRadius = new CornerRadius(12);
         _ask.Padding = new Thickness(18, 10);
