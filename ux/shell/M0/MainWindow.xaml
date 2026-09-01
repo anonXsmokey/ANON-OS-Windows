@@ -22,5 +22,25 @@
             </Grid>
         </Grid>
         <Border Grid.Row="2" Background="{StaticResource AnonTopBarBrush}" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="0,1,0,0" Padding="20,0"><Grid><StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center"><Button Content="◉" Click="Home_Click" /><Button Content="FILES" Click="Files_Click" /><Button Content="APPS" Click="Apps_Click" /><Button Content="GAMES" Click="Games_Click" /><Button Content="SYSTEM" Click="System_Click" /><Button Content="ANON AI" Click="Ai_Click" /></StackPanel><TextBlock Text="ANON CORE • WINDOWS NATIVE" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="11" Foreground="{StaticResource AnonMutedTextBrush}" /></Grid></Border>
+
+        <Grid x:Name="FirstRunOverlay" Grid.RowSpan="3" Background="#D9080A0F" Visibility="Collapsed">
+            <Border Width="720" MaxWidth="90%" Padding="44" CornerRadius="28" Background="{StaticResource AnonSurfaceBrush}" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <StackPanel Spacing="22">
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <Border Width="58" Height="58" CornerRadius="18" Background="{StaticResource AnonAccentBrush}"><TextBlock Text="A" FontSize="30" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                        <StackPanel VerticalAlignment="Center"><TextBlock Text="WELCOME TO ANON OS" FontSize="28" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" /><TextBlock Text="A Windows-native desktop designed around you." FontSize="13" Foreground="{StaticResource AnonMutedTextBrush}" /></StackPanel>
+                    </StackPanel>
+                    <Border Height="1" Background="{StaticResource AnonBorderBrush}" />
+                    <TextBlock Text="Make it yours" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" />
+                    <TextBlock Text="Choose a visual profile and theme. You can change everything later from ANON System." TextWrapping="Wrap" Foreground="{StaticResource AnonMutedTextBrush}" />
+                    <Grid ColumnSpacing="18"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                        <StackPanel Spacing="8"><TextBlock Text="VISUAL PROFILE" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AnonMutedTextBrush}" /><ComboBox x:Name="FirstRunProfile" SelectedIndex="1"><ComboBoxItem Content="Maximum Performance" /><ComboBoxItem Content="Gaming" /><ComboBoxItem Content="Balanced" /><ComboBoxItem Content="Immersive" /></ComboBox></StackPanel>
+                        <StackPanel Grid.Column="1" Spacing="8"><TextBlock Text="THEME" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AnonMutedTextBrush}" /><ComboBox x:Name="FirstRunTheme" SelectedIndex="0" SelectionChanged="FirstRunTheme_SelectionChanged"><ComboBoxItem Content="ANON Core" Tag="anon-core" /><ComboBoxItem Content="Aurora" Tag="aurora" /><ComboBoxItem Content="Carbon" Tag="carbon" /><ComboBoxItem Content="Pulse" Tag="pulse" /><ComboBoxItem Content="Crimson" Tag="crimson" /><ComboBoxItem Content="Minimal" Tag="minimal" /><ComboBoxItem Content="Immersive" Tag="immersive" /></ComboBox></StackPanel>
+                    </Grid>
+                    <CheckBox x:Name="FirstRunReducedMotion" Content="Use reduced motion" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10"><Button Content="SKIP FOR NOW" Click="SkipFirstRun_Click" /><Button Content="ENTER ANON OS" Click="CompleteFirstRun_Click" Style="{StaticResource AnonPrimaryButtonStyle}" /></StackPanel>
+                </StackPanel>
+            </Border>
+        </Grid>
     </Grid>
 </Window>
