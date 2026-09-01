@@ -1,4 +1,3 @@
-using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media;
 
@@ -30,16 +29,17 @@ public static class ThemePaletteApplier
         brush.Color = color;
     }
 
-    private static bool TryParse(string value, out Color color)
+    private static bool TryParse(string value, out global::Windows.UI.Color color)
     {
-        color = Colors.Transparent;
+        color = global::Windows.UI.Color.FromArgb(0, 0, 0, 0);
         var hex = value?.Trim().TrimStart('#');
         if (hex is null) return false;
         if (hex.Length == 6) hex = "FF" + hex;
         if (hex.Length != 8) return false;
+
         try
         {
-            color = ColorHelper.FromArgb(
+            color = global::Windows.UI.Color.FromArgb(
                 Convert.ToByte(hex[0..2], 16),
                 Convert.ToByte(hex[2..4], 16),
                 Convert.ToByte(hex[4..6], 16),
