@@ -26,6 +26,7 @@ public sealed partial class MainWindow : Window
     private AppLibraryWindow? _appsWindow;
     private AppLibraryWindow? _gamesWindow;
     private SystemWindow? _systemWindow;
+    private AiWindow? _aiWindow;
     private bool _surfaceLoaded;
     private bool _loadingPreferences;
 
@@ -91,7 +92,7 @@ public sealed partial class MainWindow : Window
     private void Files_Click(object sender, RoutedEventArgs e) { try { if (_fileBrowserWindow is null) { _fileBrowserWindow = new FileBrowserWindowCompat(); _fileBrowserWindow.Closed += (_, _) => _fileBrowserWindow = null; } _fileBrowserWindow.Activate(); LauncherPanel.Visibility = Visibility.Collapsed; SetStatus("ANON Files opened."); } catch (Exception ex) { SetStatus($"Could not open ANON Files: {ex.Message}"); } }
     private void Apps_Click(object sender, RoutedEventArgs e) { try { if (_appsWindow is null) { _appsWindow = new AppLibraryWindow(false); _appsWindow.Closed += (_, _) => _appsWindow = null; } _appsWindow.Activate(); LauncherPanel.Visibility = Visibility.Collapsed; SetStatus("ANON Apps opened."); } catch (Exception ex) { SetStatus($"Could not open ANON Apps: {ex.Message}"); } }
     private void Games_Click(object sender, RoutedEventArgs e) { try { if (_gamesWindow is null) { _gamesWindow = new AppLibraryWindow(true); _gamesWindow.Closed += (_, _) => _gamesWindow = null; } _gamesWindow.Activate(); LauncherPanel.Visibility = Visibility.Collapsed; SetStatus(_desktop.GamingMode ? "ANON Games opened • Gaming Mode active." : "ANON Games opened."); } catch (Exception ex) { SetStatus($"Could not open ANON Games: {ex.Message}"); } }
-    private void Ai_Click(object sender, RoutedEventArgs e) => SetStatus("ANON AI is optional and remains disabled in M0.");
+    private void Ai_Click(object sender, RoutedEventArgs e) { try { if (_aiWindow is null) { _aiWindow = new AiWindow(); _aiWindow.Closed += (_, _) => _aiWindow = null; } _aiWindow.Activate(); LauncherPanel.Visibility = Visibility.Collapsed; SetStatus("ANON AI opened."); } catch (Exception ex) { SetStatus($"Could not open ANON AI: {ex.Message}"); } }
     private void SearchBox_TextChanged(object sender, TextChangedEventArgs e) { var query = SearchBox.Text.Trim(); var results = _launcherCatalog.Search(query); LauncherResults.ItemsSource = results; LauncherPanel.Visibility = results.Count > 0 ? Visibility.Visible : Visibility.Collapsed; if (query.Length > 0) SetStatus(results.Count == 0 ? $"No ANON launcher matches for \"{query}\"." : $"{results.Count} launcher result{(results.Count == 1 ? "" : "s")}. "); }
     private void SearchBox_KeyDown(object sender, KeyRoutedEventArgs e) { if (e.Key == Windows.System.VirtualKey.Escape) { SearchBox.Text = string.Empty; SearchBox.Focus(FocusState.Programmatic); e.Handled = true; return; } if (e.Key != Windows.System.VirtualKey.Enter) return; var command = _launcherCatalog.Search(SearchBox.Text.Trim()).FirstOrDefault(); if (command is null) return; LaunchCommand(command); e.Handled = true; }
     private void LauncherResults_ItemClick(object sender, ItemClickEventArgs e) { if (e.ClickedItem is LauncherCommand command) LaunchCommand(command); }
