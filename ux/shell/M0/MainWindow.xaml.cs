@@ -37,13 +37,47 @@ public sealed partial class MainWindow : Window
         _visualRuntime.Changed += (_, _) => { ApplyRuntimeState(); SavePreferences(); };
         _themeRuntime.Changed += (_, _) => { ApplyRuntimeState(); SavePreferences(); };
         _layoutRuntime.Changed += (_, _) => { ApplyRuntimeState(); SavePreferences(); };
-        ApplySavedPreferences(); ApplyRuntimeState();
+        ApplySavedPreferences();
+        ApplyRuntimeState();
         _telemetryTimer = DispatcherQueue.GetForCurrentThread().CreateTimer();
-        _telemetryTimer.Interval = TimeSpan.FromSeconds(1); _telemetryTimer.Tick += (_, _) => UpdateTelemetry(); _telemetryTimer.Start(); UpdateTelemetry();
+        _telemetryTimer.Interval = TimeSpan.FromSeconds(1);
+        _telemetryTimer.Tick += (_, _) => UpdateTelemetry();
+        _telemetryTimer.Start();
+        UpdateTelemetry();
     }
 
-    private void ApplySavedPreferences() { _loadingPreferences = true; try { var preferences = _preferencesStore.Load(); var layouts = new LayoutCatalog(); PreferenceMapper.Apply(preferences, _themes, _themeRuntime, layouts, _layoutRuntime, _visualRuntime, _widgetRuntime); VisualProfile.SelectedIndex = preferences.VisualProfileId switch { "maximum-performance" => 0, "gaming" => 1, "immersive" => 3, _ => 2 }; ReducedMotion.IsChecked = preferences.ReducedMotion; } finally { _loadingPreferences = false; } }
-    private void SavePreferences() { if (_loadingPreferences) return; _preferencesStore.Save(new UserPreferences(ThemeId: _themeRuntime.Current.Id, LayoutId: _layoutRuntime.Current.Id, VisualProfileId: _visualRuntime.Current.Id, ReducedMotion: _visualRuntime.ReducedMotion, WidgetsEnabled: _widgetRuntime.Widgets.Any(w => w.Enabled))); }
+    private void ApplySavedPreferences()
+    {
+        _loadingPreferences = true;
+        try
+        {
+            var preferences = _preferencesStore.Load();
+            var layouts = new LayoutCatalog();
+            PreferenceMapper.Apply(preferences, _themes, _themeRuntime, layouts, _layoutRuntime, _visualRuntime, _widgetRuntime);
+            VisualProfile.SelectedIndex = preferences.VisualProfileId switch { "maximum-performance" => 0, "gaming" => 1, "immersive" => 3, _ => 2 };
+            ReducedMotion.IsChecked = preferences.ReducedMotion;
+            FirstRunProfile.SelectedIndex = VisualProfile.SelectedIndex;
+            FirstRunReducedMotion.IsChecked = preferences.ReducedMotion;
+            var themeIndex = preferences.ThemeId switch { "aurora" => 1, "carbon" => 2, "pulse" => 3, "crimson" => 4, "minimal" => 5, "immersive" => 6, _ => 0 };
+            FirstRunTheme.SelectedIndex = themeIndex;
+            if (!_preferencesStore.Exists || !preferences.FirstRunCompleted)
+                FirstRunOverlay.Visibility = Visibility.Visible;
+        }
+        finally { _loadingPreferences = false; }
+    }
+
+    private void SavePreferences(bool firstRunCompleted = true)
+    {
+        if (_loadingPreferences) return;
+        _preferencesStore.Save(new UserPreferences(
+            ThemeId: _themeRuntime.Current.Id,
+            LayoutId: _layoutRuntime.Current.Id,
+            VisualProfileId: _visualRuntime.Current.Id,
+            ReducedMotion: _visualRuntime.ReducedMotion,
+            WidgetsEnabled: _widgetRuntime.Widgets.Any(w => w.Enabled),
+            FirstRunCompleted: firstRunCompleted));
+    }
+
     private void SetStatus(string text) => StatusText.Text = text;
     private void ApplyRuntimeState() { var model = _desktop.RenderModel; var motion = model.Transition.Enabled ? $"motion {model.Transition.DurationMilliseconds}ms" : "motion off"; SetStatus($"{model.ThemeId} • {model.LayoutId} • {motion}{(_desktop.GamingMode ? " • GAMING" : "")}"); if (_surfaceLoaded) PlaySurfaceTransition(model.Transition); }
     private void SurfaceRoot_Loaded(object sender, RoutedEventArgs e) { _surfaceLoaded = true; PlaySurfaceTransition(_desktop.RenderModel.Transition); }
@@ -62,6 +96,34 @@ public sealed partial class MainWindow : Window
     private void SearchBox_KeyDown(object sender, KeyRoutedEventArgs e) { if (e.Key == Windows.System.VirtualKey.Escape) { SearchBox.Text = string.Empty; SearchBox.Focus(FocusState.Programmatic); e.Handled = true; return; } if (e.Key != Windows.System.VirtualKey.Enter) return; var command = _launcherCatalog.Search(SearchBox.Text.Trim()).FirstOrDefault(); if (command is null) return; LaunchCommand(command); e.Handled = true; }
     private void LauncherResults_ItemClick(object sender, ItemClickEventArgs e) { if (e.ClickedItem is LauncherCommand command) LaunchCommand(command); }
     private void LaunchCommand(LauncherCommand command) { try { switch (command.Id) { case "files": Files_Click(this, new RoutedEventArgs()); break; case "apps": Apps_Click(this, new RoutedEventArgs()); break; case "games": Games_Click(this, new RoutedEventArgs()); break; case "system": System_Click(this, new RoutedEventArgs()); break; default: _launcher.Launch(command.Target); SetStatus($"Opened {command.Title}."); break; } LauncherPanel.Visibility = Visibility.Collapsed; SearchBox.Text = string.Empty; } catch (Exception ex) { SetStatus($"Could not open {command.Title}: {ex.Message}"); } }
-    private void VisualProfile_SelectionChanged(object sender, SelectionChangedEventArgs e) { if (VisualProfile.SelectedItem is not ComboBoxItem item) return; var policy = item.Content?.ToString() switch { "Maximum Performance" => VisualPolicies.MaximumPerformance, "Gaming" => VisualPolicies.Gaming, "Immersive" => VisualPolicies.Immersive, _ => VisualPolicies.Balanced }; _visualRuntime.Apply(policy); }
-    private void ReducedMotion_Click(object sender, RoutedEventArgs e) => _visualRuntime.SetReducedMotion(ReducedMotion.IsChecked == true);
+    private void VisualProfile_SelectionChanged(object sender, SelectionChangedEventArgs e) { if (_loadingPreferences || VisualProfile.SelectedItem is not ComboBoxItem item) return; var policy = item.Content?.ToString() switch { "Maximum Performance" => VisualPolicies.MaximumPerformance, "Gaming" => VisualPolicies.Gaming, "Immersive" => VisualPolicies.Immersive, _ => VisualPolicies.Balanced }; _visualRuntime.Apply(policy); }
+    private void ReducedMotion_Click(object sender, RoutedEventArgs e) { if (_loadingPreferences) return; _visualRuntime.SetReducedMotion(ReducedMotion.IsChecked == true); }
+
+    private void FirstRunTheme_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_loadingPreferences || FirstRunTheme.SelectedItem is not ComboBoxItem item || item.Tag is not string id) return;
+        _themeRuntime.Apply(_themes.Get(id));
+    }
+
+    private void CompleteFirstRun_Click(object sender, RoutedEventArgs e)
+    {
+        if (FirstRunProfile.SelectedItem is ComboBoxItem profile)
+        {
+            var policy = profile.Content?.ToString() switch { "Maximum Performance" => VisualPolicies.MaximumPerformance, "Gaming" => VisualPolicies.Gaming, "Immersive" => VisualPolicies.Immersive, _ => VisualPolicies.Balanced };
+            _visualRuntime.Apply(policy);
+            VisualProfile.SelectedIndex = FirstRunProfile.SelectedIndex;
+        }
+        _visualRuntime.SetReducedMotion(FirstRunReducedMotion.IsChecked == true);
+        ReducedMotion.IsChecked = FirstRunReducedMotion.IsChecked == true;
+        FirstRunOverlay.Visibility = Visibility.Collapsed;
+        SavePreferences(true);
+        SetStatus("ANON OS ready. Welcome home.");
+    }
+
+    private void SkipFirstRun_Click(object sender, RoutedEventArgs e)
+    {
+        FirstRunOverlay.Visibility = Visibility.Collapsed;
+        SavePreferences(true);
+        SetStatus("ANON OS ready. You can personalize it from ANON System.");
+    }
 }
