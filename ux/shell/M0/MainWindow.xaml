@@ -24,7 +24,7 @@
         <Border Grid.Row="2" Background="{StaticResource AnonTopBarBrush}" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="0,1,0,0" Padding="20,0"><Grid><StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center"><Button Content="◉" Click="Home_Click" /><Button Content="FILES" Click="Files_Click" /><Button Content="APPS" Click="Apps_Click" /><Button Content="GAMES" Click="Games_Click" /><Button Content="SYSTEM" Click="System_Click" /><Button Content="ANON AI" Click="Ai_Click" /></StackPanel><TextBlock Text="ANON CORE • WINDOWS NATIVE" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="11" Foreground="{StaticResource AnonMutedTextBrush}" /></Grid></Border>
 
         <Grid x:Name="FirstRunOverlay" Grid.RowSpan="3" Background="#D9080A0F" Visibility="Collapsed">
-            <Border Width="720" MaxWidth="90%" Padding="44" CornerRadius="28" Background="{StaticResource AnonSurfaceBrush}" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Border Width="720" Padding="44" CornerRadius="28" Background="{StaticResource AnonSurfaceBrush}" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <StackPanel Spacing="22">
                     <StackPanel Orientation="Horizontal" Spacing="16">
                         <Border Width="58" Height="58" CornerRadius="18" Background="{StaticResource AnonAccentBrush}"><TextBlock Text="A" FontSize="30" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
