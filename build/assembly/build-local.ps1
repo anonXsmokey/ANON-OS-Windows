@@ -9,7 +9,8 @@ if(-not(Test-Path -LiteralPath $WindowsIso)){throw "Windows ISO not found: $Wind
 $root=(Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $publish=Join-Path $root 'build\shell-publish'
 $bootstrapPublish=Join-Path $root 'build\bootstrap-publish'
-New-Item -ItemType Directory -Force -Path $publish,$bootstrapPublish|Out-Null
+$petPublish=Join-Path $root 'build\performance-pet-publish'
+New-Item -ItemType Directory -Force -Path $publish,$bootstrapPublish,$petPublish|Out-Null
 Push-Location $root
 try{
  dotnet restore ux/shell/M0/ANON.Shell.M0.csproj --runtime win-x64;if($LASTEXITCODE){throw 'Shell restore failed.'}
@@ -18,7 +19,10 @@ try{
  dotnet restore ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --runtime win-x64;if($LASTEXITCODE){throw 'Bootstrap restore failed.'}
  dotnet publish ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj -c Release -r win-x64 --self-contained true --no-restore -o $bootstrapPublish;if($LASTEXITCODE){throw 'Bootstrap publish failed.'}
  if(-not(Test-Path (Join-Path $bootstrapPublish 'ANON.Shell.Bootstrap.exe'))){throw 'ANON.Shell.Bootstrap.exe missing after publish.'}
- & (Join-Path $root 'build\assembly\build-iso.ps1') -WindowsIso (Resolve-Path $WindowsIso).Path -ShellPublish $publish -BootstrapPublish $bootstrapPublish -OutputRoot $OutputRoot -Architecture x64 -ImageIndex $ImageIndex;if($LASTEXITCODE){throw 'ISO assembly failed.'}
+ dotnet restore ux/shell/PerformancePet/ANON.PerformancePet.csproj --runtime win-x64;if($LASTEXITCODE){throw 'Performance Pet restore failed.'}
+ dotnet publish ux/shell/PerformancePet/ANON.PerformancePet.csproj -c Release -r win-x64 --self-contained true --no-restore -o $petPublish;if($LASTEXITCODE){throw 'Performance Pet publish failed.'}
+ if(-not(Test-Path (Join-Path $petPublish 'ANON.PerformancePet.exe'))){throw 'ANON.PerformancePet.exe missing after publish.'}
+ & (Join-Path $root 'build\assembly\build-iso.ps1') -WindowsIso (Resolve-Path $WindowsIso).Path -ShellPublish $publish -BootstrapPublish $bootstrapPublish -PerformancePetPublish $petPublish -OutputRoot $OutputRoot -Architecture x64 -ImageIndex $ImageIndex;if($LASTEXITCODE){throw 'ISO assembly failed.'}
  $iso=Get-ChildItem $OutputRoot -Filter 'ANON-OS-Windows-*.iso'|Sort-Object LastWriteTime -Descending|Select-Object -First 1;if(-not$iso){throw 'No ANON OS ISO was produced.'}
  & (Join-Path $root 'build\assembly\validate-iso.ps1') -IsoPath $iso.FullName -ExpectedArchitecture x64 -ExpectedImageIndex $ImageIndex
  & (Join-Path $root 'build\assembly\release-manifest.ps1') -IsoPath $iso.FullName
