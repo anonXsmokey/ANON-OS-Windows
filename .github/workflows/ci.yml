@@ -31,7 +31,7 @@ jobs:
         run: dotnet build core/Anon.Os.Core.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
 
   shell-build:
-    name: Build ANON Shell
+    name: Build ANON Shell + Bootstrap
     runs-on: windows-2022
     timeout-minutes: 30
     steps:
@@ -41,21 +41,31 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-      - name: Restore
+      - name: Restore shell
         run: dotnet restore ux/shell/M0/ANON.Shell.M0.csproj --runtime ${{ env.RID }}
-      - name: Build x64
+      - name: Build shell
         run: dotnet build ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
-      - name: Publish smoke build
-        run: dotnet publish ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --runtime ${{ env.RID }} --self-contained true --no-restore --output build/ci-publish
-      - name: Verify executable
+      - name: Publish shell
+        run: dotnet publish ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --runtime ${{ env.RID }} --self-contained true --no-restore --output build/ci-shell
+      - name: Restore bootstrap
+        run: dotnet restore ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --runtime ${{ env.RID }}
+      - name: Build bootstrap
+        run: dotnet build ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
+      - name: Publish bootstrap
+        run: dotnet publish ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --runtime ${{ env.RID }} --self-contained true --no-restore --output build/ci-bootstrap
+      - name: Verify payload
         shell: pwsh
         run: |
-          $exe = Resolve-Path build/ci-publish/ANON.Shell.M0.exe -ErrorAction SilentlyContinue
-          if (-not $exe) { throw 'ANON.Shell.M0.exe was not produced.' }
-          Write-Host "Shell build PASS: $exe"
+          $shell = Resolve-Path build/ci-shell/ANON.Shell.M0.exe -ErrorAction SilentlyContinue
+          $bootstrap = Resolve-Path build/ci-bootstrap/ANON.Shell.Bootstrap.exe -ErrorAction SilentlyContinue
+          if (-not $shell) { throw 'ANON.Shell.M0.exe was not produced.' }
+          if (-not $bootstrap) { throw 'ANON.Shell.Bootstrap.exe was not produced.' }
+          Write-Host 'Shell + bootstrap build PASS'
       - name: Upload shell smoke artifact
         uses: actions/upload-artifact@v4
         with:
           name: anon-shell-win-x64
-          path: build/ci-publish
+          path: |
+            build/ci-shell
+            build/ci-bootstrap
           if-no-files-found: error
