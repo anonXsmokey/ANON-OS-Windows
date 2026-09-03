@@ -6,9 +6,9 @@
 
 ### **KEEP WINDOWS. REMOVE THE NOISE. BUILD FOR GAMERS.**
 
-<img src="https://img.shields.io/badge/STATUS-PRIVATE%20DEVELOPMENT-05070d?style=for-the-badge&labelColor=05070d" /> <img src="https://img.shields.io/badge/PLATFORM-WINDOWS%2010%2F11-0078D4?style=for-the-badge&labelColor=05070d" /> <img src="https://img.shields.io/badge/FOCUS-GAMING-45e7ff?style=for-the-badge&labelColor=05070d" /> <img src="https://img.shields.io/badge/AI-OPTIONAL-9a6cff?style=for-the-badge&labelColor=05070d" />
+<img src="https://img.shields.io/badge/STATUS-PRIVATE%20DEVELOPMENT-05070d?style=for-the-badge&labelColor=05070d" /> <img src="https://img.shields.io/badge/PLATFORM-WINDOWS%2010%2F11-0078D4?style=for-the-badge&labelColor=05070d" /> <img src="https://img.shields.io/badge/FOCUS-GAMING-45e7ff?style=for-the-badge&labelColor=05070d" /> <img src="https://img.shields.io/badge/AI-LOCAL%20FIRST-9a6cff?style=for-the-badge&labelColor=05070d" />
 
-**A Windows-native gaming platform engineered around measurable performance, compatibility, control and an optional intelligence layer.**
+**A Windows-native desktop environment engineered around focus, measurable performance, gaming control and optional local intelligence.**
 
 [⚡ ENTER THE ANIMATED COMMAND CENTER](docs/site/index.html) · [ARCHITECTURE](docs/PLATFORM-STRATEGY.md) · [PERFORMANCE](docs/PERFORMANCE-FIRST.md) · [ANON AI](docs/ANON-AI.md)
 
@@ -16,53 +16,90 @@
 
 ---
 
-## ⚡ NOT ANOTHER TWEAK PACK
+## ◈ THE ANON EXPERIENCE
 
-ANON OS Windows is a **platform**, not a pile of unexplained registry edits.
-
-`BASELINE → CHANGE → BENCHMARK → COMPARE → KEEP / ROLLBACK`
-
-The performance stack targets boot time, idle overhead, launch time, CPU/GPU/RAM/VRAM behavior, I/O, frame-time, 1% lows, 0.1% lows, latency and thermals.
-
-> **No placebo optimizations. No unexplained registry graveyard. No irreversible tuning without a recovery path.**
-
-## 🎮 THREE MODES. ONE WINDOWS FOUNDATION.
-
-| ◈ | PROFILE | MISSION | AI |
-|---|---|---|---|
-| 🪶 | **LITE** | minimum overhead | OFF |
-| ⚡ | **GAMING** | balanced gaming performance | MANUAL |
-| 🚀 | **ULTRA** | maximum capability | USER CHOICE |
-
-## 🧠 CORE LOOP
+ANON is not a theme pack. Windows stays underneath for application and driver compatibility; ANON owns the desktop experience users actually interact with.
 
 ```text
-PREFLIGHT → TRANSFORM → BENCHMARK → COMPARE
-                                      ├── KEEP
-                                      └── ROLLBACK
+SEARCH → LAUNCH → MEASURE → CONTROL → PLAY → RESTORE
 ```
 
-## 🎯 GAMING ENGINE
+### 🖥️ ANON DESKTOP
+
+- Cinematic dark-glass visual language
+- Strong typographic hierarchy and bold ANON identity
+- Animated entrance and surface transitions
+- Luminous accent gradients and premium cards/panels
+- Command/search-first launcher for Apps, Games, Files and System
+- Persistent bottom dock
+- Live CPU + memory telemetry
+- Visible Gaming Mode state
+- Graceful reduced-motion mode
+
+### 🎨 ANON VISUAL SYSTEM
+
+Seven built-in profiles share the same geometry, spacing and interaction language:
+
+`CORE` · `CARBON` · `AURORA` · `PULSE` · `CRIMSON` · `MINIMAL` · `IMMERSIVE`
+
+The visual runtime keeps motion policy separate from theme identity, allowing performance-aware or reduced-motion behavior without fragmenting the UI.
+
+## 🎮 ANON GAMING
+
+Gaming is a first-class surface rather than a hidden collection of tweaks.
 
 ```text
 GAME LAUNCH → IDENTIFY → COMPATIBILITY → PROFILE
                                       ↓
                               SAFE SESSION POLICY
                                       ↓
-                       TELEMETRY + FRAME-TIME
+                         TELEMETRY + SESSION STATE
                                       ↓
-                           RESTORE PREVIOUS STATE
+                         RESTORE PREVIOUS STATE
 ```
 
-The Gaming layer now includes reversible process-session policies, lifecycle management, profile-driven launch, compatibility decisions and automatic restoration when a game exits.
+The gaming layer includes Gaming Mode, profile selection, compatibility decisions, lifecycle/session state, measurable telemetry and restoration paths. The objective is controlled state, not unexplained optimization folklore.
 
-## 🤖 ANON AI
+## 🧠 ANON AI
 
-ANON AI is isolated from the performance core. It is optional and disabled unless the user explicitly configures and enables a provider.
+ANON AI is isolated from the desktop and performance core. The **default provider is local Ollama**, with `gemma3:4b` as the default model when available.
 
-The provider layer supports OpenAI-compatible `/chat/completions` endpoints through `ANON_AI_ENDPOINT`, `ANON_AI_MODEL` and `ANON_AI_API_KEY` environment configuration.
+```text
+ANON AI → PROVIDER ABSTRACTION → OLLAMA → gemma3:4b
+                       └────────→ future providers
+```
 
-**AI OFF = ANON OS STILL WORKS.**
+- Local-first operation
+- Provider abstraction
+- No shared API key baked into the ISO
+- Cloud providers remain optional configuration
+- AI failure cannot prevent the desktop from operating
+
+**AI OFF OR UNAVAILABLE = ANON OS STILL WORKS.**
+
+## 📦 ANON INSTALLER
+
+The release pipeline is designed around a Windows 11 25H2 WIM source:
+
+```text
+WINDOWS 11 25H2
+      ↓
+WIM SERVICE / IMAGE INDEX
+      ↓
+ANON SHELL + BOOTSTRAP + SETUPCOMPLETE
+      ↓
+WINLOGON FIRST-LOGON HANDOFF
+      ↓
+WINPE LEGACY SETUP BRIDGE
+      ↓
+BIOS + UEFI ISO
+      ↓
+STRUCTURE / PAYLOAD / RELEASE VALIDATION
+      ↓
+VM-FIRST INSTALL + BOOT TEST
+```
+
+The installer path is intentionally separated from the desktop runtime so a failed ANON component can be diagnosed without pretending the Windows Setup layer has been replaced.
 
 ---
 
@@ -72,6 +109,7 @@ The provider layer supports OpenAI-compatible `/chat/completions` endpoints thro
 - [x] Separate Windows-native project
 - [x] Windows-first architecture
 - [x] Performance-first design
+- [x] Premium ANON visual language
 - [x] AI isolation principle
 
 ### SYSTEM
@@ -82,31 +120,42 @@ The provider layer supports OpenAI-compatible `/chat/completions` endpoints thro
 - [x] Performance benchmark foundation
 - [x] Measurable process benchmark runner
 - [x] Policy parser + guarded transformation executor
+- [x] Live shell telemetry
 
 ### GAMING
 - [x] Gaming Mode foundation
 - [x] Game profile engine foundation
 - [x] Compatibility database foundation
-- [x] Full benchmark harness foundation
+- [x] Benchmark harness foundation
 - [x] Production game-session policies
+- [x] Session restoration path
 
 ### EXPERIENCE
+- [x] Search-first ANON launcher
+- [x] Persistent bottom dock
+- [x] Premium visual profiles
+- [x] Reduced-motion policy
 - [x] ANON Control Center state foundation
-- [x] Isolated optional ANON AI contract layer
 - [x] Full graphical Control Center
 - [x] ANON AI provider integration
-- [x] Recovery environment
+- [x] Recovery environment foundation
 
 ### RELEASE
 - [x] Windows image transformation foundation
-- [x] Bootable ISO assembly pipeline
+- [x] WIM servicing + ANON payload injection
+- [x] Bootstrap + Winlogon first-logon handoff
+- [x] SetupComplete integration
+- [x] WinPE legacy Setup bridge
+- [x] BIOS + UEFI ISO assembly
 - [x] ISO structural validation
+- [x] Release validation gates
 - [x] VM smoke-test harness
 - [ ] Full VM installation + first-logon validation
+- [ ] Hardware gaming validation
 - [ ] Private alpha
 - [ ] Public release
 
-**STATUS // GAMING + EXPERIENCE IMPLEMENTATION COMPLETE — RELEASE VALIDATION REMAINS**
+**STATUS // FEATURE FOUNDATION COMPLETE — INSTALL / BOOT / FIRST-LOGON VALIDATION IS THE NEXT RELEASE GATE**
 
 ---
 
@@ -122,28 +171,22 @@ ANON-OS-Windows/
 ├── anon-ai/          → optional provider layer
 ├── recovery/         → validated recovery manifest engine
 ├── installer/        → installation + recovery
-├── tests/            → validation
+├── tests/             → validation
 ├── ux/shell/M0/      → ANON desktop shell
 └── build/            → image assembly + release gates
 ```
 
-## 🛡️ COMPATIBILITY
-
-The target is modern Windows software, Win32, x64 applications, DirectX games, launchers, peripherals and supported anti-cheat configurations.
-
-Universal compatibility is **not** promised blindly. Drivers, DRM, anti-cheat, hardware dependencies and Windows-version restrictions must be tested and documented.
-
-## 🔒 SAFETY
+## 🛡️ SAFETY MODEL
 
 Every serious system change follows:
 
 `PREFLIGHT → BACKUP → POLICY → CHANGE → VERIFY → ROLLBACK`
 
-Recovery manifests are checksum-validatable and only describe recorded reversible operations. Bootable WinRE integration remains a release validation concern rather than being falsely represented as tested.
+No shared cloud credentials are committed to the image. Recovery manifests are checksum-validatable and describe recorded reversible operations.
 
-## ⚠️ STATUS
+## ⚠️ RELEASE STATUS
 
-ANON OS Windows is a private development project. It is **not yet a production Windows distribution or a validated public ISO**. It is intended to work with appropriately licensed Windows installations.
+ANON OS Windows remains a private development project. A generated ISO is a **candidate build until it passes real VM installation, first-logon, shell startup, gaming/session and recovery validation**. The project is intended to work with appropriately licensed Windows installations.
 
 ---
 
