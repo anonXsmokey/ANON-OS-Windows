@@ -1,47 +1,19 @@
 [CmdletBinding()]
-param(
- [Parameter(Mandatory=$true)][string]$IsoPath,
- [string]$ExpectedArchitecture='x64',
- [ValidateRange(1,999)][int]$ExpectedImageIndex=6
-)
+param([Parameter(Mandatory=$true)][string]$IsoPath,[string]$ExpectedArchitecture='x64',[ValidateRange(1,999)][int]$ExpectedImageIndex=6)
 $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 if(-not(Test-Path -LiteralPath $IsoPath)){throw "ISO not found: $IsoPath"}
-$iso=(Resolve-Path $IsoPath).Path
-$hash=(Get-FileHash -LiteralPath $iso -Algorithm SHA256).Hash
-$disk=$null;$mountedWim=$false;$mountDir=$null
-try {
-  $disk=Mount-DiskImage -ImagePath $iso -PassThru
-  $vol=$disk|Get-Volume|Where-Object DriveLetter|Select-Object -First 1
-  if(-not$vol){throw 'Unable to resolve ISO volume.'}
-  $root="$($vol.DriveLetter):\"
-  $required=@('bootmgr','boot\etfsboot.com','efi\microsoft\boot\efisys.bin','sources\install.wim','ANON-OS.txt')
-  foreach($item in $required){if(-not(Test-Path -LiteralPath (Join-Path $root $item))){throw "Required ISO component missing: $item"}}
-  $marker=Get-Content (Join-Path $root 'ANON-OS.txt') -Raw
-  if($marker -notmatch 'ANON OS Windows'){throw 'ANON marker content is invalid.'}
-  if($marker -notmatch "Architecture:\s*$ExpectedArchitecture"){throw "ISO architecture marker does not match '$ExpectedArchitecture'."}
-
-  $wim=Join-Path $root 'sources\install.wim'
-  $wimInfo=& dism.exe /Get-WimInfo /WimFile:$wim 2>&1
-  if($LASTEXITCODE){throw 'DISM could not inspect install.wim.'}
-  if(-not($wimInfo -match "Index\s*:\s*$ExpectedImageIndex")){throw "install.wim index $ExpectedImageIndex was not found."}
-
-  $mountDir=Join-Path ([System.IO.Path]::GetTempPath()) ('ANON-ISO-VALIDATE-'+[guid]::NewGuid().ToString('N'))
-  New-Item -ItemType Directory -Force -Path $mountDir|Out-Null
-  & dism.exe /Mount-Wim /WimFile:$wim /Index:$ExpectedImageIndex /MountDir:$mountDir /ReadOnly 2>&1|Write-Host
-  if($LASTEXITCODE){throw "DISM read-only mount failed: $LASTEXITCODE"}
-  $mountedWim=$true
-  $payload=Join-Path $mountDir 'ProgramData\ANON\Shell\M0\ANON.Shell.M0.exe'
-  $anonMarker=Join-Path $mountDir 'ProgramData\ANON\ANON-OS.txt'
-  foreach($item in @($payload,$anonMarker)){if(-not(Test-Path -LiteralPath $item)){throw "Required ANON image component missing: $item"}}
-  Write-Host 'ISO structure validation: PASS'
-  Write-Host 'ANON payload validation: PASS'
-  Write-Host 'Windows image validation: PASS'
-  Write-Host "Image index: $ExpectedImageIndex"
-  Write-Host "SHA256: $hash"
-  Write-Host "Architecture: $ExpectedArchitecture"
-} finally {
-  if($mountedWim){& dism.exe /Unmount-Wim /MountDir:$mountDir /Discard 2>&1|Write-Host}
-  if($mountDir -and (Test-Path $mountDir)){Remove-Item $mountDir -Recurse -Force -ErrorAction SilentlyContinue}
-  if($disk){Dismount-DiskImage -ImagePath $iso -ErrorAction SilentlyContinue}
-}
-Write-Host 'NOTE: Boot/install/first-logon validation still requires a VM.'
+$iso=(Resolve-Path $IsoPath).Path;$hash=(Get-FileHash $iso -Algorithm SHA256).Hash;$disk=$null;$installMounted=$false;$bootMounted=$false;$installMount=$null;$bootMount=$null
+try{
+ $disk=Mount-DiskImage -ImagePath $iso -PassThru;$vol=$disk|Get-Volume|Where-Object DriveLetter|Select-Object -First 1;if(-not$vol){throw 'Unable to resolve ISO volume.'};$root="$($vol.DriveLetter):\"
+ $required=@('bootmgr','bootmgr.efi','boot\etfsboot.com','boot\bcd','efi\microsoft\boot\efisys.bin','efi\microsoft\boot\bcd','sources\boot.wim','sources\install.wim','Autounattend.xml','ANON-OS.txt');foreach($item in $required){if(-not(Test-Path (Join-Path $root $item))){throw "Required ISO component missing: $item"}}
+ $marker=Get-Content (Join-Path $root 'ANON-OS.txt') -Raw;if($marker-notmatch 'ANON OS Windows'){throw 'ANON marker invalid.'};if($marker-notmatch "Architecture:\s*$ExpectedArchitecture"){throw 'Architecture marker mismatch.'}
+ $wim=Join-Path $root 'sources\install.wim';$info=&dism.exe /Get-WimInfo /WimFile:$wim 2>&1;if($LASTEXITCODE){throw 'DISM could not inspect install.wim.'};if($info-notmatch "Index\s*:\s*$ExpectedImageIndex"){throw "install.wim index $ExpectedImageIndex not found."}
+ $installMount=Join-Path ([IO.Path]::GetTempPath()) ('ANON-ISO-INSTALL-'+[guid]::NewGuid().ToString('N'));New-Item -ItemType Directory -Force -Path $installMount|Out-Null;&dism.exe /Mount-Wim /WimFile:$wim /Index:$ExpectedImageIndex /MountDir:$installMount /ReadOnly 2>&1|Write-Host;if($LASTEXITCODE){throw "install.wim read-only mount failed: $LASTEXITCODE"};$installMounted=$true
+ foreach($item in @('ProgramData\ANON\Shell\M0\ANON.Shell.M0.exe','ProgramData\ANON\Shell\Bootstrap\ANON.Shell.Bootstrap.exe','ProgramData\ANON\ANON-OS.txt','Windows\Setup\Scripts\SetupComplete.cmd')){if(-not(Test-Path (Join-Path $installMount $item))){throw "Required installed-image component missing: $item"}}
+ $bootWim=Join-Path $root 'sources\boot.wim';$bootMount=Join-Path ([IO.Path]::GetTempPath()) ('ANON-ISO-BOOT-'+[guid]::NewGuid().ToString('N'));New-Item -ItemType Directory -Force -Path $bootMount|Out-Null;&dism.exe /Mount-Wim /WimFile:$bootWim /Index:2 /MountDir:$bootMount /ReadOnly 2>&1|Write-Host;if($LASTEXITCODE){throw "boot.wim read-only mount failed: $LASTEXITCODE"};$bootMounted=$true
+ foreach($item in @('Windows\System32\ANON-Setup.cmd','Windows\System32\winpeshl.ini','Windows\System32\ANON-SETUP-MARKER.txt')){if(-not(Test-Path (Join-Path $bootMount $item))){throw "Required installer component missing: $item"}}
+ $setup=Get-Content (Join-Path $bootMount 'Windows\System32\ANON-Setup.cmd') -Raw;if($setup-notmatch '/legacy'){throw 'Legacy Setup bridge is not present.'};if($setup-notmatch 'Autounattend.xml'){throw 'Setup bridge does not explicitly pass Autounattend.xml.'}
+ Write-Host 'ISO structure validation: PASS';Write-Host 'Installer bridge validation: PASS';Write-Host 'ANON payload validation: PASS';Write-Host "Image index: $ExpectedImageIndex";Write-Host "SHA256: $hash";Write-Host "Architecture: $ExpectedArchitecture"
+}finally{
+ if($bootMounted){&dism.exe /Unmount-Wim /MountDir:$bootMount /Discard 2>&1|Write-Host};if($installMounted){&dism.exe /Unmount-Wim /MountDir:$installMount /Discard 2>&1|Write-Host};if($bootMount-and(Test-Path $bootMount)){Remove-Item $bootMount -Recurse -Force -ErrorAction SilentlyContinue};if($installMount-and(Test-Path $installMount)){Remove-Item $installMount -Recurse -Force -ErrorAction SilentlyContinue};if($disk){Dismount-DiskImage -ImagePath $iso -ErrorAction SilentlyContinue}}
+Write-Host 'VM validation remains mandatory: clean install, reboot, OOBE completion, first logon and ANON shell startup.'
