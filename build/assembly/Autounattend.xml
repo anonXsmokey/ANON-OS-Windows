@@ -8,7 +8,13 @@
     <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS">
       <DynamicUpdate><Enable>false</Enable></DynamicUpdate>
       <ImageInstall><OSImage><InstallFrom><MetaData wcm:action="add"><Key>/IMAGE/INDEX</Key><Value>6</Value></MetaData></InstallFrom><WillShowUI>OnError</WillShowUI></OSImage></ImageInstall>
-      <UserData><AcceptEula>true</AcceptEula></UserData>
+      <UserData>
+        <AcceptEula>true</AcceptEula>
+        <ProductKey>
+          <Key>VK7JG-NPHTM-C97JM-9MPGT-3V66T</Key>
+          <WillShowUI>Never</WillShowUI>
+        </ProductKey>
+      </UserData>
     </component>
   </settings>
   <settings pass="specialize">
