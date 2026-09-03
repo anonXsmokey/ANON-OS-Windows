@@ -12,14 +12,13 @@ public static class AnonAiProviderFactory
     {
         var endpoint = Environment.GetEnvironmentVariable("ANON_AI_ENDPOINT");
         var model = Environment.GetEnvironmentVariable("ANON_AI_MODEL");
-        var apiKey = Environment.GetEnvironmentVariable("ANON_AI_API_KEY");
         if (string.IsNullOrWhiteSpace(endpoint)) endpoint = "http://localhost:11434";
         if (string.IsNullOrWhiteSpace(model)) model = "gemma3:4b";
-        return new OllamaProvider(endpoint, model, apiKey);
+        return new OllamaProvider(endpoint, model);
     }
 }
 
-internal sealed class OllamaProvider(string endpoint, string model, string? apiKey) : IAnonAiProvider
+internal sealed class OllamaProvider(string endpoint, string model) : IAnonAiProvider
 {
     private readonly HttpClient _http = new() { BaseAddress = new Uri(endpoint.TrimEnd('/') + "/") };
 
