@@ -31,9 +31,9 @@ jobs:
         run: dotnet build core/Anon.Os.Core.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
 
   shell-build:
-    name: Build ANON Shell + Bootstrap
+    name: Build ANON Shell + Bootstrap + Performance Pet
     runs-on: windows-2022
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -53,14 +53,22 @@ jobs:
         run: dotnet build ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
       - name: Publish bootstrap
         run: dotnet publish ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --runtime ${{ env.RID }} --self-contained true --no-restore --output build/ci-bootstrap
+      - name: Restore Performance Pet
+        run: dotnet restore ux/shell/PerformancePet/ANON.PerformancePet.csproj --runtime ${{ env.RID }}
+      - name: Build Performance Pet
+        run: dotnet build ux/shell/PerformancePet/ANON.PerformancePet.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
+      - name: Publish Performance Pet
+        run: dotnet publish ux/shell/PerformancePet/ANON.PerformancePet.csproj --configuration Release --runtime ${{ env.RID }} --self-contained true --no-restore --output build/ci-performance-pet
       - name: Verify payload
         shell: pwsh
         run: |
           $shell = Resolve-Path build/ci-shell/ANON.Shell.M0.exe -ErrorAction SilentlyContinue
           $bootstrap = Resolve-Path build/ci-bootstrap/ANON.Shell.Bootstrap.exe -ErrorAction SilentlyContinue
+          $pet = Resolve-Path build/ci-performance-pet/ANON.PerformancePet.exe -ErrorAction SilentlyContinue
           if (-not $shell) { throw 'ANON.Shell.M0.exe was not produced.' }
           if (-not $bootstrap) { throw 'ANON.Shell.Bootstrap.exe was not produced.' }
-          Write-Host 'Shell + bootstrap build PASS'
+          if (-not $pet) { throw 'ANON.PerformancePet.exe was not produced.' }
+          Write-Host 'Shell + bootstrap + performance pet build PASS'
       - name: Upload shell smoke artifact
         uses: actions/upload-artifact@v4
         with:
@@ -68,4 +76,5 @@ jobs:
           path: |
             build/ci-shell
             build/ci-bootstrap
+            build/ci-performance-pet
           if-no-files-found: error
