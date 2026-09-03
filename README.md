@@ -35,6 +35,7 @@ SEARCH → LAUNCH → MEASURE → CONTROL → PLAY → RESTORE
 - Live CPU + memory telemetry
 - Visible Gaming Mode state
 - Graceful reduced-motion mode
+- **ANON Performance Pet** — lightweight animated system-tray indicator that reacts to CPU load and highlights Gaming Mode
 
 ### 🎨 ANON VISUAL SYSTEM
 
@@ -86,7 +87,7 @@ WINDOWS 11 25H2
       ↓
 WIM SERVICE / IMAGE INDEX
       ↓
-ANON SHELL + BOOTSTRAP + SETUPCOMPLETE
+ANON SHELL + BOOTSTRAP + PERFORMANCE PET + SETUPCOMPLETE
       ↓
 WINLOGON FIRST-LOGON HANDOFF
       ↓
@@ -121,6 +122,7 @@ The installer path is intentionally separated from the desktop runtime so a fail
 - [x] Measurable process benchmark runner
 - [x] Policy parser + guarded transformation executor
 - [x] Live shell telemetry
+- [x] Animated Performance Pet
 
 ### GAMING
 - [x] Gaming Mode foundation
@@ -144,6 +146,7 @@ The installer path is intentionally separated from the desktop runtime so a fail
 - [x] Windows image transformation foundation
 - [x] WIM servicing + ANON payload injection
 - [x] Bootstrap + Winlogon first-logon handoff
+- [x] Performance Pet payload integration
 - [x] SetupComplete integration
 - [x] WinPE legacy Setup bridge
 - [x] BIOS + UEFI ISO assembly
@@ -173,6 +176,7 @@ ANON-OS-Windows/
 ├── installer/        → installation + recovery
 ├── tests/             → validation
 ├── ux/shell/M0/      → ANON desktop shell
+├── ux/shell/PerformancePet/ → animated system telemetry companion
 └── build/            → image assembly + release gates
 ```
 
