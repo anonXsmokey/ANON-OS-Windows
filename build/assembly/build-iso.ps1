@@ -123,6 +123,9 @@ try {
     try{
         $sys=Join-Path $bootMount 'Windows\System32'
         $answer|Set-Content (Join-Path $sys 'Autounattend.xml') -Encoding UTF8
+        # WinPE expands %SYSTEMDRIVE% to X:. Keep a second copy at X:\Autounattend.xml
+        # because winpeshl.ini launches Setup before the install media drive letter is known.
+        $answer|Set-Content (Join-Path $bootMount 'Autounattend.xml') -Encoding UTF8
         @'
 [LaunchApps]
 %SYSTEMDRIVE%\setup.exe, /unattend:%SYSTEMDRIVE%\Autounattend.xml
