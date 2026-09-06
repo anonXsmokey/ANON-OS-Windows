@@ -50,7 +50,7 @@ jobs:
       - name: Restore bootstrap
         run: dotnet restore ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --runtime ${{ env.RID }}
       - name: Build bootstrap
-        run: dotnet build ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --no-restore --runtime win-x64
+        run: dotnet build ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
       - name: Publish bootstrap
         run: dotnet publish ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --runtime ${{ env.RID }} --self-contained true --no-restore --output build/ci-bootstrap
       - name: Restore Performance Pet
