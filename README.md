@@ -89,7 +89,7 @@ ANON AI → PROVIDER ABSTRACTION → OLLAMA → gemma3:4b
 ```
 
 - Local-first by default
-- No shared API key baked into the ISO
+- No shared cloud credential baked into the ISO
 - Cloud providers remain optional
 - AI failure cannot prevent the desktop from operating
 - AI is outside the critical boot path
@@ -111,7 +111,7 @@ SETUPCOMPLETE + AUTOUNATTEND
         ↓
 PATCH boot.wim INDEX 2
         ↓
-25H2 LEGACY SETUP BRIDGE
+FORCE LEGACY SETUP ENGINE
         ↓
 BIOS + UEFI ISO
         ↓
@@ -122,18 +122,26 @@ CLEAN VM INSTALL
 OOBE → FIRST LOGON → ANON DESKTOP
 ```
 
-### Why the legacy Setup bridge exists
+### 25H2 Setup compatibility
 
-Windows 11 24H2/25H2 media can route through the newer ConX Setup experience. That path is not reliable for ANON's full `windowsPE → specialize → oobeSystem → FirstLogonCommands` chain.
+Windows 11 24H2/25H2 media can route normal boot-time installation through the newer ConX Setup experience. Current 25H2 deployment testing shows that forcing the legacy Setup engine is the reliable path when an unattended file must carry the full `windowsPE → specialize → oobeSystem` workflow. citeturn4search0turn5search0
 
-ANON therefore patches `boot.wim` index 2 with the documented WinPE launcher mechanism:
+ANON patches **boot.wim index 2** with the WinPE launcher mechanism and deliberately calls the Setup executable inside WinPE's `sources` directory:
 
 ```ini
 [LaunchApps]
-%SYSTEMDRIVE%\setup.exe, /legacy
+%SYSTEMDRIVE%\sources\setup.exe, /legacy
 ```
 
-The answer file is also carried at the media root and embedded in the image, while the installed WIM receives a Panther fallback. This gives Setup multiple deterministic copies of the same answer file without relying on a fragile direct `/unattend` launch from the WinPE bootstrapper.
+The distinction matters: `X:\sources\setup.exe` is the Setup engine used for this handoff; `X:\setup.exe` is not the executable ANON should use for the legacy bridge. Microsoft documents `\sources\setup.exe` as the WinPE Setup entry point, while `Winpeshl.ini` officially supports launching an application with command-line options. citeturn4search9turn0search0
+
+The answer file is carried at the ISO root as `Autounattend.xml`, embedded in the WinPE image for deterministic diagnostics/fallback, and copied into the installed image's `Windows\Panther\unattend.xml`. Microsoft documents root-media discovery and Panther caching/processing for unattended Setup. citeturn5search0turn5search1
+
+### Why ANON does not use the previous direct `/unattend` bridge
+
+The previous engineering candidate launched the WinPE Setup path with a direct `setup.exe /unattend:X:\Autounattend.xml` command. That candidate produced an **invalid command-line argument** failure on the real VirtualBox boot test. It is rejected as a release candidate.
+
+The current implementation returns to the simpler, established 25H2 legacy-Setup mechanism and validates the **exact executable path and `/legacy` argument** inside `boot.wim` before an ISO is accepted as a candidate.
 
 ## 🔧 BUILD LOCALLY
 
@@ -154,9 +162,9 @@ cd E:\ANON-OS\ANON-OS-Windows
   -ImageIndex 6
 ```
 
-The local build publishes **all three** runtime components, services the WIM, patches `boot.wim`, assembles a dual-firmware ISO, validates the release structure and writes SHA-256/release metadata.
+The local build publishes **all three** runtime components, services the WIM, patches `boot.wim`, assembles a dual-firmware ISO, validates the image/payload/Setup chain and writes SHA-256/release metadata.
 
-`oscdimg.exe` discovery supports the user's existing `E:\Windows Kits\...` layout, standard Windows ADK locations and the `OSCDIMG_PATH` environment variable.
+`oscdimg.exe` discovery supports the existing `E:\Windows Kits\...` layout, standard Windows ADK locations and the `OSCDIMG_PATH` environment variable.
 
 ### GitHub Actions
 
@@ -176,7 +184,7 @@ A static validator passing does **not** make an ISO a final release.
 | Payload | All ANON runtime binaries present |
 | Setup | `SetupComplete.cmd` present |
 | Unattend | Media + WinPE + Panther answer-file paths valid |
-| WinPE | Legacy Setup bridge present in `boot.wim` index 2 |
+| WinPE | `X:\sources\setup.exe, /legacy` bridge present in `boot.wim` index 2 |
 | VM boot | ISO reliably reaches Setup |
 | Windows install | Clean installation completes |
 | OOBE | Intended unattended configuration is consumed |
@@ -194,13 +202,15 @@ Always test the newest ISO on a clean VM:
 1. Create a fresh VM disk.
 2. Attach the newly generated ANON ISO.
 3. Boot from the ISO.
-4. Complete installation/OOBE.
-5. Reach the first desktop.
-6. Reboot once.
-7. Confirm Bootstrap, M0 and Performance Pet start automatically.
-8. Verify Gaming Mode/profile/session behavior.
-9. Verify Explorer fallback by safely terminating the ANON shell process.
-10. Record failures before making manual changes.
+4. Confirm Windows Setup starts without a command-line error.
+5. Confirm the intended unattended Setup path is consumed.
+6. Complete installation/OOBE.
+7. Reach the first desktop.
+8. Reboot once.
+9. Confirm Bootstrap, M0 and Performance Pet start automatically.
+10. Verify Gaming Mode/profile/session behavior.
+11. Verify Explorer fallback by safely terminating the ANON shell process.
+12. Record failures before making manual changes.
 
 If Setup fails, inspect:
 
@@ -211,6 +221,20 @@ C:\Windows\Panther
 ```
 
 Useful logs: `setupact.log`, `setuperr.log`, `cbs_unattend.log`.
+
+## 🔐 RELEASE INTEGRITY
+
+Every generated candidate records:
+
+- Source ISO SHA-256
+- Output ISO SHA-256
+- Target architecture
+- Target WIM index
+- Installer bridge mode
+- Payload validation state
+- Release-gate state
+
+The release manifest intentionally remains **blocked** until real VM evidence is supplied. The finalization script only changes the manifest to `RELEASE_APPROVED` when the VM result contains PASS for boot, Windows installation, first logon and shell smoke gates.
 
 ---
 
