@@ -98,14 +98,17 @@ jobs:
         run: |
           $builder = Get-Content build/assembly/build-iso.ps1 -Raw
           $validator = Get-Content build/assembly/validate-iso.ps1 -Raw
-          $requiredBridge = '%SYSTEMDRIVE%\\sources\\setup.exe, /legacy'
-          $requiredLaunch = 'Launch: %SYSTEMDRIVE%\\sources\\setup.exe /legacy'
-          $requiredValidatorPattern = '%SYSTEMDRIVE%\\\\sources\\\\setup\\.exe'
-          foreach ($required in @($requiredBridge, $requiredLaunch)) {
-            if ($builder -notlike "*$required*") { throw "Builder is missing required WinPE contract text: $required" }
+          if ($builder -notmatch '(?m)%SYSTEMDRIVE%\\\\sources\\\\setup\.exe,\s*/legacy') {
+            throw 'Builder is missing the exact SYSTEMDRIVE legacy Setup bridge.'
           }
-          if ($validator -notlike "*$requiredValidatorPattern*") {
-            throw 'Validator is missing the WinPE SYSTEMDRIVE setup path contract.'
+          if ($builder -notmatch '(?m)^\s*"ANON legacy Setup bridge enabled\.') {
+            throw 'Builder is missing the WinPE legacy Setup marker.'
+          }
+          if ($builder -notmatch 'Launch:\s*%SYSTEMDRIVE%.*sources.*setup.*legacy') {
+            throw 'Builder marker does not describe the expected Setup launch contract.'
+          }
+          if ($validator -notmatch '%SYSTEMDRIVE%.*sources.*setup') {
+            throw 'Validator is missing the WinPE SYSTEMDRIVE Setup path contract.'
           }
           if ($builder -notmatch 'bootOrderCandidates') {
             throw 'Builder must derive oscdimg optimization hints from existing files.'
