@@ -119,10 +119,11 @@ try {
         if($LASTEXITCODE){throw "DISM install.wim commit failed: $LASTEXITCODE"}
     }
 
-    # Windows 11 24H2/25H2 media can route through the newer ConX Setup client.
-    # That path is not reliable for the full oobeSystem/FirstLogon workflow used by ANON.
-    # Force the proven legacy Setup client from WinPE and let it consume the media-root
-    # Autounattend.xml through the normal Setup answer-file search order.
+    # Windows 11 24H2/25H2 installation media can route the normal boot-time
+    # launcher through the newer ConX Setup client. For ANON we force the
+    # legacy Setup engine used by the unattended workflow.
+    # IMPORTANT: use X:\sources\setup.exe, not X:\setup.exe. The latter is
+    # the WinPE/media launcher and is the wrong executable for this handoff.
     $bootWim=Join-Path $source 'sources\boot.wim'
     if(-not(Test-Path $bootWim)){throw 'Windows source boot.wim missing.'}
     &$dism /Mount-Wim /WimFile:$bootWim /Index:2 /MountDir:$bootMount
@@ -130,20 +131,20 @@ try {
     try{
         $sys=Join-Path $bootMount 'Windows\System32'
         $answer|Set-Content (Join-Path $sys 'Autounattend.xml') -Encoding UTF8
-        # A second copy is kept at the WinPE system-drive root for deterministic fallback/search.
+        # Keep a second copy at the WinPE system-drive root for diagnostics and fallback.
         $answer|Set-Content (Join-Path $bootMount 'Autounattend.xml') -Encoding UTF8
         @'
 [LaunchApps]
-%SYSTEMDRIVE%\setup.exe, /legacy
+%SYSTEMDRIVE%\sources\setup.exe, /legacy
 '@|Set-Content (Join-Path $sys 'winpeshl.ini') -Encoding ASCII
-        "ANON legacy Setup bridge enabled.`r`nLaunch: %SYSTEMDRIVE%\setup.exe /legacy`r`nAnswer file: media-root Autounattend.xml + WinPE embedded fallback`r`n"|Set-Content (Join-Path $sys 'ANON-SETUP-MARKER.txt') -Encoding ASCII
+        "ANON legacy Setup bridge enabled.`r`nLaunch: %SYSTEMDRIVE%\sources\setup.exe /legacy`r`nAnswer file: media-root Autounattend.xml + WinPE embedded fallback`r`n"|Set-Content (Join-Path $sys 'ANON-SETUP-MARKER.txt') -Encoding ASCII
     }finally{
         &$dism /Unmount-Wim /MountDir:$bootMount /Commit
         if($LASTEXITCODE){throw "DISM boot.wim commit failed: $LASTEXITCODE"}
     }
 
     $rootMarker=Join-Path $source 'ANON-OS.txt'
-    "ANON OS Windows`r`nArchitecture: $Architecture`r`nImageIndex: $ImageIndex`r`nInstaller: boot.wim winpeshl.ini -> setup.exe /legacy -> media-root Autounattend.xml`r`nShell: FirstLogonCommands -> Winlogon Bootstrap -> ANON.Shell.M0`r`nPerformancePet: ANON.PerformancePet`r`n"|Set-Content $rootMarker -Encoding UTF8
+    "ANON OS Windows`r`nArchitecture: $Architecture`r`nImageIndex: $ImageIndex`r`nInstaller: boot.wim winpeshl.ini -> X:\sources\setup.exe /legacy -> media-root Autounattend.xml`r`nShell: FirstLogonCommands -> Winlogon Bootstrap -> ANON.Shell.M0`r`nPerformancePet: ANON.PerformancePet`r`n"|Set-Content $rootMarker -Encoding UTF8
 
     foreach($required in @('bootmgr','bootmgr.efi','boot\bcd','efi\microsoft\boot\bcd','sources\boot.wim','sources\install.wim','Autounattend.xml')){
         if(-not(Test-Path (Join-Path $source $required))){throw "Required release component missing: $required"}
@@ -171,7 +172,7 @@ try {
         OutputIso=(Split-Path $outIso -Leaf)
         OutputIsoSha256=$hash
         Validation='STRUCTURE+PAYLOAD;VM-FIRST-BOOT-REQUIRED'
-        Installer='boot.wim winpeshl.ini -> setup.exe /legacy + media-root Autounattend.xml + Panther fallback'
+        Installer='boot.wim winpeshl.ini -> X:\sources\setup.exe /legacy + media-root Autounattend.xml + Panther fallback'
         Shell='FirstLogonCommands -> Winlogon Bootstrap -> ANON.Shell.M0'
         PerformancePet='ANON.PerformancePet'
     }|ConvertTo-Json|Set-Content (Join-Path $OutputRoot 'BUILD-MANIFEST.json') -Encoding UTF8
