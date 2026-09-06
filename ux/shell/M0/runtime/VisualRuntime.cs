@@ -4,6 +4,8 @@ public sealed class VisualRuntime
 {
     private const string GamingModeFlag = @"C:\ProgramData\ANON\gaming-mode.flag";
 
+    public VisualRuntime() => UpdateGamingModeFlag(false);
+
     public VisualPolicy Current { get; private set; } = VisualPolicies.Balanced;
     public bool GamingMode { get; private set; }
     public bool ReducedMotion { get; private set; }
