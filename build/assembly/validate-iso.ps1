@@ -28,7 +28,7 @@ try {
     if($marker -notmatch 'ANON OS Windows'){throw 'ANON marker invalid.'}
     if($marker -notmatch "Architecture:\s*$ExpectedArchitecture"){throw 'Architecture marker mismatch.'}
     if($marker -notmatch '(?m)^PerformancePet:\s*ANON\.PerformancePet\s*$'){throw 'Performance Pet marker missing.'}
-    if($marker -notmatch '(?i)setup\.exe\s+/legacy'){throw 'Release marker does not identify the Windows 11 legacy Setup bridge.'}
+    if($marker -notmatch '(?i)X:\\sources\\setup\.exe\s+/legacy'){throw 'Release marker does not identify the correct Windows 11 legacy Setup bridge path.'}
 
     $wim=Join-Path $root 'sources\install.wim'
     $info=((&dism.exe /English /Get-WimInfo /WimFile:$wim 2>&1|Out-String))
@@ -70,8 +70,13 @@ try {
     }
 
     $winpe=Get-Content (Join-Path $bootMount 'Windows\System32\winpeshl.ini') -Raw
-    if($winpe -notmatch '(?im)^%SYSTEMDRIVE%\\setup\.exe,\s*/legacy\s*$'){
-        throw 'boot.wim does not force the Windows 11 legacy Setup client.'
+    if($winpe -notmatch '(?im)^%SYSTEMDRIVE%\\sources\\setup\.exe,\s*/legacy\s*$'){
+        throw 'boot.wim does not force X:\sources\setup.exe into the Windows 11 legacy Setup client.'
+    }
+
+    $bootMarker=Get-Content (Join-Path $bootMount 'Windows\System32\ANON-SETUP-MARKER.txt') -Raw
+    if($bootMarker -notmatch '(?i)X:\\sources\\setup\.exe\s+/legacy'){
+        throw 'boot.wim Setup marker does not match the actual legacy Setup executable path.'
     }
 
     $bootAnswer=Get-Content (Join-Path $bootMount 'Windows\System32\Autounattend.xml') -Raw
