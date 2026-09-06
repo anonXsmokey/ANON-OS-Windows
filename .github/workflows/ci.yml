@@ -52,7 +52,7 @@ jobs:
       - name: Build bootstrap
         run: dotnet build ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
       - name: Publish bootstrap
-        run: dotnet publish ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --runtime win-x64 --self-contained true --no-restore --output build/ci-bootstrap
+        run: dotnet publish ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --runtime ${{ env.RID }} --self-contained true --no-restore --output build/ci-bootstrap
       - name: Restore Performance Pet
         run: dotnet restore ux/shell/PerformancePet/ANON.PerformancePet.csproj --runtime ${{ env.RID }}
       - name: Build Performance Pet
@@ -93,6 +93,24 @@ jobs:
             throw 'Autounattend.xml is missing a required deployment pass.'
           }
           Write-Host 'Installer PowerShell + Autounattend XML syntax PASS'
+      - name: Validate installer contract consistency
+        shell: pwsh
+        run: |
+          $builder = Get-Content build/assembly/build-iso.ps1 -Raw
+          $validator = Get-Content build/assembly/validate-iso.ps1 -Raw
+          $requiredBridge = '%SYSTEMDRIVE%\\sources\\setup.exe, /legacy'
+          $requiredLaunch = 'Launch: %SYSTEMDRIVE%\\sources\\setup.exe /legacy'
+          $requiredValidatorPattern = '%SYSTEMDRIVE%\\\\sources\\\\setup\\.exe'
+          foreach ($required in @($requiredBridge, $requiredLaunch)) {
+            if ($builder -notlike "*$required*") { throw "Builder is missing required WinPE contract text: $required" }
+          }
+          if ($validator -notlike "*$requiredValidatorPattern*") {
+            throw 'Validator is missing the WinPE SYSTEMDRIVE setup path contract.'
+          }
+          if ($builder -notmatch 'bootOrderCandidates') {
+            throw 'Builder must derive oscdimg optimization hints from existing files.'
+          }
+          Write-Host 'Installer bridge contract consistency PASS'
       - name: Verify optimization policy code shape
         shell: pwsh
         run: |
@@ -119,12 +137,6 @@ jobs:
             if ($text -notmatch [regex]::Escape($required)) { throw "AI action boundary missing: $required" }
           }
           Write-Host 'AI action boundary gate PASS'
-      - name: Upload shell smoke artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: anon-shell-win-x64
-          path: |
-            build/ci-shell
-            build/ci-bootstrap
-            build/ci-performance-pet
-          if-no-files-found: error
+      - name: Repository diff hygiene
+        shell: bash
+        run: git diff --check --exit-code
