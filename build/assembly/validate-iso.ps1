@@ -75,8 +75,8 @@ try {
     }
 
     $bootMarker=Get-Content (Join-Path $bootMount 'Windows\System32\ANON-SETUP-MARKER.txt') -Raw
-    if($bootMarker -notmatch '(?i)X:\\sources\\setup\.exe\s+/legacy'){
-        throw 'boot.wim Setup marker does not match the actual legacy Setup executable path.'
+    if($bootMarker -notmatch '(?im)^Launch:\s*%SYSTEMDRIVE%\\sources\\setup\.exe\s+/legacy\s*$'){
+        throw 'boot.wim Setup marker does not match the generated WinPE launcher contract.'
     }
 
     $bootAnswer=Get-Content (Join-Path $bootMount 'Windows\System32\Autounattend.xml') -Raw
