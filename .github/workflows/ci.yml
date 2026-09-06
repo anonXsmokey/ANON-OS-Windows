@@ -69,6 +69,24 @@ jobs:
           if (-not $bootstrap) { throw 'ANON.Shell.Bootstrap.exe was not produced.' }
           if (-not $pet) { throw 'ANON.PerformancePet.exe was not produced.' }
           Write-Host 'Shell + bootstrap + performance pet build PASS'
+      - name: Validate installer scripts and answer file syntax
+        shell: pwsh
+        run: |
+          $files = @(
+            'build/assembly/build-iso.ps1',
+            'build/assembly/build-local.ps1',
+            'build/assembly/validate-iso.ps1',
+            'build/assembly/release-manifest.ps1',
+            'build/assembly/validate-release-gates.ps1'
+          )
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file), [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count) { throw "PowerShell syntax validation failed: $file`n$($errors | Out-String)" }
+          }
+          [xml](Get-Content build/assembly/Autounattend.xml -Raw) | Out-Null
+          Write-Host 'Installer PowerShell + Autounattend XML syntax PASS'
       - name: Upload shell smoke artifact
         uses: actions/upload-artifact@v4
         with:
