@@ -13,15 +13,20 @@ $ErrorActionPreference='Stop';Set-StrictMode -Version Latest
 function Find-Tool([string]$Name,[string[]]$Candidates){
     $cmd=Get-Command $Name -ErrorAction SilentlyContinue
     if($cmd){return $cmd.Source}
-    foreach($p in $Candidates){if(Test-Path -LiteralPath $p){return (Resolve-Path -LiteralPath $p).Path}}
+    foreach($p in $Candidates){if($p -and (Test-Path -LiteralPath $p)){return (Resolve-Path -LiteralPath $p).Path}}
     throw "Missing required tool: $Name"
 }
 $dism=Find-Tool 'dism.exe' @("$env:SystemRoot\System32\dism.exe")
 $reg=Find-Tool 'reg.exe' @("$env:SystemRoot\System32\reg.exe")
-$oscdimg=Find-Tool 'oscdimg.exe' @(
+$oscdimgCandidates=@(
+    $env:OSCDIMG_PATH,
     "E:\Windows Kits\10\ADK\Assessment and Deployment Kit\Deployment Tools\amd64\Oscdimg\oscdimg.exe",
-    "E:\Windows Kits\10\ADK\Assessment and Deployment Kit\Deployment Tools\x86\Oscdimg\oscdimg.exe"
+    "E:\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\amd64\Oscdimg\oscdimg.exe",
+    "$env:ProgramFiles(x86)\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\amd64\Oscdimg\oscdimg.exe",
+    "$env:ProgramFiles\Windows Kits\10\Assessment and Deployment Kit\Deployment Tools\amd64\Oscdimg\oscdimg.exe",
+    "$env:ProgramFiles(x86)\Windows Kits\10\ADK\Assessment and Deployment Kit\Deployment Tools\amd64\Oscdimg\oscdimg.exe"
 )
+$oscdimg=Find-Tool 'oscdimg.exe' $oscdimgCandidates
 $robocopy=Find-Tool 'robocopy.exe' @("$env:SystemRoot\System32\robocopy.exe")
 foreach($p in @($WindowsIso,$ShellPublish,$BootstrapPublish,$PerformancePetPublish)){
     if(-not(Test-Path -LiteralPath $p)){throw "Required input missing: $p"}
