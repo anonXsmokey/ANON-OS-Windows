@@ -49,7 +49,8 @@ jobs:
         env:
           WINDOWS_ISO_URL: ${{ inputs.windows_iso_url }}
         run: |
-          $dir="$env:GITHUB_WORKSPACE\build\input";New-Item -ItemType Directory -Force $dir|Out-Null
+          $dir="$env:GITHUB_WORKSPACE\build\input"
+          New-Item -ItemType Directory -Force $dir | Out-Null
           $iso="$dir\windows-source.iso"
           Invoke-WebRequest -Uri $env:WINDOWS_ISO_URL -OutFile $iso -UseBasicParsing
           if((Get-Item $iso).Length -lt 4000000000){throw 'Downloaded Windows ISO is unexpectedly small.'}
@@ -88,13 +89,19 @@ jobs:
           $iso=Get-ChildItem .\build\out\ANON-OS-Windows-*.iso|Select-Object -First 1
           & .\build\assembly\release-manifest.ps1 -IsoPath $iso.FullName
           & .\build\assembly\validate-release-gates.ps1 -ManifestPath (Join-Path $iso.DirectoryName 'RELEASE-MANIFEST.json')
-      - name: Upload ISO candidate
-        uses: actions/upload-artifact@v4
-        with:
-          name: ANON-OS-Windows-ISO
-          path: |
-            build/out/*.iso
-            build/out/*.txt
-            build/out/*.json
-          if-no-files-found: error
-          retention-days: 14
+      - name: Publish build summary
+        shell: pwsh
+        run: |
+          $iso=Get-ChildItem .\build\out\ANON-OS-Windows-*.iso|Select-Object -First 1
+          $sha=Get-FileHash $iso.FullName -Algorithm SHA256
+          @(
+            '# ANON OS ISO candidate',
+            '',
+            "ISO: $($iso.Name)",
+            "SizeBytes: $($iso.Length)",
+            "SHA256: $($sha.Hash)",
+            "Architecture: ${{ inputs.architecture }}",
+            "ImageIndex: ${{ inputs.image_index }}",
+            'StaticValidation: PASS',
+            'VMValidation: REQUIRED BEFORE RELEASE'
+          ) | Out-File "$env:GITHUB_STEP_SUMMARY" -Encoding utf8
