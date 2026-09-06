@@ -26,5 +26,8 @@ try{
  $iso=Get-ChildItem $OutputRoot -Filter 'ANON-OS-Windows-*.iso'|Sort-Object LastWriteTime -Descending|Select-Object -First 1;if(-not$iso){throw 'No ANON OS ISO was produced.'}
  & (Join-Path $root 'build\assembly\validate-iso.ps1') -IsoPath $iso.FullName -ExpectedArchitecture x64 -ExpectedImageIndex $ImageIndex
  & (Join-Path $root 'build\assembly\release-manifest.ps1') -IsoPath $iso.FullName
+ $manifest=Join-Path $iso.DirectoryName 'RELEASE-MANIFEST.json'
+ & (Join-Path $root 'build\assembly\validate-release-gates.ps1') -ManifestPath $manifest
  Write-Host "ANON OS ISO candidate: $($iso.FullName)"
+ Write-Host 'Static release gates: PASS; VM release gates remain mandatory.'
 }finally{Pop-Location}
