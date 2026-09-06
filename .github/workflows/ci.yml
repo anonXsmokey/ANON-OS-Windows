@@ -52,7 +52,7 @@ jobs:
       - name: Build bootstrap
         run: dotnet build ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
       - name: Publish bootstrap
-        run: dotnet publish ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --runtime ${{ env.RID }} --self-contained true --no-restore --output build/ci-bootstrap
+        run: dotnet publish ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --runtime win-x64 --self-contained true --no-restore --output build/ci-bootstrap
       - name: Restore Performance Pet
         run: dotnet restore ux/shell/PerformancePet/ANON.PerformancePet.csproj --runtime ${{ env.RID }}
       - name: Build Performance Pet
@@ -83,10 +83,42 @@ jobs:
             $tokens = $null
             $errors = $null
             [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file), [ref]$tokens, [ref]$errors) | Out-Null
-            if ($errors.Count) { throw "PowerShell syntax validation failed: $file`n$($errors | Out-String)" }
+            if ($errors.Count) {
+              throw "PowerShell syntax validation failed: $file`n$($errors | Out-String)"
+            }
           }
-          [xml](Get-Content build/assembly/Autounattend.xml -Raw) | Out-Null
+          $xml = Get-Content build/assembly/Autounattend.xml -Raw
+          [xml]$xml | Out-Null
+          if ($xml -notmatch 'windowsPE' -or $xml -notmatch 'oobeSystem' -or $xml -notmatch '/IMAGE/INDEX') {
+            throw 'Autounattend.xml is missing a required deployment pass.'
+          }
           Write-Host 'Installer PowerShell + Autounattend XML syntax PASS'
+      - name: Verify optimization policy code shape
+        shell: pwsh
+        run: |
+          $files = @(
+            'performance/optimization/OptimizationProfile.cs',
+            'performance/optimization/OptimizationPolicyEngine.cs',
+            'performance/optimization/OptimizationPlan.cs'
+          )
+          foreach ($file in $files) {
+            if (-not (Test-Path $file)) { throw "Optimization source missing: $file" }
+            $text = Get-Content $file -Raw
+            if ($text -notmatch 'Restore' -and $text -notmatch 'Reversible') {
+              throw "Optimization source lacks a rollback/reversibility marker: $file"
+            }
+          }
+          Write-Host 'Optimization source safety gate PASS'
+      - name: Verify AI action boundary
+        shell: pwsh
+        run: |
+          $file = 'anon-ai/runtime/AiActionContract.cs'
+          if (-not (Test-Path $file)) { throw 'AI action contract missing.' }
+          $text = Get-Content $file -Raw
+          foreach ($required in @('ReadOnly','UserConfirmed','SystemChange','IAiActionExecutor')) {
+            if ($text -notmatch [regex]::Escape($required)) { throw "AI action boundary missing: $required" }
+          }
+          Write-Host 'AI action boundary gate PASS'
       - name: Upload shell smoke artifact
         uses: actions/upload-artifact@v4
         with:
