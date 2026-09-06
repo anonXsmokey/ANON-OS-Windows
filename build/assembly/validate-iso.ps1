@@ -28,7 +28,7 @@ try {
     if($marker -notmatch 'ANON OS Windows'){throw 'ANON marker invalid.'}
     if($marker -notmatch "Architecture:\s*$ExpectedArchitecture"){throw 'Architecture marker mismatch.'}
     if($marker -notmatch '(?m)^PerformancePet:\s*ANON\.PerformancePet\s*$'){throw 'Performance Pet marker missing.'}
-    if($marker -notmatch '(?i)setup\.exe\s+/unattend:X:\\Autounattend\.xml'){throw 'Release marker does not identify the explicit unattended Setup bridge.'}
+    if($marker -notmatch '(?i)setup\.exe\s+/legacy'){throw 'Release marker does not identify the Windows 11 legacy Setup bridge.'}
 
     $wim=Join-Path $root 'sources\install.wim'
     $info=((&dism.exe /English /Get-WimInfo /WimFile:$wim 2>&1|Out-String))
@@ -63,14 +63,15 @@ try {
     foreach($item in @(
         'Windows\System32\winpeshl.ini',
         'Windows\System32\Autounattend.xml',
+        'Autounattend.xml',
         'Windows\System32\ANON-SETUP-MARKER.txt'
     )){
         if(-not(Test-Path (Join-Path $bootMount $item))){throw "Required installer component missing: $item"}
     }
 
     $winpe=Get-Content (Join-Path $bootMount 'Windows\System32\winpeshl.ini') -Raw
-    if($winpe -notmatch '(?i)setup\.exe,\s*/unattend:%SYSTEMDRIVE%\\Autounattend\.xml'){
-        throw 'boot.wim does not explicitly launch Setup with the embedded answer file.'
+    if($winpe -notmatch '(?im)^%SYSTEMDRIVE%\\setup\.exe,\s*/legacy\s*$'){
+        throw 'boot.wim does not force the Windows 11 legacy Setup client.'
     }
 
     $bootAnswer=Get-Content (Join-Path $bootMount 'Windows\System32\Autounattend.xml') -Raw
@@ -84,7 +85,7 @@ try {
     }
 
     Write-Host 'ISO structure validation: PASS'
-    Write-Host 'Installer bridge validation: PASS'
+    Write-Host 'Legacy Setup bridge validation: PASS'
     Write-Host 'Embedded WinPE answer-file validation: PASS'
     Write-Host 'ANON payload validation: PASS'
     Write-Host 'Performance Pet validation: PASS'
