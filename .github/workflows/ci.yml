@@ -50,7 +50,7 @@ jobs:
       - name: Restore bootstrap
         run: dotnet restore ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --runtime ${{ env.RID }}
       - name: Build bootstrap
-        run: dotnet build ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
+        run: dotnet build ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --no-restore --runtime win-x64
       - name: Publish bootstrap
         run: dotnet publish ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --runtime ${{ env.RID }} --self-contained true --no-restore --output build/ci-bootstrap
       - name: Restore Performance Pet
@@ -98,13 +98,15 @@ jobs:
         run: |
           $builder = Get-Content build/assembly/build-iso.ps1 -Raw
           $validator = Get-Content build/assembly/validate-iso.ps1 -Raw
-          if ($builder -notmatch '(?m)%SYSTEMDRIVE%\\\\sources\\\\setup\.exe,\s*/legacy') {
+          $requiredBridge = '%SYSTEMDRIVE%\sources\setup.exe, /legacy'
+          $requiredLaunch = 'Launch: %SYSTEMDRIVE%\sources\setup.exe /legacy'
+          if (-not $builder.Contains($requiredBridge)) {
             throw 'Builder is missing the exact SYSTEMDRIVE legacy Setup bridge.'
           }
-          if ($builder -notmatch '(?m)^\s*"ANON legacy Setup bridge enabled\.') {
+          if (-not $builder.Contains('ANON legacy Setup bridge enabled.')) {
             throw 'Builder is missing the WinPE legacy Setup marker.'
           }
-          if ($builder -notmatch 'Launch:\s*%SYSTEMDRIVE%.*sources.*setup.*legacy') {
+          if (-not $builder.Contains($requiredLaunch)) {
             throw 'Builder marker does not describe the expected Setup launch contract.'
           }
           if ($validator -notmatch '%SYSTEMDRIVE%.*sources.*setup') {
