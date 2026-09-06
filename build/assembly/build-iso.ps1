@@ -97,7 +97,6 @@ try {
         $answerPath=Join-Path $source 'Autounattend.xml'
         $answer|Set-Content $answerPath -Encoding UTF8
 
-        # Keep a post-install Panther fallback inside the image.
         $panther=Join-Path $mount 'Windows\Panther'
         New-Item -ItemType Directory -Force -Path $panther|Out-Null
         $answer|Set-Content (Join-Path $panther 'unattend.xml') -Encoding UTF8
@@ -122,8 +121,7 @@ try {
     # Windows 11 24H2/25H2 installation media can route the normal boot-time
     # launcher through the newer ConX Setup client. For ANON we force the
     # legacy Setup engine used by the unattended workflow.
-    # IMPORTANT: use X:\sources\setup.exe, not X:\setup.exe. The latter is
-    # the WinPE/media launcher and is the wrong executable for this handoff.
+    # IMPORTANT: use X:\sources\setup.exe, not X:\setup.exe.
     $bootWim=Join-Path $source 'sources\boot.wim'
     if(-not(Test-Path $bootWim)){throw 'Windows source boot.wim missing.'}
     &$dism /Mount-Wim /WimFile:$bootWim /Index:2 /MountDir:$bootMount
@@ -131,13 +129,22 @@ try {
     try{
         $sys=Join-Path $bootMount 'Windows\System32'
         $answer|Set-Content (Join-Path $sys 'Autounattend.xml') -Encoding UTF8
-        # Keep a second copy at the WinPE system-drive root for diagnostics and fallback.
         $answer|Set-Content (Join-Path $bootMount 'Autounattend.xml') -Encoding UTF8
         @'
 [LaunchApps]
 %SYSTEMDRIVE%\sources\setup.exe, /legacy
 '@|Set-Content (Join-Path $sys 'winpeshl.ini') -Encoding ASCII
         "ANON legacy Setup bridge enabled.`r`nLaunch: %SYSTEMDRIVE%\sources\setup.exe /legacy`r`nAnswer file: media-root Autounattend.xml + WinPE embedded fallback`r`n"|Set-Content (Join-Path $sys 'ANON-SETUP-MARKER.txt') -Encoding ASCII
+
+        # Self-check the exact strings that will later be validated from the ISO.
+        $winpeCheck=Get-Content (Join-Path $sys 'winpeshl.ini') -Raw
+        if($winpeCheck -notmatch '(?im)^%SYSTEMDRIVE%\\sources\\setup\.exe,\s*/legacy\s*$'){
+            throw 'Generated WinPE bridge self-check failed.'
+        }
+        $markerCheck=Get-Content (Join-Path $sys 'ANON-SETUP-MARKER.txt') -Raw
+        if($markerCheck -notmatch '(?im)^Launch:\s*%SYSTEMDRIVE%\\sources\\setup\.exe\s+/legacy\s*$'){
+            throw 'Generated WinPE marker self-check failed.'
+        }
     }finally{
         &$dism /Unmount-Wim /MountDir:$bootMount /Commit
         if($LASTEXITCODE){throw "DISM boot.wim commit failed: $LASTEXITCODE"}
@@ -154,8 +161,29 @@ try {
     if(-not(Test-Path $bootEtfs)){throw 'BIOS boot image missing.'}
     if(-not(Test-Path $efi)){throw 'UEFI boot image missing.'}
 
+    # oscdimg's -yo list is only an optimization hint. Build it from files
+    # that actually exist so a source ISO with optional files absent produces
+    # no spurious warnings.
+    $bootOrderCandidates=@(
+        'boot\bcd',
+        'boot\boot.sdi',
+        'boot\bootfix.bin',
+        'boot\bootsect.exe',
+        'boot\etfsboot.com',
+        'boot\memtest.efi',
+        'boot\memtest.exe',
+        'boot\en-us\bootsect.exe.mui',
+        'boot\fonts\chs_boot.ttf',
+        'boot\fonts\cht_boot.ttf',
+        'boot\fonts\jpn_boot.ttf',
+        'boot\fonts\kor_boot.ttf',
+        'boot\fonts\wgl4_boot.ttf',
+        'sources\boot.wim'
+    )
+    $bootOrderItems=@($bootOrderCandidates | Where-Object { Test-Path (Join-Path $source $_) })
+    if($bootOrderItems.Count -eq 0){throw 'No valid boot-order optimization files were found.'}
     $bootOrder=Join-Path $work 'bootOrder.txt'
-    @('boot\bcd','boot\boot.sdi','boot\bootfix.bin','boot\bootsect.exe','boot\etfsboot.com','boot\memtest.efi','boot\memtest.exe','boot\en-us\bootsect.exe.mui','boot\fonts\chs_boot.ttf','boot\fonts\cht_boot.ttf','boot\fonts\jpn_boot.ttf','boot\fonts\kor_boot.ttf','boot\fonts\wgl4_boot.ttf','sources\boot.wim')|Set-Content $bootOrder -Encoding ASCII
+    $bootOrderItems|Set-Content $bootOrder -Encoding ASCII
 
     $outIso=Join-Path $OutputRoot "ANON-OS-Windows-$stamp-$Architecture.iso"
     &$oscdimg -m -o -u2 -udfver102 "-yo$bootOrder" "-bootdata:2#p0,e,b$bootEtfs#pEF,e,b$efi" $source $outIso
