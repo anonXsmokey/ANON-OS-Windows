@@ -60,10 +60,22 @@ jobs:
           dotnet restore ux/shell/M0/ANON.Shell.M0.csproj --runtime win-x64
           dotnet publish ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --runtime win-x64 --self-contained true --no-restore --output "$env:GITHUB_WORKSPACE\build\shell-publish"
           if(-not(Test-Path "$env:GITHUB_WORKSPACE\build\shell-publish\ANON.Shell.M0.exe")){throw 'ANON Shell publish failed.'}
+      - name: Publish ANON bootstrap
+        shell: pwsh
+        run: |
+          dotnet restore ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --runtime win-x64
+          dotnet publish ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --configuration Release --runtime win-x64 --self-contained true --no-restore --output "$env:GITHUB_WORKSPACE\build\bootstrap-publish"
+          if(-not(Test-Path "$env:GITHUB_WORKSPACE\build\bootstrap-publish\ANON.Shell.Bootstrap.exe")){throw 'ANON Bootstrap publish failed.'}
+      - name: Publish ANON Performance Pet
+        shell: pwsh
+        run: |
+          dotnet restore ux/shell/PerformancePet/ANON.PerformancePet.csproj --runtime win-x64
+          dotnet publish ux/shell/PerformancePet/ANON.PerformancePet.csproj --configuration Release --runtime win-x64 --self-contained true --no-restore --output "$env:GITHUB_WORKSPACE\build\performance-pet-publish"
+          if(-not(Test-Path "$env:GITHUB_WORKSPACE\build\performance-pet-publish\ANON.PerformancePet.exe")){throw 'ANON Performance Pet publish failed.'}
       - name: Assemble ISO
         shell: pwsh
         run: |
-          & .\build\assembly\build-iso.ps1 -WindowsIso "$env:GITHUB_WORKSPACE\build\input\windows-source.iso" -ShellPublish "$env:GITHUB_WORKSPACE\build\shell-publish" -OutputRoot "$env:GITHUB_WORKSPACE\build\out" -Architecture '${{ inputs.architecture }}' -ImageIndex ([int]'${{ inputs.image_index }}')
+          & .\build\assembly\build-iso.ps1 -WindowsIso "$env:GITHUB_WORKSPACE\build\input\windows-source.iso" -ShellPublish "$env:GITHUB_WORKSPACE\build\shell-publish" -BootstrapPublish "$env:GITHUB_WORKSPACE\build\bootstrap-publish" -PerformancePetPublish "$env:GITHUB_WORKSPACE\build\performance-pet-publish" -OutputRoot "$env:GITHUB_WORKSPACE\build\out" -Architecture '${{ inputs.architecture }}' -ImageIndex ([int]'${{ inputs.image_index }}')
       - name: Validate ISO
         shell: pwsh
         run: |
