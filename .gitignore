@@ -10,8 +10,15 @@ build/assembly/iso-*/
 *.vdi
 
 # Local publish output
+build/shell-publish/
+build/bootstrap-publish/
+build/performance-pet-publish/
+build/ci-shell/
+build/ci-bootstrap/
+build/ci-performance-pet/
 **/bin/
 **/obj/
 
 # VM test state
 build/assembly/vm/
+build/assembly/out/vm/
