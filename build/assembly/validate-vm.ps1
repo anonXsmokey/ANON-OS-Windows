@@ -6,5 +6,21 @@ $vmware=Get-Command vmrun.exe -ErrorAction SilentlyContinue;$virtualbox=Get-Comm
 if(-not$vmware -and -not$virtualbox){throw 'No supported VM runner found. Install VMware Workstation or VirtualBox before release validation.'}
 if(-not$OutputPath){$OutputPath=Join-Path (Split-Path $IsoPath) 'VM-VALIDATION-MANIFEST.json'}
 $hash=(Get-FileHash -LiteralPath (Resolve-Path $IsoPath) -Algorithm SHA256).Hash
-[ordered]@{SchemaVersion=1;VmName=$VmName;Iso=(Resolve-Path $IsoPath).Path;IsoSha256=$hash;Runner=if($virtualbox){'VBoxManage'}else{'vmrun'};VmBoot='REQUIRED';WindowsInstall='REQUIRED';FirstLogon='REQUIRED';ShellSmoke='REQUIRED';ValidatedUtc=$null}|ConvertTo-Json|Set-Content $OutputPath -Encoding UTF8
-Write-Host "VM validation manifest created: $OutputPath";Write-Host 'No gate is marked PASS by runner detection alone.'
+[ordered]@{
+ SchemaVersion=2
+ VmName=$VmName
+ Iso=(Resolve-Path $IsoPath).Path
+ IsoSha256=$hash
+ Runner=if($virtualbox){'VBoxManage'}else{'vmrun'}
+ VmBoot='REQUIRED'
+ WindowsInstall='REQUIRED'
+ FirstLogon='REQUIRED'
+ ShellSmoke='REQUIRED'
+ Gaming='REQUIRED'
+ Recovery='REQUIRED'
+ Benchmark='REQUIRED'
+ ValidatedUtc=$null
+}|ConvertTo-Json|Set-Content $OutputPath -Encoding UTF8
+Write-Host "VM validation manifest created: $OutputPath"
+Write-Host 'No gate is marked PASS by runner detection alone.'
+Write-Host 'Required runtime gates: boot, install, first logon, shell, gaming, recovery, benchmark.'
