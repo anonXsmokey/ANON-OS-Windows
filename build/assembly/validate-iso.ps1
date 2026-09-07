@@ -88,6 +88,12 @@ try {
     if($answer -notmatch '/IMAGE/INDEX' -or $answer -notmatch 'oobeSystem' -or $answer -notmatch '<ProductKey>'){
         throw 'Media Autounattend.xml is missing required Setup/OOBE/ProductKey configuration.'
     }
+    if($answer -match 'CurrentVersion\\Winlogon"\s+/v\s+Shell'){
+        throw 'Autounattend must not replace the Winlogon shell; Explorer must remain the recovery shell.'
+    }
+    if($answer -notmatch 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -or $answer -notmatch 'ANONShell' -or $answer -notmatch 'ANON\.Shell\.Bootstrap\.exe'){
+        throw 'Autounattend is missing the safe per-user ANON launcher contract.'
+    }
 
     Write-Host 'ISO structure validation: PASS'
     Write-Host 'Legacy Setup bridge validation: PASS'
@@ -95,6 +101,7 @@ try {
     Write-Host 'ANON payload validation: PASS'
     Write-Host 'Performance Pet validation: PASS'
     Write-Host 'Panther fallback validation: PASS'
+    Write-Host 'Safe desktop launcher validation: PASS'
     Write-Host 'Autounattend validation: PASS'
     Write-Host "Image index: $ExpectedImageIndex"
     Write-Host "SHA256: $hash"
