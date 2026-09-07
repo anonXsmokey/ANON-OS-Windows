@@ -33,12 +33,8 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-
-        // The XAML uses a bounded launcher, but the search field itself should
-        // stretch on compact displays instead of forcing a fixed 620px width.
         SearchBox.Width = double.NaN;
         SearchBox.HorizontalAlignment = HorizontalAlignment.Stretch;
-
         _themeRuntime = new ThemeRuntime(_themes);
         _desktop = new DesktopController(_themeRuntime, _layoutRuntime, _visualRuntime, _wallpaperRuntime, _widgetRuntime);
         _visualRuntime.Changed += (_, _) => { ApplyRuntimeState(); SavePreferences(); };
@@ -92,6 +88,7 @@ public sealed partial class MainWindow : Window
         var model = _desktop.RenderModel;
         var motion = model.Transition.Enabled ? $"motion {model.Transition.DurationMilliseconds}ms" : "motion off";
         var gaming = _desktop.GamingMode ? " • GAMING MODE ON" : "";
+        GamingModeButton.Content = _desktop.GamingMode ? "EXIT GAMING" : "PLAY";
         SetStatus($"{model.ThemeId} • {model.LayoutId} • {motion}{gaming}");
         if (_surfaceLoaded) PlaySurfaceTransition(model.Transition);
     }
@@ -111,7 +108,6 @@ public sealed partial class MainWindow : Window
             SurfaceTransform.ScaleY = 1;
             return;
         }
-
         var duration = Math.Clamp(transition.DurationMilliseconds, 100, 700);
         var intensity = Math.Clamp(transition.Intensity, 0, 1);
         var startOpacity = 1 - (0.16 * intensity);
@@ -148,8 +144,6 @@ public sealed partial class MainWindow : Window
         }
         catch
         {
-            // Telemetry is informative only. A telemetry failure must never
-            // take down the desktop surface or fabricate a value.
             CpuText.Text = "CPU     unavailable";
             MemoryText.Text = "MEMORY  unavailable";
             CpuBar.Value = 0;
@@ -167,7 +161,6 @@ public sealed partial class MainWindow : Window
             SetStatus("Gaming Mode disabled. Windows remains available normally.");
             return;
         }
-
         _desktop.EnterGamingMode();
         SetStatus("Gaming Mode enabled. Choose a game to launch.");
         Games_Click(this, new RoutedEventArgs());
@@ -194,7 +187,7 @@ public sealed partial class MainWindow : Window
     private void Home_Click(object sender, RoutedEventArgs e)
     {
         LauncherPanel.Visibility = Visibility.Collapsed;
-        SetStatus(_desktop.GamingMode ? "Home • Gaming Mode active. Press PLAY to exit." : "Home.");
+        SetStatus(_desktop.GamingMode ? "Home • Gaming Mode active. Press EXIT GAMING to leave." : "Home.");
     }
 
     private void Files_Click(object sender, RoutedEventArgs e)
@@ -281,7 +274,6 @@ public sealed partial class MainWindow : Window
             e.Handled = true;
             return;
         }
-
         if (e.Key != Windows.System.VirtualKey.Enter) return;
         var command = _launcherCatalog.Search(SearchBox.Text.Trim()).FirstOrDefault();
         if (command is null) return;
