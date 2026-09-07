@@ -21,9 +21,9 @@
             </Grid>
         </Border>
 
-        <!-- Search results -->
-        <Border x:Name="LauncherPanel" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,68,0,0" Width="620" MaxWidth="720" MaxHeight="310" Background="#F20E131D" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="8">
-            <ListView x:Name="LauncherResults" IsItemClickEnabled="True" ItemClick="LauncherResults_ItemClick" SelectionMode="None">
+        <!-- Search results: hidden until the user enters a query. -->
+        <Border x:Name="LauncherPanel" Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,68,0,0" Width="620" MaxWidth="720" MaxHeight="310" Background="#F20E131D" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1" CornerRadius="16" Padding="8" Visibility="Collapsed">
+            <ListView x:Name="LauncherResults" IsItemClickEnabled="True" ItemClick="LauncherResults_ItemClick" SelectionMode="None" AutomationProperties.Name="ANON launcher results">
                 <ListView.ItemTemplate><DataTemplate><Grid Padding="14,11"><Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="34" Height="34" CornerRadius="10" Background="{StaticResource AnonAccentSoftBrush}"><TextBlock Text="›" FontSize="22" Foreground="{StaticResource AnonAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><StackPanel Grid.Column="1" Spacing="2"><TextBlock Text="{Binding Title}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource AnonTextBrush}" /><TextBlock Text="{Binding Subtitle}" FontSize="11" Foreground="{StaticResource AnonMutedTextBrush}" /></StackPanel></Grid></DataTemplate></ListView.ItemTemplate>
             </ListView>
         </Border>
