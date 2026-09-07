@@ -62,8 +62,10 @@ public sealed class SystemWindow : Window
         Grid.SetRow(actionScroll, 1); root.Children.Add(actionScroll);
 
         var content = new Grid { ColumnSpacing = 16, RowSpacing = 16, Padding = new Thickness(0, 0, 0, 4) };
-        content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.15, GridUnitType.Star) }); content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.15, GridUnitType.Star) });
+        content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         var telemetryCard = Card(); var telemetryStack = new StackPanel { Spacing = 12 }; telemetryStack.Children.Add(SectionTitle("PERFORMANCE")); _telemetryText.FontSize = 14; _telemetryText.Foreground = Muted; telemetryStack.Children.Add(_telemetryText); _cpuBar.Maximum = 100; _cpuBar.Height = 5; telemetryStack.Children.Add(_cpuBar); _memoryBar.Maximum = 100; _memoryBar.Height = 5; telemetryStack.Children.Add(_memoryBar); telemetryCard.Child = telemetryStack; content.Children.Add(telemetryCard);
         var hardwareCard = Card(); var hardwareStack = new StackPanel { Spacing = 10 }; hardwareStack.Children.Add(SectionTitle("HARDWARE")); _hardwareText.FontSize = 13; _hardwareText.TextWrapping = TextWrapping.Wrap; _hardwareText.Foreground = Muted; hardwareStack.Children.Add(_hardwareText); hardwareCard.Child = hardwareStack; Grid.SetColumn(hardwareCard, 1); content.Children.Add(hardwareCard);
         var storageCard = Card(); var storageStack = new StackPanel { Spacing = 10 }; storageStack.Children.Add(SectionTitle("STORAGE")); _storageText.FontSize = 13; _storageText.TextWrapping = TextWrapping.Wrap; _storageText.Foreground = Muted; storageStack.Children.Add(_storageText); storageStack.Children.Add(new TextBlock { Text = "ANON does not modify storage policy in the shell.", FontSize = 11, Foreground = Muted, TextWrapping = TextWrapping.Wrap }); storageCard.Child = storageStack; Grid.SetRow(storageCard, 1); content.Children.Add(storageCard);
@@ -80,7 +82,9 @@ public sealed class SystemWindow : Window
     private static TextBlock SectionTitle(string text) => new() { Text = text, FontSize = 15, FontWeight = FontWeights.SemiBold, Foreground = Text };
     private void AddAction(Grid grid, string label, string target, int column)
     {
-        var button = CreateButton(label); button.Margin = new Thickness(column == 0 ? 0 : 8, 0, 0, 0); button.Click += (_, _) => Launch(target); Grid.SetColumn(button, column); grid.Children.Add(button);
+        var button = CreateButton(label);
+        button.Margin = column == 0 ? new Thickness(0) : new Thickness(8, 0, 0, 0);
+        button.Click += (_, _) => Launch(target); Grid.SetColumn(button, column); grid.Children.Add(button);
     }
     private void AddWindowAction(Grid grid, string label, int column, Action action)
     {
@@ -93,8 +97,7 @@ public sealed class SystemWindow : Window
         try
         {
             if (_controlCenter is null) { _controlCenter = new ControlCenterWindow(); _controlCenter.Closed += (_, _) => _controlCenter = null; }
-            _controlCenter.Activate();
-            _statusText.Text = "ANON Control Center opened.";
+            _controlCenter.Activate(); _statusText.Text = "ANON Control Center opened.";
         }
         catch (Exception ex) { _statusText.Text = $"Control Center error: {ex.Message}"; }
     }
@@ -104,8 +107,7 @@ public sealed class SystemWindow : Window
         try
         {
             if (_aiWindow is null) { _aiWindow = new AiWindow(); _aiWindow.Closed += (_, _) => _aiWindow = null; }
-            _aiWindow.Activate();
-            _statusText.Text = "ANON AI opened.";
+            _aiWindow.Activate(); _statusText.Text = "ANON AI opened.";
         }
         catch (Exception ex) { _statusText.Text = $"ANON AI error: {ex.Message}"; }
     }
@@ -116,13 +118,10 @@ public sealed class SystemWindow : Window
         {
             var snapshot = _telemetry.Read();
             _telemetryText.Text = $"CPU     {snapshot.CpuPercent:0}%\nMEMORY  {snapshot.MemoryUsedPercent:0}% ({FormatBytes(snapshot.MemoryUsedBytes)} / {FormatBytes(snapshot.MemoryTotalBytes)})";
-            _cpuBar.Value = Math.Clamp(snapshot.CpuPercent, 0, 100);
-            _memoryBar.Value = Math.Clamp(snapshot.MemoryUsedPercent, 0, 100);
+            _cpuBar.Value = Math.Clamp(snapshot.CpuPercent, 0, 100); _memoryBar.Value = Math.Clamp(snapshot.MemoryUsedPercent, 0, 100);
         }
         catch { _telemetryText.Text = "CPU     unavailable\nMEMORY  unavailable"; _cpuBar.Value = 0; _memoryBar.Value = 0; }
-
         _hardwareText.Text = $"Logical processors   {Environment.ProcessorCount}\nOS architecture      {RuntimeInformation.OSArchitecture}\nProcess architecture {RuntimeInformation.ProcessArchitecture}\nOS                   {Environment.OSVersion.VersionString}";
-
         try
         {
             var drives = DriveInfo.GetDrives().Where(d => d.IsReady).Select(d => $"{d.Name.TrimEnd('\\')}   {FormatBytes(d.TotalSize - d.AvailableFreeSpace)} used / {FormatBytes(d.TotalSize)}").ToArray();
@@ -134,11 +133,7 @@ public sealed class SystemWindow : Window
 
     private void Launch(string target)
     {
-        try
-        {
-            Process.Start(new ProcessStartInfo { FileName = target, UseShellExecute = true });
-            _statusText.Text = $"Opened {target}.";
-        }
+        try { Process.Start(new ProcessStartInfo { FileName = target, UseShellExecute = true }); _statusText.Text = $"Opened {target}."; }
         catch (Exception ex) { _statusText.Text = $"Could not open {target}: {ex.Message}"; }
     }
 
