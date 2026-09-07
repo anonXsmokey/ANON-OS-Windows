@@ -10,7 +10,17 @@ $manifest=[ordered]@{
  Product='ANON OS Windows';Channel='private-alpha';Status='candidate'
  Version=(Get-Date).ToUniversalTime().ToString('yyyy.MM.dd.HHmm');Architecture='x64'
  IsoPath=$resolved;IsoBytes=$info.Length;Sha256=$hash;GeneratedUtc=[DateTime]::UtcNow.ToString('o')
- Gates=[ordered]@{ShellBuild='required';IsoStructure='required';VmBoot='required';WindowsInstall='required';FirstLogon='required';ShellSmoke='required'}
+ Gates=[ordered]@{
+  ShellBuild='required'
+  IsoStructure='required'
+  VmBoot='required'
+  WindowsInstall='required'
+  FirstLogon='required'
+  ShellSmoke='required'
+  Gaming='required'
+  Recovery='required'
+  Benchmark='required'
+ }
  ReleaseDecision='BLOCKED_UNTIL_ALL_GATES_PASS'
 }
 $manifest|ConvertTo-Json -Depth 6|Set-Content -LiteralPath $OutputPath -Encoding UTF8
