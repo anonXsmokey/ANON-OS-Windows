@@ -27,7 +27,7 @@ public sealed class DisabledAiProvider : IAnonAiProvider
         cancellationToken.ThrowIfCancellationRequested();
         return Task.FromResult(new AiResponse(
             "ANON AI is disabled. Configure an approved provider before sending prompts.",
-            FromLocalProvider: true,
+            FromLocalProvider: false,
             DateTimeOffset.UtcNow));
     }
 }
@@ -58,6 +58,7 @@ internal sealed class OllamaProvider : IAnonAiProvider
     {
         _http = httpClient;
         _http.BaseAddress = new Uri(endpoint.TrimEnd('/') + "/");
+        _http.Timeout = TimeSpan.FromSeconds(12);
         _model = model;
     }
 
