@@ -53,7 +53,10 @@ public sealed class AiActionGate
     {
         ArgumentNullException.ThrowIfNull(action);
 
-        if (action.Risk is AiActionRisk.UserConfirmed or AiActionRisk.SystemChange && !userConfirmed)
+        var confirmationRequired = action.Risk is
+            AiActionRisk.UserConfirmed or AiActionRisk.SystemChange;
+
+        if (confirmationRequired && !userConfirmed)
         {
             return Task.FromResult(new AiActionResult(
                 false,
