@@ -92,12 +92,19 @@ jobs:
           if ($xml -notmatch 'windowsPE' -or $xml -notmatch 'oobeSystem' -or $xml -notmatch '/IMAGE/INDEX') {
             throw 'Autounattend.xml is missing a required deployment pass.'
           }
-          Write-Host 'Installer PowerShell + Autounattend XML syntax PASS'
+          if ($xml -match 'CurrentVersion\\Winlogon.*Shell') {
+            throw 'Autounattend must not replace the Winlogon shell.'
+          }
+          if ($xml -notmatch 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -or $xml -notmatch 'ANONShell' -or $xml -notmatch 'ANON\.Shell\.Bootstrap\.exe') {
+            throw 'Autounattend is missing the safe per-user ANON launcher contract.'
+          }
+          Write-Host 'Installer PowerShell + Autounattend XML + safe launcher syntax PASS'
       - name: Validate installer contract consistency
         shell: pwsh
         run: |
           $builder = Get-Content build/assembly/build-iso.ps1 -Raw
           $validator = Get-Content build/assembly/validate-iso.ps1 -Raw
+          $answer = Get-Content build/assembly/Autounattend.xml -Raw
           $requiredBridge = '%SYSTEMDRIVE%\sources\setup.exe, /legacy'
           $requiredLaunch = 'Launch: %SYSTEMDRIVE%\sources\setup.exe /legacy'
           if (-not $builder.Contains($requiredBridge)) {
@@ -112,10 +119,16 @@ jobs:
           if ($validator -notmatch '%SYSTEMDRIVE%.*sources.*setup') {
             throw 'Validator is missing the WinPE SYSTEMDRIVE Setup path contract.'
           }
+          if ($answer -match 'CurrentVersion\\Winlogon.*Shell') {
+            throw 'Installer contract still attempts to replace Winlogon Shell.'
+          }
+          if ($answer -notmatch 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run') {
+            throw 'Installer contract lacks the per-user ANON launcher.'
+          }
           if ($builder -notmatch 'bootOrderCandidates') {
             throw 'Builder must derive oscdimg optimization hints from existing files.'
           }
-          Write-Host 'Installer bridge contract consistency PASS'
+          Write-Host 'Installer bridge + safe desktop launcher contract consistency PASS'
       - name: Verify optimization policy code shape
         shell: pwsh
         run: |
