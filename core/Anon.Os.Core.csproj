@@ -15,6 +15,7 @@
   <ItemGroup>
     <Compile Include="preflight\**\*.cs" />
     <Compile Include="recovery\**\*.cs" />
+    <Compile Include="..\recovery\**\*.cs" />
     <Compile Include="transformation\**\*.cs" />
     <Compile Include="..\hardware\**\*.cs" />
     <Compile Include="..\compatibility\**\*.cs" />
