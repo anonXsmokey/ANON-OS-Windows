@@ -59,7 +59,7 @@ public sealed class AiWindow : Window
         _prompt.PlaceholderText = "Ask ANON AI anything…";
         _prompt.AcceptsReturn = true;
         _prompt.TextWrapping = TextWrapping.Wrap;
-        _prompt.CharacterLimit = 4000;
+        _prompt.MaxLength = 4000;
         _prompt.MinHeight = 100;
         _prompt.Margin = new Thickness(0, 16, 0, 10);
         _prompt.Background = SurfaceStrong;
