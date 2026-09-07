@@ -90,7 +90,7 @@ public sealed class SystemWindow : Window
     {
         var button = CreateButton(label); button.Margin = new Thickness(8, 0, 0, 0); button.Click += (_, _) => action(); Grid.SetColumn(button, column); grid.Children.Add(button);
     }
-    private static Button CreateButton(string label) => new() { Content = label, Background = Surface, Foreground = Text, BorderBrush = Border, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8), MinHeight = 38 };
+    private static Button CreateButton(string label) => new() { Content = label, Background = Surface, Foreground = Text, BorderBrush = Border, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8, 12, 8), MinHeight = 38 };
 
     private void OpenControlCenter()
     {
