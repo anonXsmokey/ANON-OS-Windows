@@ -116,21 +116,13 @@ jobs:
             $tokens = $null
             $errors = $null
             [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file), [ref]$tokens, [ref]$errors) | Out-Null
-            if ($errors.Count) {
-              throw "PowerShell syntax validation failed: $file`n$($errors | Out-String)"
-            }
+            if ($errors.Count) { throw "PowerShell syntax validation failed: $file`n$($errors | Out-String)" }
           }
           $xml = Get-Content build/assembly/Autounattend.xml -Raw
           [xml]$xml | Out-Null
-          if ($xml -notmatch 'windowsPE' -or $xml -notmatch 'oobeSystem' -or $xml -notmatch '/IMAGE/INDEX') {
-            throw 'Autounattend.xml is missing a required deployment pass.'
-          }
-          if ($xml -match 'CurrentVersion\\Winlogon.*Shell') {
-            throw 'Autounattend must not replace the Winlogon shell.'
-          }
-          if ($xml -notmatch 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -or $xml -notmatch 'ANONShell' -or $xml -notmatch 'ANON\.Shell\.Bootstrap\.exe') {
-            throw 'Autounattend is missing the safe per-user ANON launcher contract.'
-          }
+          if ($xml -notmatch 'windowsPE' -or $xml -notmatch 'oobeSystem' -or $xml -notmatch '/IMAGE/INDEX') { throw 'Autounattend.xml is missing a required deployment pass.' }
+          if ($xml -match 'CurrentVersion\\Winlogon.*Shell') { throw 'Autounattend must not replace the Winlogon shell.' }
+          if ($xml -notmatch 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -or $xml -notmatch 'ANONShell' -or $xml -notmatch 'ANON\.Shell\.Bootstrap\.exe') { throw 'Autounattend is missing the safe per-user ANON launcher contract.' }
           Write-Host 'Installer PowerShell + Autounattend XML + safe launcher syntax PASS'
       - name: Validate installer contract consistency
         shell: pwsh
@@ -140,30 +132,14 @@ jobs:
           $answer = Get-Content build/assembly/Autounattend.xml -Raw
           $requiredBridge = '%SYSTEMDRIVE%\sources\setup.exe, /legacy'
           $requiredLaunch = 'Launch: %SYSTEMDRIVE%\sources\setup.exe /legacy'
-          if (-not $builder.Contains($requiredBridge)) {
-            throw 'Builder is missing the exact SYSTEMDRIVE legacy Setup bridge.'
-          }
-          if (-not $builder.Contains('ANON legacy Setup bridge enabled.')) {
-            throw 'Builder is missing the WinPE legacy Setup marker.'
-          }
-          if (-not $builder.Contains($requiredLaunch)) {
-            throw 'Builder marker does not describe the expected Setup launch contract.'
-          }
-          if ($validator -notmatch '%SYSTEMDRIVE%.*sources.*setup') {
-            throw 'Validator is missing the WinPE SYSTEMDRIVE Setup path contract.'
-          }
-          if ($answer -match 'CurrentVersion\\Winlogon.*Shell') {
-            throw 'Installer contract still attempts to replace Winlogon Shell.'
-          }
-          if ($answer -notmatch 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run') {
-            throw 'Installer contract lacks the per-user ANON launcher.'
-          }
-          if ($builder -notmatch 'bootOrderCandidates') {
-            throw 'Builder must derive oscdimg optimization hints from existing files.'
-          }
-          if ($builder -match 'FirstLogonCommands\s*->\s*Winlogon') {
-            throw 'Builder documentation still claims ANON replaces Winlogon Shell.'
-          }
+          if (-not $builder.Contains($requiredBridge)) { throw 'Builder is missing the exact SYSTEMDRIVE legacy Setup bridge.' }
+          if (-not $builder.Contains('ANON legacy Setup bridge enabled.')) { throw 'Builder is missing the WinPE legacy Setup marker.' }
+          if (-not $builder.Contains($requiredLaunch)) { throw 'Builder marker does not describe the expected Setup launch contract.' }
+          if ($validator -notmatch '%SYSTEMDRIVE%.*sources.*setup') { throw 'Validator is missing the WinPE SYSTEMDRIVE Setup path contract.' }
+          if ($answer -match 'CurrentVersion\\Winlogon.*Shell') { throw 'Installer contract still attempts to replace Winlogon Shell.' }
+          if ($answer -notmatch 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run') { throw 'Installer contract lacks the per-user ANON launcher.' }
+          if ($builder -notmatch 'bootOrderCandidates') { throw 'Builder must derive oscdimg optimization hints from existing files.' }
+          if ($builder -match 'FirstLogonCommands\s*->\s*Winlogon') { throw 'Builder documentation still claims ANON replaces Winlogon Shell.' }
           Write-Host 'Installer bridge + safe desktop launcher contract consistency PASS'
       - name: Verify optimization policy code shape
         shell: pwsh
@@ -176,11 +152,33 @@ jobs:
           foreach ($file in $files) {
             if (-not (Test-Path $file)) { throw "Optimization source missing: $file" }
             $text = Get-Content $file -Raw
-            if ($text -notmatch 'Restore' -and $text -notmatch 'Reversible') {
-              throw "Optimization source lacks a rollback/reversibility marker: $file"
-            }
+            if ($text -notmatch 'Restore' -and $text -notmatch 'Reversible') { throw "Optimization source lacks a rollback/reversibility marker: $file" }
           }
           Write-Host 'Optimization source safety gate PASS'
+      - name: Validate M0 UI contract
+        shell: pwsh
+        run: |
+          $xaml = Get-Content 'ux/shell/M0/MainWindow.xaml' -Raw
+          $code = Get-Content 'ux/shell/M0/MainWindow.xaml.cs' -Raw
+          $theme = Get-Content 'ux/shell/M0/Themes/AnonTheme.xaml' -Raw
+          $requiredXaml = @(
+            'SearchBox', 'LauncherPanel', 'GamingModeButton', 'VisualProfile',
+            'ReducedMotion', 'FirstRunOverlay', 'FirstRunTheme', 'FirstRunProfile',
+            'Files_Click', 'Apps_Click', 'Games_Click', 'Ai_Click', 'System_Click'
+          )
+          foreach ($token in $requiredXaml) {
+            if ($xaml -notmatch [regex]::Escape($token)) { throw "M0 UI contract missing XAML token: $token" }
+          }
+          foreach ($handler in @('SearchBox_TextChanged','SearchBox_KeyDown','LauncherResults_ItemClick','Play_Click','ReducedMotion_Click','CompleteFirstRun_Click','SkipFirstRun_Click')) {
+            if ($code -notmatch [regex]::Escape($handler)) { throw "M0 UI contract missing handler: $handler" }
+          }
+          foreach ($style in @('AnonPrimaryButtonStyle','AnonSecondaryButtonStyle','AnonNavButtonStyle','AnonIconButtonStyle','AnonSearchBoxStyle')) {
+            if ($theme -notmatch [regex]::Escape($style)) { throw "M0 theme contract missing style: $style" }
+          }
+          if ($code -notmatch 'GamingModeButton\.Content\s*=') { throw 'Gaming Mode button is not synchronized with runtime state.' }
+          if ($code -notmatch 'SearchBox\.Width\s*=\s*double\.NaN') { throw 'Launcher search is fixed-width and may clip on compact displays.' }
+          if ($code -notmatch 'unavailable') { throw 'Telemetry failure state is not explicitly handled.' }
+          Write-Host 'M0 UI contract + accessibility/responsive/failure-state checks PASS'
       - name: Repository diff hygiene
         shell: bash
         run: git diff --check --exit-code
