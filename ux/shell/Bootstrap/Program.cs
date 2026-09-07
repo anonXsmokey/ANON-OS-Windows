@@ -12,13 +12,19 @@ void Log(string message)
     try { File.AppendAllText(LogFile, $"{DateTime.Now:O} {message}{Environment.NewLine}"); } catch { }
 }
 
+using var instanceMutex = new Mutex(true, "Local\\ANON.OS.Shell.Bootstrap", out var createdNew);
+if (!createdNew)
+{
+    Log("Duplicate bootstrap launch ignored");
+    return;
+}
+
 Log("ANON shell bootstrap started");
 StartPerformancePet();
 
 if (!File.Exists(ShellExe))
 {
-    Log("ANON shell executable missing; starting Explorer fallback");
-    StartExplorer();
+    Log("ANON shell executable missing; Explorer remains the recovery shell");
     return;
 }
 
@@ -53,8 +59,7 @@ for (var attempt = 1; attempt <= 3; attempt++)
     }
 }
 
-Log("ANON shell failed repeatedly; starting Explorer fallback");
-StartExplorer();
+Log("ANON shell failed repeatedly; Explorer remains available as the recovery shell");
 
 void StartPerformancePet()
 {
@@ -79,17 +84,4 @@ void StartPerformancePet()
     {
         Log($"Performance Pet launch failed: {ex.GetType().Name}: {ex.Message}");
     }
-}
-
-static void StartExplorer()
-{
-    try
-    {
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = Environment.ExpandEnvironmentVariables(@"%WINDIR%\explorer.exe"),
-            UseShellExecute = true
-        });
-    }
-    catch { }
 }
