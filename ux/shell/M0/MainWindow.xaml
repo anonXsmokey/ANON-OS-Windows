@@ -1,189 +1,65 @@
 <Window x:Class="Anon.Shell.M0.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="ANON OS"
-        Width="1280" Height="820" MinWidth="980" MinHeight="620"
-        WindowStartupLocation="CenterScreen"
-        Background="{StaticResource AnonBackgroundBrush}"
-        Foreground="{StaticResource AnonTextBrush}"
-        FontFamily="Segoe UI Variable, Segoe UI">
+        Title="ANON OS" Width="1280" Height="820" MinWidth="980" MinHeight="620"
+        WindowStartupLocation="CenterScreen" Background="{StaticResource AnonBackgroundBrush}"
+        Foreground="{StaticResource AnonTextBrush}" FontFamily="Segoe UI Variable, Segoe UI">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="74" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="68" />
-        </Grid.RowDefinitions>
-
+        <Grid.RowDefinitions><RowDefinition Height="74" /><RowDefinition Height="*" /><RowDefinition Height="68" /></Grid.RowDefinitions>
         <Border Grid.Row="0" Background="#0A0E16" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="0,0,0,1">
             <Grid Margin="26,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="290" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="290" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Width="44" Height="44" CornerRadius="13" Background="{StaticResource AnonAccentGradient}">
-                        <TextBlock Text="A" Foreground="#07101C" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="ANON" FontSize="19" FontWeight="SemiBold" />
-                        <TextBlock Text="OPERATING ENVIRONMENT" FontSize="9" Foreground="{StaticResource AnonMutedTextBrush}" />
-                    </StackPanel>
+                    <Border Width="44" Height="44" CornerRadius="13" Background="{StaticResource AnonAccentGradient}"><TextBlock Text="A" Foreground="#07101C" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center"><TextBlock Text="ANON" FontSize="19" FontWeight="SemiBold" /><TextBlock Text="OPERATING ENVIRONMENT" FontSize="9" Foreground="{StaticResource AnonMutedTextBrush}" /></StackPanel>
                 </StackPanel>
-                <Border Grid.Column="1" MaxWidth="720" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <TextBox x:Name="SearchBox" Width="620" Height="44" Padding="16,10" FontSize="13"
-                             Background="#121925" Foreground="{StaticResource AnonTextBrush}"
-                             BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1"
-                             TextChanged="SearchBox_TextChanged" KeyDown="SearchBox_KeyDown"
-                             ToolTip="Search ANON commands and Windows destinations" />
+                <TextBox Grid.Column="1" x:Name="SearchBox" Height="44" MaxWidth="620" Padding="16,10" FontSize="13" HorizontalAlignment="Center" VerticalAlignment="Center"
+                         Background="#121925" Foreground="{StaticResource AnonTextBrush}" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1"
+                         TextChanged="SearchBox_TextChanged" KeyDown="SearchBox_KeyDown" ToolTip="Search ANON destinations" />
+                <Border Grid.Column="2" Padding="12,7" CornerRadius="10" Background="{StaticResource AnonSurfaceStrongBrush}" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal"><Ellipse Width="7" Height="7" Fill="{StaticResource AnonSuccessBrush}" Margin="0,0,7,0" VerticalAlignment="Center" /><TextBlock Text="READY" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AnonMutedTextBrush}" /></StackPanel>
                 </Border>
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Padding="12,7" CornerRadius="10" Background="{StaticResource AnonSurfaceStrongBrush}">
-                        <StackPanel Orientation="Horizontal">
-                            <Ellipse Width="7" Height="7" Fill="{StaticResource AnonSuccessBrush}" Margin="0,0,7,0" VerticalAlignment="Center" />
-                            <TextBlock Text="READY" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AnonMutedTextBrush}" />
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
             </Grid>
         </Border>
 
         <Border x:Name="LauncherPanel" Grid.Row="0" Margin="0,66,0,0" Width="620" MaxHeight="280" HorizontalAlignment="Center" VerticalAlignment="Top"
-                Background="#F20E131D" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="6" Visibility="Collapsed" Panel.ZIndex="10">
+                Background="#F20E131D" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1" CornerRadius="14" Padding="6" Visibility="Collapsed" Panel.ZIndex="20">
             <ListBox x:Name="LauncherResults" BorderThickness="0" Background="Transparent" MouseDoubleClick="LauncherResults_MouseDoubleClick">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Grid Margin="2" Padding="11">
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                            <Border Width="34" Height="34" CornerRadius="9" Background="{StaticResource AnonAccentSoftBrush}">
-                                <TextBlock Text="›" FontSize="20" Foreground="{StaticResource AnonAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            </Border>
-                            <StackPanel Grid.Column="1" Margin="12,0,0,0">
-                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" />
-                                <TextBlock Text="{Binding Subtitle}" FontSize="11" Foreground="{StaticResource AnonMutedTextBrush}" />
-                            </StackPanel>
-                        </Grid>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
+                <ListBox.ItemTemplate><DataTemplate><Grid Margin="2" Padding="11"><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Width="34" Height="34" CornerRadius="9" Background="{StaticResource AnonAccentSoftBrush}"><TextBlock Text="›" FontSize="20" Foreground="{StaticResource AnonAccentBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><StackPanel Grid.Column="1" Margin="12,0,0,0"><TextBlock Text="{Binding Title}" FontWeight="SemiBold" /><TextBlock Text="{Binding Subtitle}" FontSize="11" Foreground="{StaticResource AnonMutedTextBrush}" /></StackPanel></Grid></DataTemplate></ListBox.ItemTemplate>
             </ListBox>
         </Border>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <Grid Margin="42,30,42,28" MaxWidth="1500" HorizontalAlignment="Center">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-
+                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                 <Grid Grid.Row="0" Margin="0,0,0,24">
-                    <StackPanel>
-                        <TextBlock Text="WELCOME BACK" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AnonAccentBrush}" />
-                        <TextBlock Text="Your space." FontSize="42" FontWeight="SemiBold" Margin="0,5,0,4" />
-                        <TextBlock Text="A calm, capable Windows desktop with an ANON identity." FontSize="14" Foreground="{StaticResource AnonMutedTextBrush}" />
-                    </StackPanel>
-                    <Border HorizontalAlignment="Right" VerticalAlignment="Center" Padding="14,10" CornerRadius="14" Background="{StaticResource AnonSurfaceBrush}" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1">
-                        <StackPanel Orientation="Horizontal">
-                            <Ellipse Width="8" Height="8" Fill="{StaticResource AnonSuccessBrush}" VerticalAlignment="Center" Margin="0,0,9,0" />
-                            <StackPanel>
-                                <TextBlock Text="ANON CORE" FontSize="11" FontWeight="SemiBold" />
-                                <TextBlock Text="WINDOWS NATIVE" FontSize="9" Foreground="{StaticResource AnonMutedTextBrush}" />
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
+                    <StackPanel><TextBlock Text="WELCOME BACK" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource AnonAccentBrush}" /><TextBlock Text="Your space." FontSize="42" FontWeight="SemiBold" Margin="0,5,0,4" /><TextBlock Text="A calm, capable Windows desktop with an ANON identity." FontSize="14" Foreground="{StaticResource AnonMutedTextBrush}" /></StackPanel>
+                    <Border HorizontalAlignment="Right" VerticalAlignment="Center" Padding="14,10" CornerRadius="14" Background="{StaticResource AnonSurfaceBrush}" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1"><StackPanel Orientation="Horizontal"><Ellipse Width="8" Height="8" Fill="{StaticResource AnonSuccessBrush}" VerticalAlignment="Center" Margin="0,0,9,0" /><StackPanel><TextBlock Text="ANON CORE" FontSize="11" FontWeight="SemiBold" /><TextBlock Text="WINDOWS NATIVE" FontSize="9" Foreground="{StaticResource AnonMutedTextBrush}" /></StackPanel></StackPanel></Border>
                 </Grid>
-
                 <Grid Grid.Row="1" Margin="0,0,0,18">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2.2*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="1*" />
-                    </Grid.ColumnDefinitions>
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="2.2*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="1*" /></Grid.ColumnDefinitions>
                     <Border Grid.Column="0" MinHeight="315" CornerRadius="24" Background="#0C1522" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="1" Padding="32">
-                        <Grid>
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="220" /></Grid.ColumnDefinitions>
+                        <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="220" /></Grid.ColumnDefinitions>
                             <StackPanel VerticalAlignment="Center">
-                                <Border HorizontalAlignment="Left" Padding="10,6" CornerRadius="8" Background="{StaticResource AnonAccentSoftBrush}">
-                                    <TextBlock Text="DESIGNED FOR FOCUS" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AnonAccentBrush}" />
-                                </Border>
+                                <Border HorizontalAlignment="Left" Padding="10,6" CornerRadius="8" Background="{StaticResource AnonAccentSoftBrush}"><TextBlock Text="DESIGNED FOR FOCUS" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AnonAccentBrush}" /></Border>
                                 <TextBlock Text="Everything you need.&#x0a;Nothing in your way." FontSize="34" FontWeight="SemiBold" Margin="0,16,0,10" />
                                 <TextBlock Text="Launch your apps, games and files from one coherent environment. Windows stays underneath; ANON is what you see." TextWrapping="Wrap" MaxWidth="640" Foreground="{StaticResource AnonMutedTextBrush}" FontSize="13" />
-                                <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
-                                    <Button x:Name="GamingModeButton" Content="PLAY" Click="Play_Click" Style="{StaticResource PrimaryButtonStyle}" />
-                                    <Button Content="LIBRARY" Click="Library_Click" Style="{StaticResource SecondaryButtonStyle}" />
-                                    <Button Content="SYSTEM" Click="System_Click" Style="{StaticResource SecondaryButtonStyle}" />
-                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0,20,0,0"><Button x:Name="GamingModeButton" Content="PLAY" Click="Play_Click" Style="{StaticResource PrimaryButtonStyle}" /><Button Content="LIBRARY" Click="Library_Click" Style="{StaticResource SecondaryButtonStyle}" /><Button Content="SYSTEM" Click="System_Click" Style="{StaticResource SecondaryButtonStyle}" /></StackPanel>
                                 <TextBlock x:Name="StatusText" Text="Ready." FontSize="11" Foreground="{StaticResource AnonMutedTextBrush}" Margin="0,10,0,0" />
                             </StackPanel>
-                            <Grid Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Ellipse Width="184" Height="184" Fill="#161F31" Stroke="{StaticResource AnonAccentBrush}" StrokeThickness="1" />
-                                <Ellipse Width="136" Height="136" Fill="#101725" Stroke="#4B6280" StrokeThickness="1" />
-                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                    <TextBlock Text="ANON" FontSize="27" FontWeight="Bold" HorizontalAlignment="Center" />
-                                    <TextBlock Text="CORE" FontSize="9" Foreground="{StaticResource AnonAccentBrush}" HorizontalAlignment="Center" />
-                                </StackPanel>
-                            </Grid>
+                            <Grid Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Center"><Ellipse Width="184" Height="184" Fill="#161F31" Stroke="{StaticResource AnonAccentBrush}" StrokeThickness="1" /><Ellipse Width="136" Height="136" Fill="#101725" Stroke="#4B6280" StrokeThickness="1" /><StackPanel HorizontalAlignment="Center" VerticalAlignment="Center"><TextBlock Text="ANON" FontSize="27" FontWeight="Bold" HorizontalAlignment="Center" /><TextBlock Text="CORE" FontSize="9" Foreground="{StaticResource AnonAccentBrush}" HorizontalAlignment="Center" /></StackPanel></Grid>
                         </Grid>
                     </Border>
                     <StackPanel Grid.Column="2">
-                        <Border Style="{StaticResource CardStyle}" Margin="0,0,0,18">
-                            <StackPanel>
-                                <Grid><TextBlock Text="SYSTEM" FontSize="16" FontWeight="SemiBold" /><TextBlock Text="LIVE" HorizontalAlignment="Right" FontSize="9" Foreground="{StaticResource AnonSuccessBrush}" /></Grid>
-                                <TextBlock x:Name="CpuText" Text="CPU     —" Margin="0,14,0,4" Foreground="{StaticResource AnonMutedTextBrush}" />
-                                <ProgressBar x:Name="CpuBar" Height="5" Minimum="0" Maximum="100" />
-                                <TextBlock x:Name="MemoryText" Text="MEMORY  —" Margin="0,12,0,4" Foreground="{StaticResource AnonMutedTextBrush}" />
-                                <ProgressBar x:Name="MemoryBar" Height="5" Minimum="0" Maximum="100" />
-                                <TextBlock Text="GPU     telemetry coming next" FontSize="10" Foreground="{StaticResource AnonMutedTextBrush}" Margin="0,12,0,0" />
-                            </StackPanel>
-                        </Border>
-                        <Border Style="{StaticResource CardStyle}">
-                            <StackPanel>
-                                <TextBlock Text="VISUAL PROFILE" FontSize="16" FontWeight="SemiBold" />
-                                <ComboBox x:Name="VisualProfile" SelectionChanged="VisualProfile_SelectionChanged" Margin="0,14,0,10" SelectedIndex="1">
-                                    <ComboBoxItem Content="Maximum Performance" />
-                                    <ComboBoxItem Content="Gaming" />
-                                    <ComboBoxItem Content="Balanced" />
-                                    <ComboBoxItem Content="Immersive" />
-                                </ComboBox>
-                                <CheckBox x:Name="ReducedMotion" Content="Reduced motion" Click="ReducedMotion_Click" Foreground="{StaticResource AnonTextBrush}" />
-                            </StackPanel>
-                        </Border>
+                        <Border Style="{StaticResource CardStyle}" Margin="0,0,0,18"><StackPanel><Grid><TextBlock Text="SYSTEM" FontSize="16" FontWeight="SemiBold" /><TextBlock Text="LIVE" HorizontalAlignment="Right" FontSize="9" Foreground="{StaticResource AnonSuccessBrush}" /></Grid><TextBlock x:Name="CpuText" Text="CPU     —" Margin="0,14,0,4" Foreground="{StaticResource AnonMutedTextBrush}" /><ProgressBar x:Name="CpuBar" Height="5" Minimum="0" Maximum="100" /><TextBlock x:Name="MemoryText" Text="MEMORY  —" Margin="0,12,0,4" Foreground="{StaticResource AnonMutedTextBrush}" /><ProgressBar x:Name="MemoryBar" Height="5" Minimum="0" Maximum="100" /><TextBlock Text="GPU     telemetry coming next" FontSize="10" Foreground="{StaticResource AnonMutedTextBrush}" Margin="0,12,0,0" /></StackPanel></Border>
+                        <Border Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="VISUAL PROFILE" FontSize="16" FontWeight="SemiBold" /><ComboBox x:Name="VisualProfile" SelectionChanged="VisualProfile_SelectionChanged" Margin="0,14,0,10" SelectedIndex="1"><ComboBoxItem Content="Maximum Performance" /><ComboBoxItem Content="Gaming" /><ComboBoxItem Content="Balanced" /><ComboBoxItem Content="Immersive" /></ComboBox><CheckBox x:Name="ReducedMotion" Content="Reduced motion" Click="ReducedMotion_Click" Foreground="{StaticResource AnonTextBrush}" /></StackPanel></Border>
                     </StackPanel>
                 </Grid>
-
-                <Grid Grid.Row="2" Margin="0,0,0,18">
-                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                    <Border Grid.Column="0" Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="FILES" FontSize="16" FontWeight="SemiBold" /><TextBlock Text="A clean entry point to the Windows file system." TextWrapping="Wrap" Margin="0,10,0,15" Foreground="{StaticResource AnonMutedTextBrush}" /><Button Content="OPEN FILES" Click="Files_Click" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" /></StackPanel></Border>
-                    <Border Grid.Column="2" Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="APPLICATIONS" FontSize="16" FontWeight="SemiBold" /><TextBlock Text="Your installed software, presented as an ANON library." TextWrapping="Wrap" Margin="0,10,0,15" Foreground="{StaticResource AnonMutedTextBrush}" /><Button Content="OPEN APPS" Click="Apps_Click" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" /></StackPanel></Border>
-                    <Border Grid.Column="4" Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="GAMES" FontSize="16" FontWeight="SemiBold" /><TextBlock Text="A focused gaming surface with a dedicated performance mode." TextWrapping="Wrap" Margin="0,10,0,15" Foreground="{StaticResource AnonMutedTextBrush}" /><Button Content="OPEN GAMES" Click="Games_Click" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" /></StackPanel></Border>
-                </Grid>
-
-                <Border Grid.Row="3" Style="{StaticResource CardStyle}" Padding="24">
-                    <Grid>
-                        <StackPanel>
-                            <TextBlock Text="ANON AI" FontSize="18" FontWeight="SemiBold" />
-                            <TextBlock Text="Local-first intelligence. Configure an Ollama model on this PC; cloud-compatible endpoints remain opt-in." TextWrapping="Wrap" Foreground="{StaticResource AnonMutedTextBrush}" Margin="0,7,0,0" />
-                        </StackPanel>
-                        <Button Grid.Column="1" Content="OPEN ANON AI" Click="Ai_Click" Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                    </Grid>
-                </Border>
+                <Grid Grid.Row="2" Margin="0,0,0,18"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Border Grid.Column="0" Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="FILES" FontSize="16" FontWeight="SemiBold" /><TextBlock Text="A clean entry point to the Windows file system." TextWrapping="Wrap" Margin="0,10,0,15" Foreground="{StaticResource AnonMutedTextBrush}" /><Button Content="OPEN FILES" Click="Files_Click" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" /></StackPanel></Border><Border Grid.Column="2" Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="APPLICATIONS" FontSize="16" FontWeight="SemiBold" /><TextBlock Text="Your installed software, presented as an ANON library." TextWrapping="Wrap" Margin="0,10,0,15" Foreground="{StaticResource AnonMutedTextBrush}" /><Button Content="OPEN APPS" Click="Apps_Click" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" /></StackPanel></Border><Border Grid.Column="4" Style="{StaticResource CardStyle}"><StackPanel><TextBlock Text="GAMES" FontSize="16" FontWeight="SemiBold" /><TextBlock Text="A focused gaming surface with a dedicated performance mode." TextWrapping="Wrap" Margin="0,10,0,15" Foreground="{StaticResource AnonMutedTextBrush}" /><Button Content="OPEN GAMES" Click="Games_Click" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" /></StackPanel></Border></Grid>
+                <Border Grid.Row="3" Style="{StaticResource CardStyle}" Padding="24"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><StackPanel><TextBlock Text="ANON AI" FontSize="18" FontWeight="SemiBold" /><TextBlock Text="Local-first intelligence. Configure an Ollama model on this PC; cloud-compatible endpoints remain opt-in." TextWrapping="Wrap" Foreground="{StaticResource AnonMutedTextBrush}" Margin="0,7,0,0" /></StackPanel><Button Grid.Column="1" Content="OPEN ANON AI" Click="Ai_Click" Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Right" VerticalAlignment="Center" /></Grid></Border>
             </Grid>
         </ScrollViewer>
 
-        <Border Grid.Row="2" Background="#E60A0E16" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="0,1,0,0" Padding="24,0">
-            <Grid>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button Content="HOME" Click="Home_Click" Style="{StaticResource NavButtonStyle}" />
-                    <Button Content="FILES" Click="Files_Click" Style="{StaticResource NavButtonStyle}" />
-                    <Button Content="APPS" Click="Apps_Click" Style="{StaticResource NavButtonStyle}" />
-                    <Button Content="GAMES" Click="Games_Click" Style="{StaticResource NavButtonStyle}" />
-                    <Button Content="ANON AI" Click="Ai_Click" Style="{StaticResource NavButtonStyle}" />
-                    <Button Content="SYSTEM" Click="System_Click" Style="{StaticResource NavButtonStyle}" />
-                </StackPanel>
-                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="ANON OS" FontSize="10" FontWeight="SemiBold" Margin="0,0,14,0" />
-                    <TextBlock Text="WPF NATIVE SHELL" FontSize="9" Foreground="{StaticResource AnonMutedTextBrush}" />
-                </StackPanel>
-            </Grid>
-        </Border>
+        <Border Grid.Row="2" Background="#E60A0E16" BorderBrush="{StaticResource AnonBorderBrush}" BorderThickness="0,1,0,0" Padding="24,0"><Grid><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><Button Content="HOME" Click="Home_Click" Style="{StaticResource NavButtonStyle}" /><Button Content="FILES" Click="Files_Click" Style="{StaticResource NavButtonStyle}" /><Button Content="APPS" Click="Apps_Click" Style="{StaticResource NavButtonStyle}" /><Button Content="GAMES" Click="Games_Click" Style="{StaticResource NavButtonStyle}" /><Button Content="ANON AI" Click="Ai_Click" Style="{StaticResource NavButtonStyle}" /><Button Content="SYSTEM" Click="System_Click" Style="{StaticResource NavButtonStyle}" /></StackPanel><StackPanel HorizontalAlignment="Right" Orientation="Horizontal" VerticalAlignment="Center"><TextBlock Text="ANON OS" FontSize="10" FontWeight="SemiBold" Margin="0,0,14,0" /><TextBlock Text="WPF NATIVE SHELL" FontSize="9" Foreground="{StaticResource AnonMutedTextBrush}" /></StackPanel></Grid></Border>
     </Grid>
 </Window>
