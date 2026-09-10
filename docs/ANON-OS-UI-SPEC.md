@@ -13,7 +13,7 @@ This document is the UI contract for M0 and the later Experience layer. It preve
 - **Premium:** restrained dark-glass surfaces, consistent spacing, typography, radii and motion.
 - **Transparent:** system state is visible; ANON must not claim telemetry or capability it has not actually measured.
 - **Recoverable:** ANON failures must leave Windows Explorer usable.
-- **Accessible:** every actionable control has a visible label or AutomationProperties name, sufficient contrast, focus indication and a reduced-motion path.
+- **Accessible:** every actionable control has a visible label, sufficient contrast, focus indication and a reduced-motion path.
 - **Responsive:** the layout must remain usable from compact laptop dimensions through large desktop displays; fixed-width controls must not force horizontal clipping.
 
 ## Information architecture
@@ -51,7 +51,7 @@ The Home surface must expose:
 8. A persistent status line for the last ANON action.
 9. A recovery-safe path to ordinary Windows applications.
 
-The current M0 implementation provides these surfaces in `MainWindow.xaml` and `MainWindow.xaml.cs`.
+The current WPF M0 implementation provides these surfaces in `MainWindow.xaml` and `MainWindow.xaml.cs`.
 
 ## Launcher
 
@@ -87,17 +87,17 @@ ANON AI is optional and must never be required for the desktop to function. Prov
 
 ## Onboarding
 
-First run is a short setup, not a tutorial wall. It should collect:
+M0 currently favors immediate usability over a mandatory onboarding wall. A later first-run surface may collect:
 
 - performance profile
 - visual identity
 - reduced-motion preference
 
-The choices must be editable later. Skipping onboarding must still produce a usable desktop.
+The choices must be editable later. Skipping onboarding must always produce a usable desktop.
 
 ## Visual system
 
-Canonical M0 tokens live in `ux/shell/M0/Themes/AnonTheme.xaml`.
+Canonical M0 visual tokens live in `ux/shell/M0/App.xaml` because M0 is now a dependency-light WPF shell. The legacy `Themes` tree is not part of the M0 build surface.
 
 Required consistency:
 
@@ -123,16 +123,15 @@ Every major surface must have a non-destructive failure state. Examples:
 
 Before M0 is considered UI-valid:
 
-- XAML parses/builds.
+- WPF XAML parses/builds.
 - Code-behind event handlers compile.
 - All navigation actions open their target surface or report an explicit failure.
-- Search supports result click, Enter and Escape.
-- Preferences persist across restart.
-- Reduced motion suppresses ANON transitions.
+- Search supports result launch, Enter and Escape.
 - Gaming Mode can enter **and exit**.
 - Gaming Mode state is visible to the user.
 - Explorer remains usable if M0 closes or crashes.
 - Compact window dimensions do not clip the primary navigation/search path.
+- M0 does not require Windows App SDK or Windows App Runtime to launch.
 
 ## Experience-layer roadmap
 
