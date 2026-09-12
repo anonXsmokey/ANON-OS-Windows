@@ -16,6 +16,7 @@ public sealed class GamingOptimizationPolicy
 {
     private const string GamingRegPath = @"Software\ANON\Gaming";
     private const string GamingModeValue = "GamingModeRequested";
+    private const string GamingModeFlag = @"C:\ProgramData\ANON\gaming-mode.flag";
 
     public IReadOnlyList<GamingOptimizationResult> ApplySessionPolicy(bool enabled)
     {
@@ -34,7 +35,20 @@ public sealed class GamingOptimizationPolicy
         {
             using var key = Registry.CurrentUser.CreateSubKey(GamingRegPath, writable: true);
             key?.SetValue(GamingModeValue, enabled ? 1 : 0, RegistryValueKind.DWord);
-            return new("Windows Gaming Mode", "APPLIED", enabled ? "Gaming policy requested for the active session." : "Gaming policy request cleared.", true);
+
+            Directory.CreateDirectory(@"C:\ProgramData\ANON");
+            if (enabled)
+                File.WriteAllText(GamingModeFlag, "enabled\n");
+            else if (File.Exists(GamingModeFlag))
+                File.Delete(GamingModeFlag);
+
+            return new(
+                "Windows Gaming Mode",
+                "APPLIED",
+                enabled
+                    ? "Gaming policy request enabled; shell and core now share the same session state."
+                    : "Gaming policy request cleared and shared session state restored.",
+                true);
         }
         catch (Exception ex)
         {
