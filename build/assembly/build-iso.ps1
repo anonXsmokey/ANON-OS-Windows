@@ -102,7 +102,7 @@ try {
         $answer|Set-Content (Join-Path $panther 'unattend.xml') -Encoding UTF8
 
         $marker=Join-Path $mount 'ProgramData\ANON\ANON-OS.txt'
-        "ANON OS Windows`r`nArchitecture: $Architecture`r`nImageIndex: $ImageIndex`r`nInstaller: Windows 11 25H2 legacy Setup bridge`r`nShell: FirstLogonCommands -> Bootstrap -> ANON.Shell.M0`r`nPerformancePet: ANON.PerformancePet`r`n"|Set-Content $marker -Encoding UTF8
+        "ANON OS Windows`r`nArchitecture: $Architecture`r`nImageIndex: $ImageIndex`r`nInstaller: Windows 11 25H2 legacy Setup bridge`r`nShell: FirstLogonCommands -> HKCU Run -> Bootstrap -> ANON.Shell.M0`r`nPerformancePet: ANON.PerformancePet`r`n"|Set-Content $marker -Encoding UTF8
 
         $hive=Join-Path $mount 'Windows\System32\Config\SOFTWARE'
         $tempHive='ANON_OFFLINE_SOFTWARE'
@@ -151,7 +151,7 @@ try {
     }
 
     $rootMarker=Join-Path $source 'ANON-OS.txt'
-    "ANON OS Windows`r`nArchitecture: $Architecture`r`nImageIndex: $ImageIndex`r`nInstaller: boot.wim winpeshl.ini -> X:\sources\setup.exe /legacy -> media-root Autounattend.xml`r`nShell: FirstLogonCommands -> Winlogon Bootstrap -> ANON.Shell.M0`r`nPerformancePet: ANON.PerformancePet`r`n"|Set-Content $rootMarker -Encoding UTF8
+    "ANON OS Windows`r`nArchitecture: $Architecture`r`nImageIndex: $ImageIndex`r`nInstaller: boot.wim winpeshl.ini -> X:\sources\setup.exe /legacy -> media-root Autounattend.xml`r`nShell: FirstLogonCommands -> HKCU Run -> Bootstrap -> ANON.Shell.M0`r`nPerformancePet: ANON.PerformancePet`r`n"|Set-Content $rootMarker -Encoding UTF8
 
     foreach($required in @('bootmgr','bootmgr.efi','boot\bcd','efi\microsoft\boot\bcd','sources\boot.wim','sources\install.wim','Autounattend.xml')){
         if(-not(Test-Path (Join-Path $source $required))){throw "Required release component missing: $required"}
@@ -201,7 +201,7 @@ try {
         OutputIsoSha256=$hash
         Validation='STRUCTURE+PAYLOAD;VM-FIRST-BOOT-REQUIRED'
         Installer='boot.wim winpeshl.ini -> X:\sources\setup.exe /legacy + media-root Autounattend.xml + Panther fallback'
-        Shell='FirstLogonCommands -> Winlogon Bootstrap -> ANON.Shell.M0'
+        Shell='FirstLogonCommands -> HKCU Run -> Bootstrap -> ANON.Shell.M0'
         PerformancePet='ANON.PerformancePet'
     }|ConvertTo-Json|Set-Content (Join-Path $OutputRoot 'BUILD-MANIFEST.json') -Encoding UTF8
     Write-Host "ISO assembled: $outIso"

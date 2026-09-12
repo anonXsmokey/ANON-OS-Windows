@@ -89,6 +89,14 @@ jobs:
           $iso=Get-ChildItem .\build\out\ANON-OS-Windows-*.iso|Select-Object -First 1
           & .\build\assembly\release-manifest.ps1 -IsoPath $iso.FullName
           & .\build\assembly\validate-release-gates.ps1 -ManifestPath (Join-Path $iso.DirectoryName 'RELEASE-MANIFEST.json')
+      - name: Package ISO + manifests
+        shell: pwsh
+        run: |
+          $iso=Get-ChildItem .\build\out\ANON-OS-Windows-*.iso|Select-Object -First 1
+          $package=Join-Path $iso.DirectoryName ($iso.BaseName + '-FINAL-PACKAGE.zip')
+          if(Test-Path $package){Remove-Item -Force $package}
+          Compress-Archive -Path @($iso.FullName,(Join-Path $iso.DirectoryName 'SHA256SUMS'),(Join-Path $iso.DirectoryName 'BUILD-MANIFEST.json'),(Join-Path $iso.DirectoryName 'RELEASE-MANIFEST.json')) -DestinationPath $package -CompressionLevel Optimal
+          Write-Host "Package: $package"
       - name: Publish build summary
         shell: pwsh
         run: |
@@ -105,3 +113,10 @@ jobs:
             'StaticValidation: PASS',
             'VMValidation: REQUIRED BEFORE RELEASE'
           ) | Out-File "$env:GITHUB_STEP_SUMMARY" -Encoding utf8
+      - name: Upload ISO package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ANON-OS-Windows-x64-FINAL-PACKAGE
+          path: build/out/*-FINAL-PACKAGE.zip
+          if-no-files-found: error
+          retention-days: 14
