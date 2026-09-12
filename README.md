@@ -49,7 +49,7 @@ TELEMETRY + BENCHMARK
 AUTOMATIC RESTORE
 ```
 
-The gaming foundation includes game profiles, session-scoped process controls, restoration, Gaming Mode lifecycle, compatibility data, benchmark protocol and Performance Pet telemetry. The session manager restores prior process priority/affinity when a session ends. fileciteturn118file0
+The gaming foundation includes game profiles, session-scoped process controls, restoration, Gaming Mode lifecycle, compatibility data, benchmark protocol and Performance Pet telemetry.
 
 ### Performance philosophy
 
@@ -82,7 +82,7 @@ ANON.Shell.Bootstrap
        ANON DESKTOP
 ```
 
-Bootstrap is intentionally a safety boundary: if ANON cannot start reliably, it falls back to Explorer instead of leaving the user without a desktop. fileciteturn109file0
+Bootstrap is intentionally a safety boundary: if ANON cannot start reliably, it falls back to Explorer instead of leaving the user without a desktop.
 
 ## 🧠 ANON AI — FROM CHATBOT TO DESKTOP INTELLIGENCE
 
@@ -102,7 +102,7 @@ ANON AI is provider-neutral and local-first.
 
 **Recover:** explain failed changes and guide restoration from recorded state.
 
-The architecture supports local Ollama/OpenAI-compatible endpoints and optional cloud providers. Free Claude Code was used as an architectural reference for provider abstraction, model routing, failover and multi-client operation; ANON does not bundle a third-party provider or require its credentials. citeturn936668search0
+The architecture supports local Ollama/OpenAI-compatible endpoints and optional cloud providers. It does not bundle a third-party provider or require provider credentials in the operating image.
 
 AI actions have explicit risk classes and a tool boundary. System changes require confirmation rather than silent execution.
 
@@ -150,7 +150,7 @@ RELEASE ONLY AFTER ALL GATES PASS
 
 ANON targets the supplied Windows 11 25H2 English International x64 source with image index 6 (Windows 11 Pro).
 
-The installer bridge deliberately uses the WinPE `sources\setup.exe` legacy client and carries the answer file at media root, inside WinPE and in the installed Panther directory. The build and validator enforce those paths. fileciteturn97file0 fileciteturn125file0
+The installer bridge deliberately uses the WinPE `sources\setup.exe` legacy client and carries the answer file at media root, inside WinPE and in the installed Panther directory. The build and validator enforce those paths.
 
 The previous direct unattended command-line bridge caused the real VM candidate to fail with an invalid command-line argument. It is not part of the current release path.
 
@@ -222,9 +222,9 @@ ANON-OS-Windows/
 ├── core/                 system intelligence + transformation
 ├── performance/          measurement + optimization
 ├── gaming/               profiles + session policies
-├── compatibility/        app/game intelligence
+├── compatibility/       app/game intelligence
 ├── control-center/       user controls
-├── anon-ai/              provider + action boundary
+├── ai/                   provider + action boundary
 ├── recovery/             rollback + recovery manifests
 ├── installer/            installation support
 ├── tests/                validation
@@ -237,17 +237,13 @@ ANON-OS-Windows/
 
 ## 📚 ENGINEERING REFERENCES
 
-ANON uses the composable “build it to understand it” mindset from **build-your-own-X** for subsystem architecture and learning material. citeturn936668search12
-
-For AI orchestration, provider abstraction and resilient model routing, ANON references the architecture patterns demonstrated by **Free Claude Code**. citeturn936668search0
-
-These are references, not bundled dependencies.
+ANON uses composable subsystem architecture and provider-abstraction patterns as references, not bundled dependencies.
 
 ## 🚦 STATUS
 
-**Channel:** private alpha / engineering build  
+**Channel:** public engineering candidate  
 **Primary milestone:** Gaming-first desktop + AI architecture + installer hardening  
-**Release status:** **BLOCKED until real clean-VM evidence passes every gate.**
+**Release status:** **BLOCKED until a clean VM passes every runtime gate.**
 
 The repository intentionally refuses to call an ISO “final” merely because the static validator passes.
 
