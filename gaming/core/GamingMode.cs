@@ -4,10 +4,11 @@ public sealed class GamingMode
 {
     private readonly object _gate = new();
     private int _sessions;
+    private bool _sessionOwnsPersistentState;
 
     public bool IsActive
     {
-        get { lock (_gate) return GamingModeState.IsEnabled() || _sessions > 0; }
+        get { lock (_gate) return GamingModeState.IsEnabled(); }
     }
 
     public int ActiveSessionCount
@@ -32,7 +33,7 @@ public sealed class GamingMode
     {
         lock (_gate)
         {
-            if (!GamingModeState.IsEnabled() && _sessions == 0) return;
+            if (!GamingModeState.IsEnabled()) return;
             if (!GamingModeState.SetEnabled(false))
                 throw new InvalidOperationException("ANON Gaming Mode state could not be cleared.");
         }
@@ -43,13 +44,19 @@ public sealed class GamingMode
     {
         lock (_gate)
         {
+            var wasEnabled = GamingModeState.IsEnabled();
             _sessions++;
             if (_sessions > 1)
                 return new Scope(this);
-            if (!GamingModeState.SetEnabled(true))
+
+            if (!wasEnabled)
             {
-                _sessions--;
-                throw new InvalidOperationException("ANON Gaming Mode state could not be persisted.");
+                if (!GamingModeState.SetEnabled(true))
+                {
+                    _sessions--;
+                    throw new InvalidOperationException("ANON Gaming Mode state could not be persisted.");
+                }
+                _sessionOwnsPersistentState = true;
             }
         }
 
@@ -62,9 +69,11 @@ public sealed class GamingMode
         bool changed = false;
         lock (_gate)
         {
-            if (_sessions > 0) _sessions--;
-            if (_sessions == 0 && GamingModeState.IsEnabled())
+            if (_sessions == 0) return;
+            _sessions--;
+            if (_sessions == 0 && _sessionOwnsPersistentState)
             {
+                _sessionOwnsPersistentState = false;
                 changed = GamingModeState.SetEnabled(false);
             }
         }
