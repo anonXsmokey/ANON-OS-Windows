@@ -5,7 +5,11 @@ public sealed class GamingMode
     private readonly object _gate = new();
     private int _sessions;
 
-    public bool IsActive { get; private set; }
+    public bool IsActive
+    {
+        get { lock (_gate) return GamingModeState.IsEnabled() || _sessions > 0; }
+    }
+
     public int ActiveSessionCount
     {
         get { lock (_gate) return _sessions; }
@@ -17,8 +21,9 @@ public sealed class GamingMode
     {
         lock (_gate)
         {
-            if (IsActive) return;
-            IsActive = true;
+            if (GamingModeState.IsEnabled()) return;
+            if (!GamingModeState.SetEnabled(true))
+                throw new InvalidOperationException("ANON Gaming Mode state could not be persisted.");
         }
         Changed?.Invoke(this, true);
     }
@@ -27,8 +32,9 @@ public sealed class GamingMode
     {
         lock (_gate)
         {
-            if (!IsActive) return;
-            IsActive = false;
+            if (!GamingModeState.IsEnabled() && _sessions == 0) return;
+            if (!GamingModeState.SetEnabled(false))
+                throw new InvalidOperationException("ANON Gaming Mode state could not be cleared.");
         }
         Changed?.Invoke(this, false);
     }
@@ -40,7 +46,11 @@ public sealed class GamingMode
             _sessions++;
             if (_sessions > 1)
                 return new Scope(this);
-            IsActive = true;
+            if (!GamingModeState.SetEnabled(true))
+            {
+                _sessions--;
+                throw new InvalidOperationException("ANON Gaming Mode state could not be persisted.");
+            }
         }
 
         Changed?.Invoke(this, true);
@@ -53,10 +63,9 @@ public sealed class GamingMode
         lock (_gate)
         {
             if (_sessions > 0) _sessions--;
-            if (_sessions == 0 && IsActive)
+            if (_sessions == 0 && GamingModeState.IsEnabled())
             {
-                IsActive = false;
-                changed = true;
+                changed = GamingModeState.SetEnabled(false);
             }
         }
 
