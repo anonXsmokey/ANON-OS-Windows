@@ -2,17 +2,22 @@
 param(
     [string]$WindowsIso = 'E:\ANON-OS\ANON-OS-Windows\Win11_iso\Win11_25H2_EnglishInternational_x64_v2.iso',
     [ValidateRange(1,999)][int]$ImageIndex = 6,
-    [string]$OutputRoot = (Join-Path $PSScriptRoot '..\out')
+    [string]$OutputRoot = ''
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+$scriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+if ([string]::IsNullOrWhiteSpace($OutputRoot)) {
+    $OutputRoot = Join-Path $scriptRoot '..\out'
+}
+
 if (-not (Test-Path -LiteralPath $WindowsIso)) {
     throw "Windows 11 source ISO not found: $WindowsIso"
 }
 
-$root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+$root = (Resolve-Path (Join-Path $scriptRoot '..\..')).Path
 $out = (Resolve-Path (New-Item -ItemType Directory -Force -Path $OutputRoot)).Path
 
 $required = @(
