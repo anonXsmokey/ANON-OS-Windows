@@ -78,7 +78,70 @@ Set-Content -LiteralPath (Join-Path $packageRoot 'RELEASE-STATUS.txt') -Value $r
 
 $zip = Join-Path $out "ANON-OS-Windows-$stamp-x64-FINAL-PACKAGE.zip"
 if (Test-Path $zip) { Remove-Item -Force $zip }
-Compress-Archive -Path (Join-Path $packageRoot '*') -DestinationPath $zip -CompressionLevel Optimal
+
+# Compress-Archive has a practical size limit for large ZIP entries and failed
+# on the ~8.6 GB ISO. Prefer 7-Zip when installed, otherwise stream the files
+# through .NET ZipArchive, which supports ZIP64 without loading the ISO into memory.
+$sevenZip = @(
+    (Get-Command 7z.exe -ErrorAction SilentlyContinue),
+    (Get-Command 7zz.exe -ErrorAction SilentlyContinue)
+) | Where-Object { $_ } | Select-Object -First 1
+
+if ($sevenZip) {
+    Write-Host "Packaging with $($sevenZip.Source) (ZIP64, store mode)..." -ForegroundColor Cyan
+    & $sevenZip.Source a -tzip -mx=0 -mm=Copy $zip (Join-Path $packageRoot '*') | Out-Host
+    if ($LASTEXITCODE) { throw "7-Zip package creation failed with exit code $LASTEXITCODE." }
+}
+else {
+    Write-Host '7-Zip not found; packaging with .NET ZipArchive (ZIP64, store mode)...' -ForegroundColor Cyan
+    Add-Type -AssemblyName System.IO.Compression
+
+    $zipStream = [System.IO.File]::Open(
+        $zip,
+        [System.IO.FileMode]::Create,
+        [System.IO.FileAccess]::Write,
+        [System.IO.FileShare]::None)
+    try {
+        $archive = [System.IO.Compression.ZipArchive]::new(
+            $zipStream,
+            [System.IO.Compression.ZipArchiveMode]::Create,
+            $false)
+        try {
+            foreach ($file in Get-ChildItem -LiteralPath $packageRoot -File) {
+                Write-Host "Adding $($file.Name) ..."
+                $entry = $archive.CreateEntry(
+                    $file.Name,
+                    [System.IO.Compression.CompressionLevel]::NoCompression)
+                $entryStream = $entry.Open()
+                try {
+                    $sourceStream = [System.IO.File]::OpenRead($file.FullName)
+                    try {
+                        $sourceStream.CopyTo($entryStream, 1048576)
+                    }
+                    finally {
+                        $sourceStream.Dispose()
+                    }
+                }
+                finally {
+                    $entryStream.Dispose()
+                }
+            }
+        }
+        finally {
+            $archive.Dispose()
+        }
+    }
+    finally {
+        $zipStream.Dispose()
+    }
+}
+
+if (-not (Test-Path -LiteralPath $zip)) {
+    throw 'Final package ZIP was not created.'
+}
+
+$zipSize = (Get-Item -LiteralPath $zip).Length
+Write-Host "Package ZIP size: $zipSize bytes"
 
 Write-Host ''
 Write-Host 'FINAL BUILD OUTPUTS' -ForegroundColor Green
