@@ -29,6 +29,7 @@ try {
     if($marker -notmatch "Architecture:\s*$ExpectedArchitecture"){throw 'Architecture marker mismatch.'}
     if($marker -notmatch '(?m)^PerformancePet:\s*ANON\.PerformancePet\s*$'){throw 'Performance Pet marker missing.'}
     if($marker -notmatch '(?i)X:\\sources\\setup\.exe\s+/legacy'){throw 'Release marker does not identify the correct Windows 11 legacy Setup bridge path.'}
+    if($marker -notmatch '(?m)^AnswerFile:\s*Windows Setup-managed caching'){throw 'Release marker does not declare Setup-managed answer-file caching.'}
 
     $wim=Join-Path $root 'sources\install.wim'
     $info=((&dism.exe /English /Get-WimInfo /WimFile:$wim 2>&1|Out-String))
@@ -47,10 +48,16 @@ try {
         'ProgramData\ANON\Shell\Bootstrap\ANON.Shell.Bootstrap.exe',
         'ProgramData\ANON\Shell\PerformancePet\ANON.PerformancePet.exe',
         'ProgramData\ANON\ANON-OS.txt',
-        'Windows\Setup\Scripts\SetupComplete.cmd',
-        'Windows\Panther\unattend.xml'
+        'Windows\Setup\Scripts\SetupComplete.cmd'
     )){
         if(-not(Test-Path (Join-Path $installMount $item))){throw "Required installed-image component missing: $item"}
+    }
+
+    # Windows Setup owns the Panther cache. A complete unattend.xml should not
+    # be injected into install.wim\Windows\Panther because Setup must annotate
+    # and advance its cached answer file across reboots itself.
+    if(Test-Path (Join-Path $installMount 'Windows\Panther\unattend.xml')){
+        throw 'install.wim contains an embedded Panther unattend.xml override; Setup-managed caching is required.'
     }
 
     $bootWim=Join-Path $root 'sources\boot.wim'
@@ -100,7 +107,7 @@ try {
     Write-Host 'Embedded WinPE answer-file validation: PASS'
     Write-Host 'ANON payload validation: PASS'
     Write-Host 'Performance Pet validation: PASS'
-    Write-Host 'Panther fallback validation: PASS'
+    Write-Host 'Setup-managed answer-file caching validation: PASS'
     Write-Host 'Safe desktop launcher validation: PASS'
     Write-Host 'Autounattend validation: PASS'
     Write-Host "Image index: $ExpectedImageIndex"
