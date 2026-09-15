@@ -11,6 +11,14 @@ public partial class App : Application
         DispatcherUnhandledException += OnDispatcherUnhandledException;
         AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
         base.OnStartup(e);
+
+        // M0 uses an explicit application definition, so StartupUri is not
+        // provided by generated WPF startup code. Keep the main window alive
+        // for the lifetime of the shell process instead of exiting immediately.
+        var mainWindow = new MainWindow();
+        MainWindow = mainWindow;
+        mainWindow.Show();
+        Log("M0 WPF main window shown");
     }
 
     private static void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
