@@ -2,41 +2,45 @@
 
 ## Purpose
 
-M0 is the Windows-native ANON Shell prototype. It is not an operating-system ISO and must not be described as one.
+M0 is the Windows-native ANON desktop shell. It is a user-mode application and is not the operating-system ISO itself.
 
 ## Requirements
 
-- Windows 10 version 1809 or newer for the declared minimum platform target
+- Windows 10/11 x64 development environment
 - .NET 8 SDK
-- Visual Studio 2022 with Windows App SDK / WinUI 3 tooling
-- x64 Windows environment for the first test
+- Windows desktop development support for WPF
+
+M0 intentionally does not require Windows App SDK / WinUI 3 tooling or a separate Windows App Runtime installation.
 
 ## Build
 
 From `ux/shell/M0`:
 
 ```powershell
-dotnet restore .\ANON.Shell.M0.csproj
-dotnet build .\ANON.Shell.M0.csproj -c Debug -p:Platform=x64
+dotnet restore .\ANON.Shell.M0.csproj --runtime win-x64
+dotnet build .\ANON.Shell.M0.csproj -c Release -r win-x64
 ```
 
 ## Publish
 
 ```powershell
-dotnet publish .\ANON.Shell.M0.csproj -c Release -p:Platform=x64 -p:PublishProfile=win-x64
+dotnet publish .\ANON.Shell.M0.csproj -c Release -r win-x64 --self-contained true -p:PublishTrimmed=false -p:PublishSingleFile=false -p:PublishReadyToRun=false
 ```
 
 ## Test checklist
 
-1. Application starts without crashing.
-2. ANON visual resources load.
-3. Play enters Gaming Mode.
-4. Visual Profile changes update runtime state.
-5. Reduced Motion disables transitions.
+1. Application starts without crashing on a clean Windows installation.
+2. ANON dashboard renders using WPF only.
+3. Search opens ANON destinations.
+4. Play toggles Gaming Mode.
+5. Visual Profile and Reduced Motion controls remain responsive.
 6. Files opens Windows Explorer.
-7. Closing the app returns cleanly to Windows.
-8. Record CPU and memory at idle for later baseline comparison.
+7. Applications and Games open the Windows application inventory.
+8. System opens Windows Settings.
+9. ANON AI opens without making cloud access mandatory.
+10. Closing or failing M0 leaves Explorer available as the recovery shell.
+11. CPU and memory telemetry are recorded for later performance baselines.
 
 ## Status
 
-The commands above are **not claimed to have been executed by the repository agent**. A real build requires a Windows development environment.
+The commands above are build instructions for the repository. A release claim still requires an actual clean-VM test of boot, OOBE, first logon, M0 startup, reboot persistence and shell recovery.

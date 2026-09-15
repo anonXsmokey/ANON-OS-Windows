@@ -14,7 +14,7 @@ New-Item -ItemType Directory -Force -Path $publish,$bootstrapPublish,$petPublish
 Push-Location $root
 try{
  dotnet restore ux/shell/M0/ANON.Shell.M0.csproj --runtime win-x64;if($LASTEXITCODE){throw 'Shell restore failed.'}
- dotnet publish ux/shell/M0/ANON.Shell.M0.csproj -c Release -r win-x64 --self-contained true --no-restore -o $publish;if($LASTEXITCODE){throw 'Shell publish failed.'}
+ dotnet publish ux/shell/M0/ANON.Shell.M0.csproj -c Release -r win-x64 --self-contained true --no-restore -o $publish -p:SelfContained=true -p:PublishTrimmed=false -p:PublishSingleFile=false -p:PublishReadyToRun=false;if($LASTEXITCODE){throw 'Shell publish failed.'}
  if(-not(Test-Path (Join-Path $publish 'ANON.Shell.M0.exe'))){throw 'ANON.Shell.M0.exe missing after publish.'}
  dotnet restore ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --runtime win-x64;if($LASTEXITCODE){throw 'Bootstrap restore failed.'}
  dotnet publish ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj -c Release -r win-x64 --self-contained true --no-restore -o $bootstrapPublish;if($LASTEXITCODE){throw 'Bootstrap publish failed.'}

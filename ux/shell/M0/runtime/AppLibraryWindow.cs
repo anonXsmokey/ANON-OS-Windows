@@ -15,6 +15,7 @@ public sealed class AppLibraryWindow : Window
     private readonly TextBox _search = new();
     private readonly ListView _list = new();
     private readonly TextBlock _count = new();
+    private CancellationTokenSource? _scanCts;
     private List<Entry> _entries = new();
 
     private static readonly SolidColorBrush Bg = new(Colors.Black);
@@ -50,14 +51,16 @@ public sealed class AppLibraryWindow : Window
 
         var toolbar = new Grid { Padding = new Thickness(20, 8, 20, 8), Background = Strong };
         toolbar.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto }); toolbar.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); toolbar.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        var refresh = new Button { Content = "↻  REFRESH" }; refresh.Click += (_, _) => LoadEntries(); toolbar.Children.Add(refresh);
+        var refresh = new Button { Content = "↻  REFRESH" }; refresh.Click += (_, _) => _ = LoadEntriesAsync(); toolbar.Children.Add(refresh);
         var hint = new TextBlock { Text = _gamesOnly ? "Installed games discovered from Windows shortcuts" : "Installed apps discovered from Windows shortcuts", Foreground = Muted, FontSize = 12, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(16, 0, 0, 0) }; Grid.SetColumn(hint, 1); toolbar.Children.Add(hint);
         var windows = new Button { Content = "WINDOWS APPS" }; windows.Click += (_, _) => Launch("shell:AppsFolder"); Grid.SetColumn(windows, 2); toolbar.Children.Add(windows); Grid.SetRow(toolbar, 1); root.Children.Add(toolbar);
 
-        var border = new Border { Background = Surface, BorderBrush = Border, BorderThickness = new Thickness(1, 1, 1, 1), CornerRadius = new CornerRadius(12), Margin = new Thickness(20, 0, 20, 10), Padding = new Thickness(8, 8, 8, 8) };
+        var border = new Border { Background = Surface, BorderBrush = Border, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Margin = new Thickness(20, 0, 20, 10), Padding = new Thickness(8) };
         _list.IsItemClickEnabled = true; _list.SelectionMode = ListViewSelectionMode.Single; _list.ItemClick += (_, e) => { if (e.ClickedItem is Entry entry) Launch(entry.Path); }; _list.DoubleTapped += (_, _) => { if (_list.SelectedItem is Entry entry) Launch(entry.Path); }; _list.ItemTemplate = CreateTemplate(); _list.Background = Surface; border.Child = _list; Grid.SetRow(border, 2); root.Children.Add(border);
-        _count.Text = "Scanning..."; _count.Foreground = Muted; _count.FontSize = 11; _count.Margin = new Thickness(20, 0, 20, 0); _count.VerticalAlignment = VerticalAlignment.Center; Grid.SetRow(_count, 3); root.Children.Add(_count);
-        Content = root; LoadEntries();
+        _count.Text = "Scanning installed shortcuts…"; _count.Foreground = Muted; _count.FontSize = 11; _count.Margin = new Thickness(20, 0, 20, 0); _count.VerticalAlignment = VerticalAlignment.Center; Grid.SetRow(_count, 3); root.Children.Add(_count);
+        Content = root;
+        Closed += (_, _) => _scanCts?.Cancel();
+        _ = LoadEntriesAsync();
     }
 
     private static DataTemplate CreateTemplate()
@@ -66,10 +69,27 @@ public sealed class AppLibraryWindow : Window
         return (DataTemplate)XamlReader.Load(xaml);
     }
 
-    private void LoadEntries()
+    private async Task LoadEntriesAsync()
     {
-        _entries = Discover().Where(e => _gamesOnly ? IsGame(e) : !IsGame(e)).GroupBy(e => e.Path, StringComparer.OrdinalIgnoreCase).Select(g => g.First()).OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase).ToList();
-        ApplySearch();
+        _scanCts?.Cancel();
+        _scanCts?.Dispose();
+        _scanCts = new CancellationTokenSource();
+        var token = _scanCts.Token;
+        _count.Text = "Scanning installed shortcuts…";
+        try
+        {
+            var discovered = await Task.Run(() => Discover().ToList(), token);
+            token.ThrowIfCancellationRequested();
+            _entries = discovered
+                .Where(e => _gamesOnly ? IsGame(e) : !IsGame(e))
+                .GroupBy(e => e.Path, StringComparer.OrdinalIgnoreCase)
+                .Select(g => g.First())
+                .OrderBy(e => e.Name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            ApplySearch();
+        }
+        catch (OperationCanceledException) { }
+        catch (Exception ex) { _entries = new(); _list.ItemsSource = _entries; _count.Text = $"Library scan unavailable: {ex.Message}"; }
     }
 
     private IEnumerable<Entry> Discover()
@@ -77,7 +97,8 @@ public sealed class AppLibraryWindow : Window
         var roots = new[] { Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), Environment.GetFolderPath(Environment.SpecialFolder.CommonStartMenu), Environment.GetFolderPath(Environment.SpecialFolder.Desktop), Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory) };
         foreach (var root in roots.Where(Directory.Exists).Distinct(StringComparer.OrdinalIgnoreCase))
         {
-            IEnumerable<string> files; try { files = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories); } catch { continue; }
+            IEnumerable<string> files;
+            try { files = Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories); } catch { continue; }
             foreach (var path in files)
             {
                 var ext = Path.GetExtension(path); if (!ext.Equals(".lnk", StringComparison.OrdinalIgnoreCase) && !ext.Equals(".url", StringComparison.OrdinalIgnoreCase) && !ext.Equals(".exe", StringComparison.OrdinalIgnoreCase)) continue;
@@ -99,6 +120,11 @@ public sealed class AppLibraryWindow : Window
         var query = _search.Text.Trim(); var visible = string.IsNullOrEmpty(query) ? _entries : _entries.Where(e => e.Name.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList(); _list.ItemsSource = visible; _count.Text = $"{visible.Count} {(_gamesOnly ? "game" : "app")}{(visible.Count == 1 ? "" : "s")}";
     }
 
-    private static void Launch(string target) { try { _ = global::System.Diagnostics.Process.Start(new global::System.Diagnostics.ProcessStartInfo { FileName = target, UseShellExecute = true }); } catch { } }
+    private void Launch(string target)
+    {
+        try { _ = global::System.Diagnostics.Process.Start(new global::System.Diagnostics.ProcessStartInfo { FileName = target, UseShellExecute = true }); }
+        catch (Exception ex) { _count.Text = $"Could not open item: {ex.Message}"; }
+    }
+
     private sealed record Entry(string Name, string Path, string Subtitle, string Icon);
 }

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Anon.Os.Gaming;
 
 namespace Anon.Os.ControlCenter;
 
@@ -22,21 +23,43 @@ public sealed class ControlCenterController
         Save();
     }
 
-    public void SetGamingMode(bool enabled) { Model.SetGamingMode(enabled); Save(); }
-    public void SetAiEnabled(bool enabled) { Model.SetAiEnabled(enabled); Save(); }
+    public void SetGamingMode(bool enabled)
+    {
+        if (!GamingModeState.SetEnabled(enabled))
+            throw new InvalidOperationException("ANON Gaming Mode state could not be persisted.");
+        Model.SetGamingMode(enabled);
+        Save();
+    }
+
+    public void SetAiEnabled(bool enabled)
+    {
+        Model.SetAiEnabled(enabled);
+        Save();
+    }
 
     private void Load()
     {
         try
         {
-            if (!File.Exists(_statePath)) return;
-            var state = JsonSerializer.Deserialize<ControlCenterState>(File.ReadAllText(_statePath));
-            if (state is null) return;
-            Model.SetProfile(state.Profile);
-            Model.SetGamingMode(state.GamingMode);
-            Model.SetAiEnabled(state.AiEnabled);
+            if (File.Exists(_statePath))
+            {
+                var state = JsonSerializer.Deserialize<ControlCenterState>(File.ReadAllText(_statePath));
+                if (state is not null)
+                {
+                    Model.SetProfile(state.Profile);
+                    Model.SetAiEnabled(state.AiEnabled);
+                }
+            }
+
+            // Gaming Mode is intentionally loaded from the shared cross-process
+            // state rather than the UI preference cache.
+            Model.SetGamingMode(GamingModeState.IsEnabled());
         }
-        catch { /* Corrupt preferences must never prevent ANON from starting. */ }
+        catch
+        {
+            // Corrupt preferences must never prevent ANON from starting.
+            Model.SetGamingMode(GamingModeState.IsEnabled());
+        }
     }
 
     private void Save()

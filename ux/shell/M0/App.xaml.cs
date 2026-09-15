@@ -1,22 +1,48 @@
-using Microsoft.UI.Xaml;
-using Anon.Shell.M0.Runtime;
+using System.IO;
+using System.Windows;
+using System.Windows.Threading;
 
 namespace Anon.Shell.M0;
 
 public partial class App : Application
 {
-    private Window? _window;
-    public static DesktopController Desktop { get; private set; } = null!;
-
-    public App()
+    protected override void OnStartup(StartupEventArgs e)
     {
-        InitializeComponent();
-        Desktop = RuntimeFactory.CreateDefault();
+        DispatcherUnhandledException += OnDispatcherUnhandledException;
+        AppDomain.CurrentDomain.UnhandledException += OnUnhandledException;
+        base.OnStartup(e);
+
+        // M0 uses an explicit application definition, so StartupUri is not
+        // provided by generated WPF startup code. Keep the main window alive
+        // for the lifetime of the shell process instead of exiting immediately.
+        var mainWindow = new MainWindow();
+        MainWindow = mainWindow;
+        mainWindow.Show();
+        Log("M0 WPF main window shown");
     }
 
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    private static void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
-        _window = new MainWindow();
-        _window.Activate();
+        Log($"Unhandled UI exception: {e.Exception.GetType().Name}: {e.Exception.Message}");
+        MessageBox.Show("ANON OS encountered a desktop UI error. Windows remains available.", "ANON OS", MessageBoxButton.OK, MessageBoxImage.Warning);
+        e.Handled = true;
+    }
+
+    private static void OnUnhandledException(object? sender, UnhandledExceptionEventArgs e)
+    {
+        if (e.ExceptionObject is Exception ex)
+            Log($"Unhandled process exception: {ex.GetType().Name}: {ex.Message}");
+    }
+
+    public static void Log(string message)
+    {
+        try
+        {
+            Directory.CreateDirectory(@"C:\ProgramData\ANON\Logs");
+            File.AppendAllText(@"C:\ProgramData\ANON\Logs\m0-wpf.log", $"{DateTime.Now:O} {message}{Environment.NewLine}");
+        }
+        catch
+        {
+        }
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using System.Threading;
 
 namespace Anon.Shell.M0.Runtime;
 
@@ -13,6 +14,7 @@ public sealed class AiWindow : Window
     private readonly TextBlock _response = new();
     private readonly TextBlock _status = new();
     private readonly Button _ask = new();
+    private readonly CancellationTokenSource _lifetime = new();
 
     private static readonly SolidColorBrush Background = new(ColorHelper.FromArgb(255, 7, 10, 16));
     private static readonly SolidColorBrush Surface = new(ColorHelper.FromArgb(255, 14, 19, 29));
@@ -45,7 +47,7 @@ public sealed class AiWindow : Window
         var responseCard = new Border { Background = Surface, BorderBrush = Border, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(20), Padding = new Thickness(22) };
         var responseStack = new StackPanel { Spacing = 10 };
         responseStack.Children.Add(new TextBlock { Text = "RESPONSE", FontSize = 10, FontWeight = Microsoft.UI.Text.FontWeights.SemiBold, Foreground = Accent });
-        _response.Text = "ANON AI is ready. Default provider: Ollama at http://localhost:11434 using gemma3:4b.";
+        _response.Text = "ANON AI is ready. Default provider: local Ollama. Configure ANON_AI_ENDPOINT/ANON_AI_MODEL for another provider.";
         _response.TextWrapping = TextWrapping.Wrap;
         _response.Foreground = Muted;
         _response.FontSize = 14;
@@ -57,6 +59,7 @@ public sealed class AiWindow : Window
         _prompt.PlaceholderText = "Ask ANON AI anything…";
         _prompt.AcceptsReturn = true;
         _prompt.TextWrapping = TextWrapping.Wrap;
+        _prompt.MaxLength = 4000;
         _prompt.MinHeight = 100;
         _prompt.Margin = new Thickness(0, 16, 0, 10);
         _prompt.Background = SurfaceStrong;
@@ -65,6 +68,7 @@ public sealed class AiWindow : Window
         _prompt.BorderThickness = new Thickness(1);
         _prompt.CornerRadius = new CornerRadius(14);
         _prompt.Padding = new Thickness(16, 12, 16, 12);
+        ToolTipService.SetToolTip(_prompt, "Maximum 4000 characters. Enter a request and use ASK ANON AI.");
         Grid.SetRow(_prompt, 2);
         root.Children.Add(_prompt);
 
@@ -80,24 +84,37 @@ public sealed class AiWindow : Window
         _ask.FontWeight = Microsoft.UI.Text.FontWeights.SemiBold;
         _ask.CornerRadius = new CornerRadius(12);
         _ask.Padding = new Thickness(18, 10, 18, 10);
+        ToolTipService.SetToolTip(_ask, "Send the current prompt to the configured ANON AI provider.");
         _ask.Click += AskAsync;
         footer.Children.Add(_ask);
         Grid.SetRow(footer, 3);
         root.Children.Add(footer);
 
         Content = root;
+        Closed += (_, _) => _lifetime.Cancel();
     }
 
     private async void AskAsync(object sender, RoutedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(_prompt.Text)) return;
+        var prompt = _prompt.Text.Trim();
+        if (string.IsNullOrWhiteSpace(prompt))
+        {
+            _status.Text = "Enter a prompt first.";
+            _prompt.Focus(FocusState.Programmatic);
+            return;
+        }
+
         _ask.IsEnabled = false;
         _status.Text = "Thinking…";
         try
         {
-            var result = await _service.AskAsync(new AiRequest(_prompt.Text));
+            var result = await _service.AskAsync(new AiRequest(prompt), _lifetime.Token);
             _response.Text = result.Text;
-            _status.Text = "Ready";
+            _status.Text = result.FromLocalProvider ? "Local provider • Ready" : "Provider • Ready";
+        }
+        catch (OperationCanceledException) when (_lifetime.IsCancellationRequested)
+        {
+            _status.Text = "Request cancelled.";
         }
         catch (Exception ex)
         {
@@ -106,7 +123,8 @@ public sealed class AiWindow : Window
         }
         finally
         {
-            _ask.IsEnabled = true;
+            if (!_lifetime.IsCancellationRequested)
+                _ask.IsEnabled = true;
         }
     }
 }

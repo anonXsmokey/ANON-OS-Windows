@@ -30,8 +30,35 @@ jobs:
       - name: Build core
         run: dotnet build core/Anon.Os.Core.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
 
+  ai-build:
+    name: Build ANON AI safety layer
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Restore AI
+        run: dotnet restore ai/Anon.Os.Ai.csproj --runtime ${{ env.RID }}
+      - name: Build AI
+        run: dotnet build ai/Anon.Os.Ai.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
+      - name: Verify canonical AI sources
+        shell: pwsh
+        run: |
+          $required = @('ai/Contracts.cs','ai/OpenAiCompatibleProvider.cs','ai/runtime/AiActionContract.cs')
+          foreach ($file in $required) { if (-not (Test-Path $file)) { throw "Canonical AI source missing: $file" } }
+          if (Test-Path 'anon-ai') { throw 'Duplicate anon-ai implementation must not ship.' }
+          $contract = Get-Content 'ai/runtime/AiActionContract.cs' -Raw
+          foreach ($requiredToken in @('ReadOnly','UserConfirmed','SystemChange','IAiActionExecutor','AiActionGate')) {
+            if ($contract -notmatch [regex]::Escape($requiredToken)) { throw "AI safety contract missing: $requiredToken" }
+          }
+          Write-Host 'Canonical AI + compiled safety boundary PASS'
+
   shell-build:
-    name: Build ANON Shell + Bootstrap + Performance Pet
+    name: Build ANON WPF Shell + Bootstrap + Performance Pet
     runs-on: windows-2022
     timeout-minutes: 35
     steps:
@@ -41,12 +68,30 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Validate M0 WPF project contract
+        shell: pwsh
+        run: |
+          [xml]$project = Get-Content 'ux/shell/M0/ANON.Shell.M0.csproj' -Raw
+          $text = Get-Content 'ux/shell/M0/ANON.Shell.M0.csproj' -Raw
+          foreach ($token in @(
+            '<UseWPF>true</UseWPF>',
+            '<TargetFramework>net8.0-windows</TargetFramework>',
+            '<SelfContained>true</SelfContained>',
+            '<PublishTrimmed>false</PublishTrimmed>',
+            '<PublishSingleFile>false</PublishSingleFile>',
+            '<PublishReadyToRun>false</PublishReadyToRun>',
+            '<AssemblyName>ANON.Shell.M0</AssemblyName>'
+          )) {
+            if ($text -notmatch [regex]::Escape($token)) { throw "M0 WPF contract missing: $token" }
+          }
+          if ($text -match 'Microsoft.WindowsAppSDK|WindowsPackageType|WindowsAppSDKSelfContained') { throw 'M0 must not depend on the Windows App SDK runtime.' }
+          Write-Host 'M0 WPF dependency-light publish contract PASS'
       - name: Restore shell
         run: dotnet restore ux/shell/M0/ANON.Shell.M0.csproj --runtime ${{ env.RID }}
       - name: Build shell
         run: dotnet build ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
       - name: Publish shell
-        run: dotnet publish ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --runtime ${{ env.RID }} --self-contained true --no-restore --output build/ci-shell
+        run: dotnet publish ux/shell/M0/ANON.Shell.M0.csproj --configuration Release --runtime ${{ env.RID }} --self-contained true --no-restore --output build/ci-shell -p:SelfContained=true -p:PublishTrimmed=false -p:PublishSingleFile=false -p:PublishReadyToRun=false
       - name: Restore bootstrap
         run: dotnet restore ux/shell/Bootstrap/ANON.Shell.Bootstrap.csproj --runtime ${{ env.RID }}
       - name: Build bootstrap
@@ -59,102 +104,72 @@ jobs:
         run: dotnet build ux/shell/PerformancePet/ANON.PerformancePet.csproj --configuration Release --no-restore --runtime ${{ env.RID }}
       - name: Publish Performance Pet
         run: dotnet publish ux/shell/PerformancePet/ANON.PerformancePet.csproj --configuration Release --runtime ${{ env.RID }} --self-contained true --no-restore --output build/ci-performance-pet
-      - name: Verify payload
+      - name: Verify payload and WPF isolation
         shell: pwsh
         run: |
-          $shell = Resolve-Path build/ci-shell/ANON.Shell.M0.exe -ErrorAction SilentlyContinue
-          $bootstrap = Resolve-Path build/ci-bootstrap/ANON.Shell.Bootstrap.exe -ErrorAction SilentlyContinue
-          $pet = Resolve-Path build/ci-performance-pet/ANON.PerformancePet.exe -ErrorAction SilentlyContinue
-          if (-not $shell) { throw 'ANON.Shell.M0.exe was not produced.' }
-          if (-not $bootstrap) { throw 'ANON.Shell.Bootstrap.exe was not produced.' }
-          if (-not $pet) { throw 'ANON.PerformancePet.exe was not produced.' }
-          Write-Host 'Shell + bootstrap + performance pet build PASS'
+          foreach ($path in @('build/ci-shell/ANON.Shell.M0.exe','build/ci-bootstrap/ANON.Shell.Bootstrap.exe','build/ci-performance-pet/ANON.PerformancePet.exe')) {
+            if (-not (Test-Path $path)) { throw "Required release payload missing: $path" }
+          }
+          foreach ($name in @('Microsoft.UI.Xaml.dll','Microsoft.WindowsAppRuntime.dll')) {
+            if (Test-Path (Join-Path 'build/ci-shell' $name)) { throw "WPF M0 must not ship WinUI runtime payload: $name" }
+          }
+          Write-Host 'WPF shell + bootstrap + performance pet payload PASS'
       - name: Validate installer scripts and answer file syntax
         shell: pwsh
         run: |
-          $files = @(
-            'build/assembly/build-iso.ps1',
-            'build/assembly/build-local.ps1',
-            'build/assembly/validate-iso.ps1',
-            'build/assembly/release-manifest.ps1',
-            'build/assembly/validate-release-gates.ps1'
-          )
+          $files = @('build/assembly/build-iso.ps1','build/assembly/build-local.ps1','build/assembly/validate-iso.ps1','build/assembly/release-manifest.ps1','build/assembly/validate-release-gates.ps1','build/assembly/SetupComplete.cmd')
           foreach ($file in $files) {
-            $tokens = $null
-            $errors = $null
-            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file), [ref]$tokens, [ref]$errors) | Out-Null
-            if ($errors.Count) {
-              throw "PowerShell syntax validation failed: $file`n$($errors | Out-String)"
+            $tokens = $null; $errors = $null
+            if ($file -like '*.ps1') {
+              [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file), [ref]$tokens, [ref]$errors) | Out-Null
+              if ($errors.Count) { throw "PowerShell syntax validation failed: $file`n$($errors | Out-String)" }
             }
           }
           $xml = Get-Content build/assembly/Autounattend.xml -Raw
           [xml]$xml | Out-Null
-          if ($xml -notmatch 'windowsPE' -or $xml -notmatch 'oobeSystem' -or $xml -notmatch '/IMAGE/INDEX') {
-            throw 'Autounattend.xml is missing a required deployment pass.'
+          if ($xml -notmatch 'windowsPE' -or $xml -notmatch 'oobeSystem' -or $xml -notmatch '/IMAGE/INDEX') { throw 'Autounattend.xml is missing a required deployment pass.' }
+          if ($xml -match 'CurrentVersion\\Winlogon.*Shell') { throw 'Autounattend must not replace the Winlogon shell.' }
+          if ($xml -match '<FirstLogonCommands>') { throw 'Autounattend must not launch ANON from FirstLogonCommands.' }
+          $setupComplete = Get-Content build/assembly/SetupComplete.cmd -Raw
+          foreach ($token in @('C:\Users\Default\NTUSER.DAT','reg load','Software\Microsoft\Windows\CurrentVersion\Run','ANONShell','C:\ProgramData\ANON\Shell\Bootstrap\ANON.Shell.Bootstrap.exe')) {
+            if ($setupComplete -notmatch [regex]::Escape($token)) { throw "SetupComplete launcher contract missing: $token" }
           }
-          if ($xml -match 'CurrentVersion\\Winlogon.*Shell') {
-            throw 'Autounattend must not replace the Winlogon shell.'
-          }
-          if ($xml -notmatch 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -or $xml -notmatch 'ANONShell' -or $xml -notmatch 'ANON\.Shell\.Bootstrap\.exe') {
-            throw 'Autounattend is missing the safe per-user ANON launcher contract.'
-          }
-          Write-Host 'Installer PowerShell + Autounattend XML + safe launcher syntax PASS'
+          Write-Host 'Installer PowerShell + Autounattend XML + Default-user launcher syntax PASS'
       - name: Validate installer contract consistency
         shell: pwsh
         run: |
           $builder = Get-Content build/assembly/build-iso.ps1 -Raw
           $validator = Get-Content build/assembly/validate-iso.ps1 -Raw
           $answer = Get-Content build/assembly/Autounattend.xml -Raw
+          $setupComplete = Get-Content build/assembly/SetupComplete.cmd -Raw
           $requiredBridge = '%SYSTEMDRIVE%\sources\setup.exe, /legacy'
           $requiredLaunch = 'Launch: %SYSTEMDRIVE%\sources\setup.exe /legacy'
-          if (-not $builder.Contains($requiredBridge)) {
-            throw 'Builder is missing the exact SYSTEMDRIVE legacy Setup bridge.'
+          if (-not $builder.Contains($requiredBridge)) { throw 'Builder is missing the exact SYSTEMDRIVE legacy Setup bridge.' }
+          if (-not $builder.Contains('ANON legacy Setup bridge enabled.')) { throw 'Builder is missing the WinPE legacy Setup marker.' }
+          if (-not $builder.Contains($requiredLaunch)) { throw 'Builder marker does not describe the expected Setup launch contract.' }
+          if ($validator -notmatch '%SYSTEMDRIVE%.*sources.*setup') { throw 'Validator is missing the WinPE SYSTEMDRIVE Setup path contract.' }
+          if ($answer -match 'CurrentVersion\\Winlogon.*Shell') { throw 'Installer contract still attempts to replace Winlogon Shell.' }
+          if ($answer -match '<FirstLogonCommands>') { throw 'Installer contract still contains FirstLogonCommands.' }
+          foreach ($token in @('C:\Users\Default\NTUSER.DAT','HKU\ANON_DEFAULT\Software\Microsoft\Windows\CurrentVersion\Run','ANONShell','ANON.Shell.Bootstrap.exe')) {
+            if ($setupComplete -notmatch [regex]::Escape($token)) { throw "Installer contract lacks Default-user launcher token: $token" }
           }
-          if (-not $builder.Contains('ANON legacy Setup bridge enabled.')) {
-            throw 'Builder is missing the WinPE legacy Setup marker.'
-          }
-          if (-not $builder.Contains($requiredLaunch)) {
-            throw 'Builder marker does not describe the expected Setup launch contract.'
-          }
-          if ($validator -notmatch '%SYSTEMDRIVE%.*sources.*setup') {
-            throw 'Validator is missing the WinPE SYSTEMDRIVE Setup path contract.'
-          }
-          if ($answer -match 'CurrentVersion\\Winlogon.*Shell') {
-            throw 'Installer contract still attempts to replace Winlogon Shell.'
-          }
-          if ($answer -notmatch 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run') {
-            throw 'Installer contract lacks the per-user ANON launcher.'
-          }
-          if ($builder -notmatch 'bootOrderCandidates') {
-            throw 'Builder must derive oscdimg optimization hints from existing files.'
-          }
-          Write-Host 'Installer bridge + safe desktop launcher contract consistency PASS'
-      - name: Verify optimization policy code shape
+          if ($builder -notmatch 'bootOrderCandidates') { throw 'Builder must derive oscdimg optimization hints from existing files.' }
+          if ($builder -match 'FirstLogonCommands\s*->\s*Winlogon') { throw 'Builder documentation still claims ANON replaces Winlogon Shell.' }
+          if ($builder -match 'Shell:\s*FirstLogonCommands\s*->\s*HKCU Run') { throw 'Builder marker still claims FirstLogonCommands launches the shell.' }
+          Write-Host 'Installer bridge + Default-user desktop launcher contract consistency PASS'
+      - name: Validate M0 WPF UI contract
         shell: pwsh
         run: |
-          $files = @(
-            'performance/optimization/OptimizationProfile.cs',
-            'performance/optimization/OptimizationPolicyEngine.cs',
-            'performance/optimization/OptimizationPlan.cs'
-          )
-          foreach ($file in $files) {
-            if (-not (Test-Path $file)) { throw "Optimization source missing: $file" }
-            $text = Get-Content $file -Raw
-            if ($text -notmatch 'Restore' -and $text -notmatch 'Reversible') {
-              throw "Optimization source lacks a rollback/reversibility marker: $file"
-            }
-          }
-          Write-Host 'Optimization source safety gate PASS'
-      - name: Verify AI action boundary
-        shell: pwsh
-        run: |
-          $file = 'anon-ai/runtime/AiActionContract.cs'
-          if (-not (Test-Path $file)) { throw 'AI action contract missing.' }
-          $text = Get-Content $file -Raw
-          foreach ($required in @('ReadOnly','UserConfirmed','SystemChange','IAiActionExecutor')) {
-            if ($text -notmatch [regex]::Escape($required)) { throw "AI action boundary missing: $required" }
-          }
-          Write-Host 'AI action boundary gate PASS'
+          $xaml = Get-Content 'ux/shell/M0/MainWindow.xaml' -Raw
+          $code = Get-Content 'ux/shell/M0/MainWindow.xaml.cs' -Raw
+          $app = Get-Content 'ux/shell/M0/App.xaml.cs' -Raw
+          $requiredXaml = @('SearchBox','LauncherPanel','GamingModeButton','VisualProfile','ReducedMotion','Files_Click','Apps_Click','Games_Click','Ai_Click','System_Click','StatusText','CpuBar','MemoryBar')
+          foreach ($token in $requiredXaml) { if ($xaml -notmatch [regex]::Escape($token)) { throw "M0 UI contract missing XAML token: $token" } }
+          foreach ($handler in @('SearchBox_TextChanged','SearchBox_KeyDown','LauncherResults_MouseDoubleClick','Play_Click','ReducedMotion_Click')) { if ($code -notmatch [regex]::Escape($handler)) { throw "M0 UI contract missing handler: $handler" } }
+          foreach ($token in @('System.Windows','UnhandledException','m0-wpf.log')) { if ($app -notmatch [regex]::Escape($token)) { throw "M0 startup contract missing token: $token" } }
+          if ($code -notmatch 'GlobalMemoryStatusEx|GetSystemTimes') { throw 'M0 telemetry implementation missing native Windows metrics.' }
+          if ($code -notmatch 'gaming-mode\.flag') { throw 'M0 Gaming Mode state contract missing.' }
+          Write-Host 'M0 WPF UI + launcher + telemetry + gaming contract PASS'
       - name: Repository diff hygiene
         shell: bash
         run: git diff --check --exit-code

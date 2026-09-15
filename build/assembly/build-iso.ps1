@@ -97,12 +97,14 @@ try {
         $answerPath=Join-Path $source 'Autounattend.xml'
         $answer|Set-Content $answerPath -Encoding UTF8
 
-        $panther=Join-Path $mount 'Windows\Panther'
-        New-Item -ItemType Directory -Force -Path $panther|Out-Null
-        $answer|Set-Content (Join-Path $panther 'unattend.xml') -Encoding UTF8
-
+        # Do not embed the full media answer file into install.wim\Windows\Panther.
+        # Windows Setup itself caches and annotates the active answer file in Panther
+        # as configuration passes and reboots progress. Duplicating the complete
+        # windowsPE+specialize+oobeSystem answer file there can make Setup process
+        # an unmanaged copy on the first reboot and trigger the generic
+        # "computer restarted unexpectedly" installation failure.
         $marker=Join-Path $mount 'ProgramData\ANON\ANON-OS.txt'
-        "ANON OS Windows`r`nArchitecture: $Architecture`r`nImageIndex: $ImageIndex`r`nInstaller: Windows 11 25H2 legacy Setup bridge`r`nShell: FirstLogonCommands -> Bootstrap -> ANON.Shell.M0`r`nPerformancePet: ANON.PerformancePet`r`n"|Set-Content $marker -Encoding UTF8
+        "ANON OS Windows`r`nArchitecture: $Architecture`r`nImageIndex: $ImageIndex`r`nInstaller: Windows 11 25H2 legacy Setup bridge`r`nShell: Default User HKCU Run -> Bootstrap -> ANON.Shell.M0`r`nPerformancePet: ANON.PerformancePet`r`nAnswerFile: Windows Setup-managed caching (no embedded Panther override)`r`n"|Set-Content $marker -Encoding UTF8
 
         $hive=Join-Path $mount 'Windows\System32\Config\SOFTWARE'
         $tempHive='ANON_OFFLINE_SOFTWARE'
@@ -151,7 +153,7 @@ try {
     }
 
     $rootMarker=Join-Path $source 'ANON-OS.txt'
-    "ANON OS Windows`r`nArchitecture: $Architecture`r`nImageIndex: $ImageIndex`r`nInstaller: boot.wim winpeshl.ini -> X:\sources\setup.exe /legacy -> media-root Autounattend.xml`r`nShell: FirstLogonCommands -> Winlogon Bootstrap -> ANON.Shell.M0`r`nPerformancePet: ANON.PerformancePet`r`n"|Set-Content $rootMarker -Encoding UTF8
+    "ANON OS Windows`r`nArchitecture: $Architecture`r`nImageIndex: $ImageIndex`r`nInstaller: boot.wim winpeshl.ini -> X:\sources\setup.exe /legacy -> media-root Autounattend.xml`r`nShell: Default User HKCU Run -> Bootstrap -> ANON.Shell.M0`r`nPerformancePet: ANON.PerformancePet`r`nAnswerFile: Windows Setup-managed caching (no embedded Panther override)`r`n"|Set-Content $rootMarker -Encoding UTF8
 
     foreach($required in @('bootmgr','bootmgr.efi','boot\bcd','efi\microsoft\boot\bcd','sources\boot.wim','sources\install.wim','Autounattend.xml')){
         if(-not(Test-Path (Join-Path $source $required))){throw "Required release component missing: $required"}
@@ -161,24 +163,11 @@ try {
     if(-not(Test-Path $bootEtfs)){throw 'BIOS boot image missing.'}
     if(-not(Test-Path $efi)){throw 'UEFI boot image missing.'}
 
-    # oscdimg's -yo list is only an optimization hint. Build it from files
-    # that actually exist so a source ISO with optional files absent produces
-    # no spurious warnings.
     $bootOrderCandidates=@(
-        'boot\bcd',
-        'boot\boot.sdi',
-        'boot\bootfix.bin',
-        'boot\bootsect.exe',
-        'boot\etfsboot.com',
-        'boot\memtest.efi',
-        'boot\memtest.exe',
-        'boot\en-us\bootsect.exe.mui',
-        'boot\fonts\chs_boot.ttf',
-        'boot\fonts\cht_boot.ttf',
-        'boot\fonts\jpn_boot.ttf',
-        'boot\fonts\kor_boot.ttf',
-        'boot\fonts\wgl4_boot.ttf',
-        'sources\boot.wim'
+        'boot\bcd','boot\boot.sdi','boot\bootfix.bin','boot\bootsect.exe','boot\etfsboot.com',
+        'boot\memtest.efi','boot\memtest.exe','boot\en-us\bootsect.exe.mui',
+        'boot\fonts\chs_boot.ttf','boot\fonts\cht_boot.ttf','boot\fonts\jpn_boot.ttf',
+        'boot\fonts\kor_boot.ttf','boot\fonts\wgl4_boot.ttf','sources\boot.wim'
     )
     $bootOrderItems=@($bootOrderCandidates | Where-Object { Test-Path (Join-Path $source $_) })
     if($bootOrderItems.Count -eq 0){throw 'No valid boot-order optimization files were found.'}
@@ -200,9 +189,10 @@ try {
         OutputIso=(Split-Path $outIso -Leaf)
         OutputIsoSha256=$hash
         Validation='STRUCTURE+PAYLOAD;VM-FIRST-BOOT-REQUIRED'
-        Installer='boot.wim winpeshl.ini -> X:\sources\setup.exe /legacy + media-root Autounattend.xml + Panther fallback'
-        Shell='FirstLogonCommands -> Winlogon Bootstrap -> ANON.Shell.M0'
+        Installer='boot.wim winpeshl.ini -> X:\sources\setup.exe /legacy + media-root Autounattend.xml + Windows Setup-managed Panther cache'
+        Shell='Default User HKCU Run -> Bootstrap -> ANON.Shell.M0'
         PerformancePet='ANON.PerformancePet'
+        AnswerFile='Media root + WinPE embedded; no install.wim Panther override'
     }|ConvertTo-Json|Set-Content (Join-Path $OutputRoot 'BUILD-MANIFEST.json') -Encoding UTF8
     Write-Host "ISO assembled: $outIso"
 }finally{

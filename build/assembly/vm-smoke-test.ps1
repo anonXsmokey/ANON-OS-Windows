@@ -36,18 +36,31 @@ try {
   if(-not$state){throw 'Unable to read VM state.'}
   if($state -notmatch 'running|paused'){throw "VM did not reach a running state: $state"}
 
+  $screenshot=Join-Path $WorkDir "$VmName-after-boot.png"
+  & $vbox.Source controlvm $VmName screenshotpng $screenshot 2>$null
+  $screenshotObserved=Test-Path -LiteralPath $screenshot
+
   $result=[ordered]@{
+    SchemaVersion=2
     VmName=$VmName
     IsoSha256=(Get-FileHash -LiteralPath (Resolve-Path $IsoPath) -Algorithm SHA256).Hash
     VmState=$state
-    BootHarness='PASS'
-    InstallValidation='REQUIRED'
-    FirstLogonValidation='REQUIRED'
-    ShellSmokeTest='REQUIRED'
+    BootHarness='RUNNING_STATE_OBSERVED'
+    Screenshot=$screenshot
+    ScreenshotObserved=$screenshotObserved
+    VmBoot='REQUIRED'
+    WindowsInstall='REQUIRED'
+    FirstLogon='REQUIRED'
+    ShellSmoke='REQUIRED'
+    Gaming='REQUIRED'
+    Recovery='REQUIRED'
+    Benchmark='REQUIRED'
     CreatedUtc=[DateTime]::UtcNow.ToString('o')
   }
   $result|ConvertTo-Json|Set-Content (Join-Path $WorkDir 'VM-SMOKE-RESULT.json') -Encoding UTF8
-  Write-Host 'VM boot harness: PASS'
+  Write-Host 'VM harness: RUNNING STATE OBSERVED (not a release PASS)'
+  Write-Host "Screenshot evidence: $screenshotObserved"
+  Write-Host 'Manual install/runtime validation remains mandatory.'
 } finally {
   if($created){try{&$vbox.Source controlvm $VmName poweroff 2>$null}catch{}}
   if($created){try{&$vbox.Source unregistervm $VmName --delete 2>$null}catch{}}

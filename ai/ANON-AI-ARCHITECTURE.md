@@ -1,12 +1,12 @@
 # ANON AI Architecture
 
-ANON AI is designed as a Windows-native assistant with a local-first provider strategy. Public Jarvis-style projects demonstrate useful patterns such as voice-first interaction, wake-word activation, memory, tool calling, desktop automation and Ollama/local-model support, but ANON OS implements its own subsystem rather than importing another assistant wholesale.
+ANON AI is a Windows-native assistant with a local-first provider strategy and an explicit action-safety boundary. The implementation lives in the `ai/` project; there is intentionally no second `anon-ai/` implementation.
 
 ## Provider priority
 
-1. Local provider (Ollama-compatible localhost endpoint) — default, no API key required.
-2. Optional cloud provider — explicit user configuration only.
-3. Disabled — always available as a safe fallback.
+1. Local provider (Ollama-compatible localhost/LAN endpoint) — default, no API key required.
+2. Optional OpenAI-compatible provider — explicit endpoint, model and API key configuration only.
+3. Disabled provider — available as the safe fallback for action execution and future restricted deployments.
 
 ## Assistant layers
 
@@ -22,18 +22,24 @@ ANON AI
 │   ├── System telemetry
 │   ├── Gaming controls
 │   └── Safe ANON actions
+├── Action safety boundary
+│   ├── ReadOnly
+│   ├── UserConfirmed
+│   └── SystemChange
 └── Provider router
-    ├── Local
-    └── Optional cloud
+    ├── Local / Ollama-compatible
+    └── Optional OpenAI-compatible
 ```
 
 ### Security boundary
 
-AI does not receive unrestricted administrator privileges. System-changing actions must pass through ANON's guarded policy/permission layer, are auditable, and should be reversible where practical.
+AI does not receive unrestricted administrator privileges. System-changing actions must pass through `AiActionGate`, require explicit user confirmation, and execute only through a registered `IAiActionExecutor`. The default executor is disabled, so adding an AI provider cannot silently grant system-control capability.
 
-### Local endpoint convention
+Action contracts are compiled as part of `ai/Anon.Os.Ai.csproj` under `ai/runtime/AiActionContract.cs`.
 
-The default local provider may use an Ollama-compatible HTTP endpoint such as `http://127.0.0.1:11434`. A model is configured independently so ANON OS can support different local models without changing the assistant UI.
+### Provider implementation
+
+`AnonAiProviderFactory` is local-first. With no explicit endpoint it uses an Ollama-compatible provider at `http://127.0.0.1:11434` and the `gemma3:4b` default model. An OpenAI-compatible provider is selected only when an explicit endpoint, model and API key are supplied. Provider failures are returned as safe responses and do not control the desktop lifecycle.
 
 ### Voice architecture
 
@@ -43,6 +49,8 @@ Speech-to-text, wake-word detection and text-to-speech remain independent interf
 
 Memory is opt-in and local by default. Short-lived conversation state and durable user-approved memory are separate stores.
 
-## Reference research
+## Runtime integration
 
-The GitHub `jarvis-assistant` topic contains multiple open-source assistant projects using combinations of voice recognition, TTS, desktop automation, memory, tool calling and Ollama/local LLMs. These patterns informed the architecture but are not copied as product dependencies.
+The ANON desktop references the canonical `ai/Anon.Os.Ai.csproj`. `AiWindow` uses the same provider factory and request/response contracts; it does not carry a second provider implementation.
+
+The AI subsystem remains outside the critical Windows boot path. If a provider is offline or fails, the ANON desktop remains available.

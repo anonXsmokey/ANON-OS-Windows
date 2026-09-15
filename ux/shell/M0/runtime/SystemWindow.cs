@@ -47,9 +47,10 @@ public sealed class SystemWindow : Window
         header.Children.Add(new TextBlock { Text = "ANON SYSTEM", FontSize = 24, FontWeight = FontWeights.SemiBold, Foreground = Text, VerticalAlignment = VerticalAlignment.Center });
         var live = new TextBlock { Text = "LIVE", FontSize = 10, FontWeight = FontWeights.SemiBold, Foreground = Accent, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(16, 0, 0, 0) };
         Grid.SetColumn(live, 1); header.Children.Add(live);
-        var refresh = new Button { Content = "↻  REFRESH" }; refresh.Click += (_, _) => Update(); Grid.SetColumn(refresh, 2); header.Children.Add(refresh);
+        var refresh = CreateButton("↻  REFRESH"); refresh.Click += (_, _) => Update(); Grid.SetColumn(refresh, 2); header.Children.Add(refresh);
         root.Children.Add(header);
 
+        var actionScroll = new ScrollViewer { HorizontalScrollBarVisibility = ScrollBarVisibility.Auto, VerticalScrollBarVisibility = ScrollBarVisibility.Disabled, HorizontalContentAlignment = HorizontalAlignment.Left };
         var actions = new Grid { Background = Strong, Padding = new Thickness(12), Margin = new Thickness(0, 0, 0, 16) };
         for (var i = 0; i < 5; i++) actions.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         AddAction(actions, "TASK MANAGER", "taskmgr.exe", 0);
@@ -57,34 +58,46 @@ public sealed class SystemWindow : Window
         AddAction(actions, "SYSTEM INFO", "ms-settings:about", 2);
         AddWindowAction(actions, "CONTROL CENTER", 3, OpenControlCenter);
         AddWindowAction(actions, "ANON AI", 4, OpenAi);
-        Grid.SetRow(actions, 1); root.Children.Add(actions);
+        actionScroll.Content = actions;
+        Grid.SetRow(actionScroll, 1); root.Children.Add(actionScroll);
 
-        var content = new Grid { ColumnSpacing = 16, RowSpacing = 16 };
-        content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.15, GridUnitType.Star) }); content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto }); content.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+        var content = new Grid { ColumnSpacing = 16, RowSpacing = 16, Padding = new Thickness(0, 0, 0, 4) };
+        content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1.15, GridUnitType.Star) });
+        content.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+        content.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
         var telemetryCard = Card(); var telemetryStack = new StackPanel { Spacing = 12 }; telemetryStack.Children.Add(SectionTitle("PERFORMANCE")); _telemetryText.FontSize = 14; _telemetryText.Foreground = Muted; telemetryStack.Children.Add(_telemetryText); _cpuBar.Maximum = 100; _cpuBar.Height = 5; telemetryStack.Children.Add(_cpuBar); _memoryBar.Maximum = 100; _memoryBar.Height = 5; telemetryStack.Children.Add(_memoryBar); telemetryCard.Child = telemetryStack; content.Children.Add(telemetryCard);
         var hardwareCard = Card(); var hardwareStack = new StackPanel { Spacing = 10 }; hardwareStack.Children.Add(SectionTitle("HARDWARE")); _hardwareText.FontSize = 13; _hardwareText.TextWrapping = TextWrapping.Wrap; _hardwareText.Foreground = Muted; hardwareStack.Children.Add(_hardwareText); hardwareCard.Child = hardwareStack; Grid.SetColumn(hardwareCard, 1); content.Children.Add(hardwareCard);
         var storageCard = Card(); var storageStack = new StackPanel { Spacing = 10 }; storageStack.Children.Add(SectionTitle("STORAGE")); _storageText.FontSize = 13; _storageText.TextWrapping = TextWrapping.Wrap; _storageText.Foreground = Muted; storageStack.Children.Add(_storageText); storageStack.Children.Add(new TextBlock { Text = "ANON does not modify storage policy in the shell.", FontSize = 11, Foreground = Muted, TextWrapping = TextWrapping.Wrap }); storageCard.Child = storageStack; Grid.SetRow(storageCard, 1); content.Children.Add(storageCard);
         var runtimeCard = Card(); var runtimeStack = new StackPanel { Spacing = 10 }; runtimeStack.Children.Add(SectionTitle("WINDOWS RUNTIME")); runtimeStack.Children.Add(new TextBlock { Text = $"Architecture  {RuntimeInformation.OSArchitecture}\n.NET           {Environment.Version}\nProcessors     {Environment.ProcessorCount}\nMachine        {Environment.MachineName}", FontSize = 13, Foreground = Muted }); runtimeCard.Child = runtimeStack; Grid.SetColumn(runtimeCard, 1); Grid.SetRow(runtimeCard, 1); content.Children.Add(runtimeCard);
-        Grid.SetRow(content, 2); root.Children.Add(content);
+        var contentScroll = new ScrollViewer { VerticalScrollBarVisibility = ScrollBarVisibility.Auto, HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled, Content = content };
+        Grid.SetRow(contentScroll, 2); root.Children.Add(contentScroll);
 
         _statusText.Text = "Telemetry active."; _statusText.FontSize = 11; _statusText.Foreground = Muted; _statusText.Margin = new Thickness(0, 12, 0, 0); Grid.SetRow(_statusText, 3); root.Children.Add(_statusText);
         Content = root;
-        _timer = DispatcherQueue.GetForCurrentThread().CreateTimer(); _timer.Interval = TimeSpan.FromSeconds(1); _timer.Tick += (_, _) => Update(); _timer.Start(); Closed += (_, _) => _timer.Stop(); Update();
+        _timer = DispatcherQueue.GetForCurrentThread().CreateTimer(); _timer.Interval = TimeSpan.FromSeconds(1); _timer.Tick += (_, _) => Update(); Closed += (_, _) => { _timer.Stop(); _controlCenter = null; _aiWindow = null; }; Update();
     }
 
     private static Border Card() => new() { Background = Surface, BorderBrush = Border, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(12), Padding = new Thickness(18) };
     private static TextBlock SectionTitle(string text) => new() { Text = text, FontSize = 15, FontWeight = FontWeights.SemiBold, Foreground = Text };
-    private static void AddAction(Grid grid, string label, string target, int column) { var button = new Button { Content = label, Margin = new Thickness(column == 0 ? 0 : 8, 0, 0, 0) }; button.Click += (_, _) => Launch(target); Grid.SetColumn(button, column); grid.Children.Add(button); }
-    private static void AddWindowAction(Grid grid, string label, int column, Action action) { var button = new Button { Content = label, Margin = new Thickness(8, 0, 0, 0) }; button.Click += (_, _) => action(); Grid.SetColumn(button, column); grid.Children.Add(button); }
+    private void AddAction(Grid grid, string label, string target, int column)
+    {
+        var button = CreateButton(label);
+        button.Margin = column == 0 ? new Thickness(0) : new Thickness(8, 0, 0, 0);
+        button.Click += (_, _) => Launch(target); Grid.SetColumn(button, column); grid.Children.Add(button);
+    }
+    private void AddWindowAction(Grid grid, string label, int column, Action action)
+    {
+        var button = CreateButton(label); button.Margin = new Thickness(8, 0, 0, 0); button.Click += (_, _) => action(); Grid.SetColumn(button, column); grid.Children.Add(button);
+    }
+    private static Button CreateButton(string label) => new() { Content = label, Background = Surface, Foreground = Text, BorderBrush = Border, BorderThickness = new Thickness(1), CornerRadius = new CornerRadius(10), Padding = new Thickness(12, 8, 12, 8), MinHeight = 38 };
 
     private void OpenControlCenter()
     {
         try
         {
             if (_controlCenter is null) { _controlCenter = new ControlCenterWindow(); _controlCenter.Closed += (_, _) => _controlCenter = null; }
-            _controlCenter.Activate();
-            _statusText.Text = "ANON Control Center opened.";
+            _controlCenter.Activate(); _statusText.Text = "ANON Control Center opened.";
         }
         catch (Exception ex) { _statusText.Text = $"Control Center error: {ex.Message}"; }
     }
@@ -94,18 +107,35 @@ public sealed class SystemWindow : Window
         try
         {
             if (_aiWindow is null) { _aiWindow = new AiWindow(); _aiWindow.Closed += (_, _) => _aiWindow = null; }
-            _aiWindow.Activate();
-            _statusText.Text = "ANON AI opened.";
+            _aiWindow.Activate(); _statusText.Text = "ANON AI opened.";
         }
         catch (Exception ex) { _statusText.Text = $"ANON AI error: {ex.Message}"; }
     }
 
     private void Update()
     {
-        var snapshot = _telemetry.Read(); _telemetryText.Text = $"CPU     {snapshot.CpuPercent:0}%\nMEMORY  {snapshot.MemoryUsedPercent:0}% ({FormatBytes(snapshot.MemoryUsedBytes)} / {FormatBytes(snapshot.MemoryTotalBytes)})"; _cpuBar.Value = snapshot.CpuPercent; _memoryBar.Value = snapshot.MemoryUsedPercent;
+        try
+        {
+            var snapshot = _telemetry.Read();
+            _telemetryText.Text = $"CPU     {snapshot.CpuPercent:0}%\nMEMORY  {snapshot.MemoryUsedPercent:0}% ({FormatBytes(snapshot.MemoryUsedBytes)} / {FormatBytes(snapshot.MemoryTotalBytes)})";
+            _cpuBar.Value = Math.Clamp(snapshot.CpuPercent, 0, 100); _memoryBar.Value = Math.Clamp(snapshot.MemoryUsedPercent, 0, 100);
+        }
+        catch { _telemetryText.Text = "CPU     unavailable\nMEMORY  unavailable"; _cpuBar.Value = 0; _memoryBar.Value = 0; }
         _hardwareText.Text = $"Logical processors   {Environment.ProcessorCount}\nOS architecture      {RuntimeInformation.OSArchitecture}\nProcess architecture {RuntimeInformation.ProcessArchitecture}\nOS                   {Environment.OSVersion.VersionString}";
-        _storageText.Text = string.Join("\n", DriveInfo.GetDrives().Where(d => d.IsReady).Select(d => $"{d.Name.TrimEnd('\\')}   {FormatBytes(d.TotalSize - d.AvailableFreeSpace)} used / {FormatBytes(d.TotalSize)}")); _statusText.Text = $"Updated {DateTime.Now:HH:mm:ss}. Windows remains the underlying platform.";
+        try
+        {
+            var drives = DriveInfo.GetDrives().Where(d => d.IsReady).Select(d => $"{d.Name.TrimEnd('\\')}   {FormatBytes(d.TotalSize - d.AvailableFreeSpace)} used / {FormatBytes(d.TotalSize)}").ToArray();
+            _storageText.Text = drives.Length == 0 ? "No ready volumes reported." : string.Join("\n", drives);
+        }
+        catch { _storageText.Text = "Storage information unavailable."; }
+        _statusText.Text = $"Updated {DateTime.Now:HH:mm:ss}. Windows remains the underlying platform.";
     }
-    private static void Launch(string target) { try { Process.Start(new ProcessStartInfo { FileName = target, UseShellExecute = true }); } catch { } }
+
+    private void Launch(string target)
+    {
+        try { Process.Start(new ProcessStartInfo { FileName = target, UseShellExecute = true }); _statusText.Text = $"Opened {target}."; }
+        catch (Exception ex) { _statusText.Text = $"Could not open {target}: {ex.Message}"; }
+    }
+
     private static string FormatBytes(long bytes) => bytes < 1024L * 1024L * 1024L ? $"{bytes / 1024d / 1024d:0.0} MB" : $"{bytes / 1024d / 1024d / 1024d:0.0} GB";
 }

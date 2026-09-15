@@ -1,13 +1,58 @@
-<Application
-    x:Class="Anon.Shell.M0.App"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<Application x:Class="Anon.Shell.M0.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             ShutdownMode="OnMainWindowClose">
     <Application.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
-                <ResourceDictionary Source="Themes/AnonTheme.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
+        <SolidColorBrush x:Key="AnonBackgroundBrush" Color="#070A10" />
+        <SolidColorBrush x:Key="AnonSurfaceBrush" Color="#0E131D" />
+        <SolidColorBrush x:Key="AnonSurfaceStrongBrush" Color="#151C29" />
+        <SolidColorBrush x:Key="AnonBorderBrush" Color="#273142" />
+        <SolidColorBrush x:Key="AnonTextBrush" Color="#F5F7FA" />
+        <SolidColorBrush x:Key="AnonMutedTextBrush" Color="#9BA7B8" />
+        <SolidColorBrush x:Key="AnonAccentBrush" Color="#79B8FF" />
+        <SolidColorBrush x:Key="AnonAccentSoftBrush" Color="#19304A" />
+        <SolidColorBrush x:Key="AnonSuccessBrush" Color="#67E8B0" />
+        <SolidColorBrush x:Key="AnonDangerBrush" Color="#FF647C" />
+        <LinearGradientBrush x:Key="AnonBackgroundGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#070A10" Offset="0" />
+            <GradientStop Color="#0A1020" Offset="0.55" />
+            <GradientStop Color="#10152A" Offset="1" />
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="AnonAccentGradient" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#79B8FF" Offset="0" />
+            <GradientStop Color="#9B8CFF" Offset="1" />
+        </LinearGradientBrush>
+        <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AnonAccentBrush}" />
+            <Setter Property="Foreground" Value="#07101C" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="18,11" />
+            <Setter Property="Margin" Value="0,0,10,0" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style x:Key="SecondaryButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AnonSurfaceStrongBrush}" />
+            <Setter Property="Foreground" Value="{StaticResource AnonTextBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource AnonBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="16,10" />
+            <Setter Property="Margin" Value="0,0,10,0" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style x:Key="NavButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource AnonMutedTextBrush}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="13,9" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style x:Key="CardStyle" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource AnonSurfaceBrush}" />
+            <Setter Property="BorderBrush" Value="{StaticResource AnonBorderBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="Padding" Value="22" />
+        </Style>
     </Application.Resources>
 </Application>

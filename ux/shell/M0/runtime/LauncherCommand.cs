@@ -9,13 +9,15 @@ public sealed class LauncherCatalog
         new("files", "Files", "Open ANON Files", "anon:files"),
         new("apps", "Apps", "Open installed Windows apps", "shell:AppsFolder"),
         new("games", "Games", "Open installed games", "shell:AppsFolder"),
-        new("system", "System", "Open ANON System telemetry", "anon:system"),
+        new("system", "System", "Open ANON System controls", "anon:system"),
         new("settings", "Settings", "Open Windows Settings", "ms-settings:")
     ];
 
     public IReadOnlyList<LauncherCommand> Search(string? query)
     {
-        if (string.IsNullOrWhiteSpace(query)) return _commands;
+        if (string.IsNullOrWhiteSpace(query))
+            return Array.Empty<LauncherCommand>();
+
         return _commands
             .Where(c => c.Title.Contains(query, StringComparison.OrdinalIgnoreCase)
                      || c.Subtitle.Contains(query, StringComparison.OrdinalIgnoreCase)
