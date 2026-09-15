@@ -117,24 +117,31 @@ jobs:
       - name: Validate installer scripts and answer file syntax
         shell: pwsh
         run: |
-          $files = @('build/assembly/build-iso.ps1','build/assembly/build-local.ps1','build/assembly/validate-iso.ps1','build/assembly/release-manifest.ps1','build/assembly/validate-release-gates.ps1')
+          $files = @('build/assembly/build-iso.ps1','build/assembly/build-local.ps1','build/assembly/validate-iso.ps1','build/assembly/release-manifest.ps1','build/assembly/validate-release-gates.ps1','build/assembly/SetupComplete.cmd')
           foreach ($file in $files) {
             $tokens = $null; $errors = $null
-            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file), [ref]$tokens, [ref]$errors) | Out-Null
-            if ($errors.Count) { throw "PowerShell syntax validation failed: $file`n$($errors | Out-String)" }
+            if ($file -like '*.ps1') {
+              [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file), [ref]$tokens, [ref]$errors) | Out-Null
+              if ($errors.Count) { throw "PowerShell syntax validation failed: $file`n$($errors | Out-String)" }
+            }
           }
           $xml = Get-Content build/assembly/Autounattend.xml -Raw
           [xml]$xml | Out-Null
           if ($xml -notmatch 'windowsPE' -or $xml -notmatch 'oobeSystem' -or $xml -notmatch '/IMAGE/INDEX') { throw 'Autounattend.xml is missing a required deployment pass.' }
           if ($xml -match 'CurrentVersion\\Winlogon.*Shell') { throw 'Autounattend must not replace the Winlogon shell.' }
-          if ($xml -notmatch 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -or $xml -notmatch 'ANONShell' -or $xml -notmatch 'ANON\.Shell\.Bootstrap\.exe') { throw 'Autounattend is missing the safe per-user ANON launcher contract.' }
-          Write-Host 'Installer PowerShell + Autounattend XML + safe launcher syntax PASS'
+          if ($xml -match '<FirstLogonCommands>') { throw 'Autounattend must not launch ANON from FirstLogonCommands.' }
+          $setupComplete = Get-Content build/assembly/SetupComplete.cmd -Raw
+          foreach ($token in @('C:\Users\Default\NTUSER.DAT','reg load','Software\Microsoft\Windows\CurrentVersion\Run','ANONShell','C:\ProgramData\ANON\Shell\Bootstrap\ANON.Shell.Bootstrap.exe')) {
+            if ($setupComplete -notmatch [regex]::Escape($token)) { throw "SetupComplete launcher contract missing: $token" }
+          }
+          Write-Host 'Installer PowerShell + Autounattend XML + Default-user launcher syntax PASS'
       - name: Validate installer contract consistency
         shell: pwsh
         run: |
           $builder = Get-Content build/assembly/build-iso.ps1 -Raw
           $validator = Get-Content build/assembly/validate-iso.ps1 -Raw
           $answer = Get-Content build/assembly/Autounattend.xml -Raw
+          $setupComplete = Get-Content build/assembly/SetupComplete.cmd -Raw
           $requiredBridge = '%SYSTEMDRIVE%\sources\setup.exe, /legacy'
           $requiredLaunch = 'Launch: %SYSTEMDRIVE%\sources\setup.exe /legacy'
           if (-not $builder.Contains($requiredBridge)) { throw 'Builder is missing the exact SYSTEMDRIVE legacy Setup bridge.' }
@@ -142,10 +149,14 @@ jobs:
           if (-not $builder.Contains($requiredLaunch)) { throw 'Builder marker does not describe the expected Setup launch contract.' }
           if ($validator -notmatch '%SYSTEMDRIVE%.*sources.*setup') { throw 'Validator is missing the WinPE SYSTEMDRIVE Setup path contract.' }
           if ($answer -match 'CurrentVersion\\Winlogon.*Shell') { throw 'Installer contract still attempts to replace Winlogon Shell.' }
-          if ($answer -notmatch 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run') { throw 'Installer contract lacks the per-user ANON launcher.' }
+          if ($answer -match '<FirstLogonCommands>') { throw 'Installer contract still contains FirstLogonCommands.' }
+          foreach ($token in @('C:\Users\Default\NTUSER.DAT','HKU\ANON_DEFAULT\Software\Microsoft\Windows\CurrentVersion\Run','ANONShell','ANON.Shell.Bootstrap.exe')) {
+            if ($setupComplete -notmatch [regex]::Escape($token)) { throw "Installer contract lacks Default-user launcher token: $token" }
+          }
           if ($builder -notmatch 'bootOrderCandidates') { throw 'Builder must derive oscdimg optimization hints from existing files.' }
           if ($builder -match 'FirstLogonCommands\s*->\s*Winlogon') { throw 'Builder documentation still claims ANON replaces Winlogon Shell.' }
-          Write-Host 'Installer bridge + safe desktop launcher contract consistency PASS'
+          if ($builder -match 'Shell:\s*FirstLogonCommands\s*->\s*HKCU Run') { throw 'Builder marker still claims FirstLogonCommands launches the shell.' }
+          Write-Host 'Installer bridge + Default-user desktop launcher contract consistency PASS'
       - name: Validate M0 WPF UI contract
         shell: pwsh
         run: |
