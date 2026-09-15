@@ -34,14 +34,6 @@
         <HideWirelessSetupInOOBE>false</HideWirelessSetupInOOBE>
         <ProtectYourPC>3</ProtectYourPC>
       </OOBE>
-      <FirstLogonCommands>
-        <SynchronousCommand wcm:action="add">
-          <CommandLine>cmd.exe /c reg.exe add "HKCU\Software\Microsoft\Windows\CurrentVersion\Run" /v ANONShell /t REG_SZ /d C:\ProgramData\ANON\Shell\Bootstrap\ANON.Shell.Bootstrap.exe /f &amp;&amp; start "" C:\ProgramData\ANON\Shell\Bootstrap\ANON.Shell.Bootstrap.exe</CommandLine>
-          <Description>Start ANON desktop safely with Explorer recovery</Description>
-          <Order>1</Order>
-          <RequiresUserInput>false</RequiresUserInput>
-        </SynchronousCommand>
-      </FirstLogonCommands>
     </component>
   </settings>
 </unattend>
