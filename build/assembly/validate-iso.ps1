@@ -53,11 +53,19 @@ try {
         if(-not(Test-Path (Join-Path $installMount $item))){throw "Required installed-image component missing: $item"}
     }
 
-    # Windows Setup owns the Panther cache. A complete unattend.xml should not
-    # be injected into install.wim\Windows\Panther because Setup must annotate
-    # and advance its cached answer file across reboots itself.
     if(Test-Path (Join-Path $installMount 'Windows\Panther\unattend.xml')){
         throw 'install.wim contains an embedded Panther unattend.xml override; Setup-managed caching is required.'
+    }
+
+    $setupComplete=Get-Content (Join-Path $installMount 'Windows\Setup\Scripts\SetupComplete.cmd') -Raw
+    if($setupComplete -notmatch '(?i)C:\\Users\\Default\\NTUSER\.DAT'){
+        throw 'SetupComplete does not provision the ANON launcher into the Default user profile.'
+    }
+    if($setupComplete -notmatch '(?i)HKU\\ANON_DEFAULT\\Software\\Microsoft\\Windows\\CurrentVersion\\Run'){
+        throw 'SetupComplete is missing the Default-profile ANON Run key path.'
+    }
+    if($setupComplete -notmatch '(?i)ANONShell.*ANON\.Shell\.Bootstrap\.exe'){
+        throw 'SetupComplete is missing the ANONShell Bootstrap Run value.'
     }
 
     $bootWim=Join-Path $root 'sources\boot.wim'
@@ -98,8 +106,8 @@ try {
     if($answer -match 'CurrentVersion\\Winlogon"\s+/v\s+Shell'){
         throw 'Autounattend must not replace the Winlogon shell; Explorer must remain the recovery shell.'
     }
-    if($answer -notmatch 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -or $answer -notmatch 'ANONShell' -or $answer -notmatch 'ANON\.Shell\.Bootstrap\.exe'){
-        throw 'Autounattend is missing the safe per-user ANON launcher contract.'
+    if($answer -match '<FirstLogonCommands>'){
+        throw 'Autounattend must not launch ANON from FirstLogonCommands; normal user session startup is required.'
     }
 
     Write-Host 'ISO structure validation: PASS'
@@ -108,6 +116,7 @@ try {
     Write-Host 'ANON payload validation: PASS'
     Write-Host 'Performance Pet validation: PASS'
     Write-Host 'Setup-managed answer-file caching validation: PASS'
+    Write-Host 'Default-profile ANON launcher validation: PASS'
     Write-Host 'Safe desktop launcher validation: PASS'
     Write-Host 'Autounattend validation: PASS'
     Write-Host "Image index: $ExpectedImageIndex"
